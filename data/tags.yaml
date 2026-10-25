@@ -1,0 +1,18 @@
+# 功能标签词表。角色的 provides / needs 和槽位的 functions 只能用这里的 id。
+tags:
+  - {id: main_dps, zh: 主C输出}
+  - {id: sub_dps, zh: 副C输出}
+  - {id: team_dmg_buff, zh: 全队增伤}
+  - {id: elemental_shred, zh: 元素减抗}
+  - {id: universal_shred, zh: 全元素减抗}
+  - {id: grouping, zh: 聚怪}
+  - {id: shield, zh: 护盾}
+  - {id: healer, zh: 治疗}
+  - {id: interruption_res, zh: 抗打断}
+  - {id: energy_battery, zh: 充能}
+  - {id: hydro_application, zh: 后台挂水}
+  - {id: cryo_application, zh: 后台挂冰}
+  - {id: pyro_application, zh: 后台挂火}
+  - {id: electro_application, zh: 后台挂雷}
+  - {id: dendro_application, zh: 后台挂草}
+  - {id: em_share, zh: 精通分享}
