@@ -11,8 +11,11 @@ defaults:
   require_words: [原神]
   exclude_words: [幻化, 外观, 剧情, 抽卡, 抽取记录, 爆料, 测试服, 前瞻, 手书, MMD, cos, 鬼畜]
 
-# 信任的 UP 主（名字或 mid）。白名单里的视频排在前面，草稿里也会标出来。待你填。
-whitelist_up: []
+# 信任的 UP 主（名字或 mid）。白名单里的视频排在前面，草稿里也会标出来；
+# 写名字的还会单独搜一次“UP 名 + 角色名”，所以名字要和 B 站上一字不差。
+whitelist_up:
+  - 贪欲九头蛇_
+  - 卡特亚
 
 characters:
   - id: neuvillette

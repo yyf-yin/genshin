@@ -190,3 +190,13 @@ def test_select_videos_requires_genshin_context():
     rejected = []
     assert [h.bvid for h in select_videos(hits, t, [], rejected=rejected, require_words=["原神"])] == ["BV2"]
     assert rejected[0][1] == "标题、简介、标签里没有「原神」"
+
+
+def test_harvest_searches_each_whitelisted_up_by_name(tmp_path, monkeypatch):
+    from genshin_assistant.bili import harvest as hv
+    queries = []
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": queries.append((kw, order)) or [])
+    cfg = hv.SourceConfig({}, ["贪欲九头蛇_", "卡特亚", "12345"])
+    hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh} 配队"]), cfg, tmp_path, log=lambda *_: None)
+    assert queries == [("薇斯纳 配队", "totalrank"), ("薇斯纳 配队", "pubdate"),
+                       ("贪欲九头蛇_ 薇斯纳", "totalrank"), ("卡特亚 薇斯纳", "totalrank")]

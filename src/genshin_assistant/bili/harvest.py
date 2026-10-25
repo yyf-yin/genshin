@@ -136,6 +136,11 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
     return kept[: target.max_videos]
 
 
+def whitelist_names(whitelist: list[str]) -> list[str]:
+    """白名单里的 UP 主名字（纯数字的是 mid，不能拿来搜）。"""
+    return [w for w in whitelist if not w.isdigit()]
+
+
 def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path,
             refresh: bool = False, explain: bool = False, log=print) -> list[Material]:
     """搜索、挑选、取材。已取过的视频直接读本地文件，不再请求。撞到风控立刻停，已取到的照样返回。
@@ -143,18 +148,19 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
     每个搜索词按综合排序和最新发布各搜一页：新角色的攻略在综合排序里常被老视频挤掉。
     """
     hits: list[VideoHit] = []
-    for q in target.queries:
-        kw = q.format(zh=target.zh)
-        for order in ("totalrank", "pubdate"):
-            try:
-                found = search_videos(client, kw, order=order)
-            except RateLimited:
-                raise
-            except BiliError as e:
-                log(f"  搜索「{kw}」({order}) 失败：{e}")
-                continue
-            log(f"  搜索「{kw}」({order})：{len(found)} 条")
-            hits += found
+    searches = [(q.format(zh=target.zh), order) for q in target.queries for order in ("totalrank", "pubdate")]
+    # 白名单 UP 主单独搜一次“UP 名 + 角色名”：泛搜第一页常常排不到他们
+    searches += [(f"{up} {target.zh}", "totalrank") for up in whitelist_names(cfg.whitelist)]
+    for kw, order in searches:
+        try:
+            found = search_videos(client, kw, order=order)
+        except RateLimited:
+            raise
+        except BiliError as e:
+            log(f"  搜索「{kw}」({order}) 失败：{e}")
+            continue
+        log(f"  搜索「{kw}」({order})：{len(found)} 条")
+        hits += found
     rejected: list[tuple[VideoHit, str]] = []
     chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected,
                            cfg.require_words)
