@@ -126,7 +126,7 @@ def test_aggregate_counts_videos_and_flags_disputes():
     assert c0.mentioned == 2 and c0.disputed
     assert "功能分级和整队限制最容易推断错，必须人审" in c0.review_flags
     c1 = by[("slot_function", "interruption_res", "cons >= 1")]
-    assert c1.value == "minor" and "只有 1 个视频提到" in c1.review_flags
+    assert c1.value == "minor" and c1.support == 1  # 单一来源只看 support，不算需审核
 
 
 def test_compare_against_hand_entered_kb(kb):
@@ -185,3 +185,22 @@ def test_deepseek_request_shape_and_cache(tmp_path):
     url, body, headers = sent[0]
     assert len(sent) == 1 and url == "https://api.deepseek.com/chat/completions"
     assert body["response_format"] == {"type": "json_object"} and headers["Authorization"] == "Bearer k"
+
+
+def test_off_topic_video_yields_no_claims(kb, glossary):
+    model = FakeModel([{"kind": "teammate", "subject": "neuvillette", "data": {"char": "芙宁娜"},
+                        "evidence": ev("队友首选芙宁娜")}])
+    model.complete_json = lambda system, user: {"relevant": False, "claims": model.claims}
+    vc = extract_video(material(), ExtractContext(kb, glossary, "neuvillette", "那维莱特"), model)
+    assert vc.claims == [] and vc.rejected[0]["why"].startswith("模型判断不是")
+
+
+def test_main_stat_names_are_normalized_before_comparing(kb, glossary):
+    model = FakeModel([
+        {"kind": "build", "subject": "neuvillette", "data": {"field": "sands", "value": "生命"}, "evidence": ev("队友首选芙宁娜")},
+        {"kind": "build", "subject": "neuvillette", "data": {"field": "goblet", "value": "攻击"}, "evidence": ev("大家好今天讲")},
+    ])
+    vc = extract_video(material(), ExtractContext(kb, glossary, "neuvillette", "那维莱特"), model)
+    findings = aggregate([vc])
+    annotate(findings, kb, "neuvillette")
+    assert {f.data["field"]: f.kb_status for f in findings} == {"sands": "一致", "goblet": "冲突（知识库：hydro_dmg）"}

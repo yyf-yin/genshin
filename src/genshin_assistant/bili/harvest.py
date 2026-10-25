@@ -14,7 +14,7 @@ from .api import Comment, SubtitleLine, VideoHit, pinned_comments, search_videos
 from .client import BiliClient, BiliError, RateLimited
 
 DEFAULT_QUERIES = ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替"]
-# 标题里有这些词的多半不是配队养成攻略（试点里选进过“法尔加幻化武器攻略”）
+# 标题里有这些词的多半不是配队养成攻略（试点里选进过“法尔伽幻化武器攻略”）
 DEFAULT_EXCLUDE = ["幻化", "外观", "剧情", "抽卡", "抽取记录", "爆料", "测试服", "前瞻", "手书", "MMD", "cos", "鬼畜"]
 
 
@@ -40,6 +40,7 @@ class SourceConfig:
     min_duration: int = 120
     pilot: list[str] = field(default_factory=list)  # 不指定角色时默认跑的
     exclude_words: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE))
+    require_words: list[str] = field(default_factory=list)
 
     def find(self, name: str) -> Target | None:
         for t in self.targets.values():
@@ -62,7 +63,8 @@ def load_sources(path: Path) -> SourceConfig:
     return SourceConfig(targets, [str(w) for w in raw.get("whitelist_up") or []],
                         int(d.get("min_duration") or 120),
                         [c["id"] for c in raw.get("characters") or [] if c.get("pilot")],
-                        list(d.get("exclude_words") if d.get("exclude_words") is not None else DEFAULT_EXCLUDE))
+                        list(d.get("exclude_words") if d.get("exclude_words") is not None else DEFAULT_EXCLUDE),
+                        list(d.get("require_words") or []))
 
 
 @dataclass
@@ -101,8 +103,10 @@ class Material:
 
 
 def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], min_duration: int = 120,
-                  exclude_words: list[str] = (), rejected: list[tuple[VideoHit, str]] | None = None) -> list[VideoHit]:
-    """过滤并排序：标题或简介里要有角色名；标题不含排除词；上线日期之后发布；不要短视频；
+                  exclude_words: list[str] = (), rejected: list[tuple[VideoHit, str]] | None = None,
+                  require_words: list[str] = ()) -> list[VideoHit]:
+    """过滤并排序：标题或简介里要有角色名；标题、简介或标签里要有 require_words 之一（如“原神”）；
+    标题不含排除词；上线日期之后发布；不要短视频；
     白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。"""
     since_ts = datetime(target.since.year, target.since.month, target.since.day,
                         tzinfo=timezone.utc).timestamp() if target.since else 0
@@ -115,6 +119,8 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
         why = ""
         if not any(n in h.title or n in h.description for n in target.names()):
             why = "标题和简介里没有角色名"
+        elif require_words and not any(w in f"{h.title} {h.description} {h.tags}" for w in require_words):
+            why = f"标题、简介、标签里没有「{'/'.join(require_words)}」"
         elif bad := next((w for w in exclude_words if w.lower() in h.title.lower()), None):
             why = f"标题含排除词「{bad}」"
         elif h.pubdate < since_ts:
@@ -150,7 +156,8 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
             log(f"  搜索「{kw}」({order})：{len(found)} 条")
             hits += found
     rejected: list[tuple[VideoHit, str]] = []
-    chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected)
+    chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected,
+                           cfg.require_words)
     reasons = Counter(why.split("「")[0].split(" ")[0] for _, why in rejected)
     log(f"  选中 {len(chosen)} 个视频；筛掉 {len(rejected)} 个：" + "，".join(f"{k} {n}" for k, n in reasons.items()))
     if explain:

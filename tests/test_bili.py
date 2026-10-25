@@ -179,3 +179,14 @@ def test_select_videos_reports_why_videos_were_dropped():
     assert [h.bvid for h in kept] == ["BV2"]
     assert [(h.bvid, why) for h, why in rejected] == [
         ("BV1", "标题含排除词「幻化」"), ("BV3", "发布于上线日期 2026-02-19 之前")]
+
+
+def test_select_videos_requires_genshin_context():
+    t = Target("varka", "法尔伽", ["法尔加"])
+    hits = [
+        VideoHit("BV1", "炮队入门：特拉法尔加复刻", "x", 1, 9, 1, 600, tags="碧蓝航线"),
+        VideoHit("BV2", "法尔伽配队攻略", "x", 2, 9, 1, 600, tags="原神,手机游戏"),
+    ]
+    rejected = []
+    assert [h.bvid for h in select_videos(hits, t, [], rejected=rejected, require_words=["原神"])] == ["BV2"]
+    assert rejected[0][1] == "标题、简介、标签里没有「原神」"

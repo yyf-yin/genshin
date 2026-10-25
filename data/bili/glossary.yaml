@@ -55,8 +55,8 @@ characters:
   - {id: yaoyao, zh: 瑶瑶}
   - {id: traveler, zh: 旅行者, aliases: [主角]}
   # 新角色，id 待核对
-  - {id: varka, zh: 法尔加}
-  - {id: vesna, zh: 微丝娜}
+  - {id: varka, zh: 法尔伽, aliases: [法尔加, 大团长]}
+  - {id: vesna, zh: 薇斯纳, aliases: [微丝娜]}
   - {id: odette, zh: 奥黛塔}
   - {id: woyanisha, zh: 沃雅妮莎}
   - {id: nike, zh: 妮可}

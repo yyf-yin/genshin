@@ -68,8 +68,6 @@ def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2) -> list[Fi
             shown = "，".join(f"{LEVEL_ZH.get(k, {'for': '支持', 'against': '反对'}.get(k, k))} {len(b)} 个视频"
                              for k, b in votes.items())
             flags.insert(0, f"有争议：{shown}")
-        if f.support == 1 and len(videos) > 1:
-            flags.append("只有 1 个视频提到")
         f.review_flags = flags
         findings.append(f)
     findings.sort(key=lambda f: (KIND_ORDER.index(f.kind), f.subject, -f.support, str(f.data)))

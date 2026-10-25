@@ -1,6 +1,6 @@
 """把草稿和手工录入的知识库对照：每条结论标“一致 / 冲突 / 知识库没有”，并列出知识库里有、视频没提到的内容。
 
-试点（那维莱特、法尔加、微丝娜）就靠这份对照判断 AI 草稿靠不靠谱。
+试点（那维莱特、法尔伽、薇斯纳）就靠这份对照判断 AI 草稿靠不靠谱。
 """
 
 from __future__ import annotations
@@ -79,7 +79,16 @@ def _status(f: Finding, kb: KnowledgeBase, core: str) -> str:
             return AGREE if hit else MISSING
         if field in ("sands", "goblet", "circlet"):
             stats = {s for b in builds for s in b.main_stats.get(field, [])}
-            return f"需对照（知识库：{'/'.join(sorted(stats))}）" if stats else MISSING
+            if not stats:
+                return MISSING
+            if d.get("id"):
+                return AGREE if d["id"] in stats else f"{CONFLICT}（知识库：{'/'.join(sorted(stats))}）"
+            return f"需对照（知识库：{'/'.join(sorted(stats))}）"
+        if field == "substat" and d.get("id"):
+            subs = {s for b in builds for s in b.substats}
+            if d["id"] == "crit":
+                return AGREE if {"crit_rate", "crit_dmg"} & subs else MISSING
+            return AGREE if d["id"] in subs else MISSING
         if field == "energy_recharge":
             ers = [b.energy_recharge for b in builds if b.energy_recharge]
             return f"需对照（知识库：{ers[0][0]}-{ers[0][1]}）" if ers else MISSING

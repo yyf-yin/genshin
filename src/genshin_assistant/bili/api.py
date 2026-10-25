@@ -23,6 +23,7 @@ class VideoHit:
     pubdate: int  # unix 秒
     duration: int  # 秒
     description: str = ""
+    tags: str = ""  # 搜索结果里的标签，逗号分隔
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -87,7 +88,8 @@ def search_videos(client: BiliClient, keyword: str, page: int = 1, order: str = 
         hits.append(VideoHit(
             bvid=r["bvid"], title=_strip(r.get("title")), author=str(r.get("author", "")),
             mid=int(r.get("mid") or 0), play=int(r.get("play") or 0), pubdate=int(r.get("pubdate") or 0),
-            duration=_duration(r.get("duration")), description=_strip(r.get("description"))))
+            duration=_duration(r.get("duration")), description=_strip(r.get("description")),
+            tags=_strip(r.get("tag"))))
     return hits
 
 

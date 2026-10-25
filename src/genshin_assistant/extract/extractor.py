@@ -15,7 +15,9 @@ from .llm import JSONModel
 from .schema import BUILD_FIELDS, Claim, Evidence, VideoClaims
 
 SYSTEM_PROMPT = """你是原神攻略整理助手。从一个 B 站攻略视频的简介、置顶评论和字幕里，抽取关于核心角色「{core}」的结论，
-输出 JSON：{{"claims": [ ... ]}}。只抽视频里明确说了的内容，不要用你自己的游戏知识补充。
+输出 JSON：{{"relevant": true | false, "claims": [ ... ]}}。只抽视频里明确说了的内容，不要用你自己的游戏知识补充。
+relevant：这是不是一个讲《原神》角色「{core}」的配队、养成或玩法的视频。别的游戏（例如碧蓝航线）、剧情、抽卡、外观视频写 false，
+此时 claims 留空。
 
 每条 claim 的字段：
 - kind：下面七种之一
@@ -80,6 +82,25 @@ def build_user_prompt(m: Material, texts: dict[str, str], lines: list[tuple[floa
     parts.append("\n【置顶评论 pinned】\n" + (texts["pinned"] or "（无）"))
     parts.append("\n【字幕 subtitle】\n" + ("\n".join(f"[{_fmt(t)}] {s}" for t, s in lines) or "（无字幕）"))
     return "\n".join(parts)
+
+
+# 词条中文名 → 知识库配装里用的写法
+STAT_IDS = {
+    "生命": "hp%", "生命值": "hp%", "大生命": "hp%", "生命百分比": "hp%",
+    "攻击": "atk%", "攻击力": "atk%", "大攻击": "atk%", "攻击百分比": "atk%",
+    "防御": "def%", "防御力": "def%", "大防御": "def%",
+    "精通": "em", "元素精通": "em", "充能": "energy_recharge", "元素充能效率": "energy_recharge", "充能效率": "energy_recharge",
+    "暴击": "crit_rate", "暴击率": "crit_rate", "暴伤": "crit_dmg", "暴击伤害": "crit_dmg", "双暴": "crit",
+    "治疗加成": "healing_bonus", "物伤": "physical_dmg", "物理伤害加成": "physical_dmg",
+    **{f"{zh}伤": f"{en}_dmg" for zh, en in [("水", "hydro"), ("火", "pyro"), ("雷", "electro"), ("冰", "cryo"),
+                                            ("风", "anemo"), ("岩", "geo"), ("草", "dendro")]},
+    **{f"{zh}元素伤害加成": f"{en}_dmg" for zh, en in [("水", "hydro"), ("火", "pyro"), ("雷", "electro"), ("冰", "cryo"),
+                                                  ("风", "anemo"), ("岩", "geo"), ("草", "dendro")]},
+}
+
+
+def _squash_stat(s: str) -> str:
+    return "".join(s.split()).replace("杯", "").replace("沙", "").replace("头", "").removesuffix("%")
 
 
 _KEEP = re.compile(r"[\w一-鿿]")
@@ -162,6 +183,10 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
         if not tag_ok(d["tag"]):
             d["tag_note"] = str(d.pop("tag")).removeprefix("new:")
     elif c.kind == "build":
+        if d.get("field") in ("sands", "goblet", "circlet", "substat"):
+            stat = STAT_IDS.get(_squash_stat(str(d.get("value", ""))))
+            if stat:
+                d["id"] = stat
         if d.get("field") not in BUILD_FIELDS:
             flags.append(f"养成字段不合法：{d.get('field')}")
         kind = {"weapon": "weapon", "artifact_set": "artifact"}.get(d.get("field"))
@@ -184,6 +209,9 @@ def extract_video(m: Material, ctx: ExtractContext, model: JSONModel) -> VideoCl
     loc = Locator(texts, lines)
     out = VideoClaims(bvid=m.bvid, title=m.title, up=m.up, published=m.published, model=model.model,
                       corrections={f"{w}→{r}": n for (w, r), n in counter.items() if w != r})
+    if raw.get("relevant") is False:
+        out.rejected.append({"claim": None, "why": "模型判断不是该角色的原神攻略视频"})
+        return out
     for item in raw.get("claims") or []:
         try:
             claim = Claim(**{k: v for k, v in item.items() if k in Claim.model_fields and k not in ("bvid", "flags")})
