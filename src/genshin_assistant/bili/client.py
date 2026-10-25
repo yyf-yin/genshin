@@ -68,9 +68,13 @@ class Credentials:
         return bool(self.sessdata)
 
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
 def credential_paths() -> list[Path]:
     home = Path(os.environ.get("USERPROFILE") or os.environ.get("HOME") or ".")
-    return [home / ".genshin-assistant" / "bili-credentials.json",
+    return [REPO_ROOT / "bili-credentials.json",  # 仓库根目录，已在 .gitignore 里
+            home / ".genshin-assistant" / "bili-credentials.json",
             home / ".bili-ai" / "credentials.json"]  # 和 dsh-bili-whale 共用同一份
 
 

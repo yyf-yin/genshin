@@ -5,3 +5,5 @@ __pycache__/
 
 # B 站取材、抽取缓存和草稿：只在本机，不要提交或公开分发
 work/
+# B 站 cookie，绝不能提交
+bili-credentials.json

@@ -18,10 +18,10 @@ characters:
     pilot: true         # 试点：命座规则（0 命需抗打断）
   - id: varka
     zh: 法尔加
-    since: null         # 待填上线日期
+    since: 2026-02-19
     pilot: true         # 试点：整队限制（双风 + 双同元素）
   - id: vesna
     zh: 微丝娜
-    since: null         # 待填上线日期
+    since: 2026-09-17
     queries: ["{zh} 配队", "{zh} 奥黛塔", "{zh} 养成 攻略", "{zh} 替代 平替"]
     pilot: true         # 试点：功能分级（奥黛塔槽的挂冰是核心功能）

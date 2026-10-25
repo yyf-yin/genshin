@@ -43,8 +43,9 @@ B 站接口部分移植自 [dsh-bili-whale](https://github.com/Alterssss/dsh-bil
 
 1. `pip install -e ".[bili]"`（装 pypinyin，用来纠正字幕里的同音错字）。
 2. B 站 cookie：**建议用小号**。浏览器登录后按 F12 → Application → Cookies 复制 `SESSDATA`、`bili_jct`、`buvid3`，
-   写进 `~/.genshin-assistant/bili-credentials.json`：`{"sessdata": "...", "bili_jct": "...", "buvid3": "..."}`
-   （也认 dsh-bili-whale 的 `~/.bili-ai/credentials.json`，或环境变量 `BILI_SESSDATA` / `BILI_JCT` / `BILI_BUVID3`）。没有登录拉不到 AI 字幕。
+   在仓库根目录新建 `bili-credentials.json`（已在 `.gitignore` 里，不会被提交）：`{"sessdata": "...", "bili_jct": "...", "buvid3": "..."}`
+   （也认 `~/.genshin-assistant/bili-credentials.json`、dsh-bili-whale 的 `~/.bili-ai/credentials.json`，
+   或环境变量 `BILI_SESSDATA` / `BILI_JCT` / `BILI_BUVID3`）。没有登录拉不到 AI 字幕。
 3. `DEEPSEEK_API_KEY` 环境变量。可选 `DEEPSEEK_MODEL`（默认 `deepseek-chat`）。
 4. 抽帧才需要 ffmpeg。
 
