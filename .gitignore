@@ -2,3 +2,6 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .venv/
+
+# B 站取材、抽取缓存和草稿：只在本机，不要提交或公开分发
+work/

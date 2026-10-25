@@ -1,0 +1,27 @@
+# B 站取材配置：要提取哪些角色、用什么搜索词、信任哪些 UP 主。
+# since：角色正式上线日期，只取这天之后发布的视频（避免测试服爆料和旧版本攻略）。不填就不过滤。
+# pilot: true 的角色是试点，`python -m genshin_assistant bili run` 不带角色名时只跑它们。
+
+defaults:
+  queries: ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替"]
+  max_videos: 8        # 每个角色最多取几个视频（方案定的是 5 到 10 个）
+  min_duration: 120    # 秒，短于这个的不要
+
+# 信任的 UP 主（名字或 mid）。白名单里的视频排在前面，草稿里也会标出来。待你填。
+whitelist_up: []
+
+characters:
+  - id: neuvillette
+    zh: 那维莱特
+    aliases: [水龙, 水龙王]
+    since: 2023-11-08   # 4.2 版本
+    pilot: true         # 试点：命座规则（0 命需抗打断）
+  - id: varka
+    zh: 法尔加
+    since: null         # 待填上线日期
+    pilot: true         # 试点：整队限制（双风 + 双同元素）
+  - id: vesna
+    zh: 微丝娜
+    since: null         # 待填上线日期
+    queries: ["{zh} 配队", "{zh} 奥黛塔", "{zh} 养成 攻略", "{zh} 替代 平替"]
+    pilot: true         # 试点：功能分级（奥黛塔槽的挂冰是核心功能）

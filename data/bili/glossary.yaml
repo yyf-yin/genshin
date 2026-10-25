@@ -1,0 +1,94 @@
+# 补充名词表：知识库还没录入的角色、武器、圣遗物。知识库里已有的会自动并入，不用重复写。
+# 用途：① 纠正 AI 字幕的同音错字（三个字以上的名字按拼音自动纠；两个字的名字容易误伤，
+#       例如“甘雨”和“干预”同音，要纠就写 homophone: true，或者在 typos 里写死）；
+#       ② 把抽取结果里的名字归一成 id。
+# id 用英文名或拼音；标了“id 待核对”的是我不确定英文名的新角色，改了要同步改 sources.yaml。
+
+characters:
+  - {id: xingqiu, zh: 行秋}
+  - {id: yelan, zh: 夜兰}
+  - {id: bennett, zh: 班尼特, aliases: [班爷]}
+  - {id: xiangling, zh: 香菱}
+  - {id: kokomi, zh: 珊瑚宫心海, aliases: [心海]}
+  - {id: nahida, zh: 纳西妲, aliases: [草神]}
+  - {id: raiden, zh: 雷电将军, aliases: [雷神]}
+  - {id: xianyun, zh: 闲云}
+  - {id: xilonen, zh: 希诺宁}
+  - {id: citlali, zh: 茜特菈莉}
+  - {id: mavuika, zh: 玛薇卡, aliases: [火神]}
+  - {id: chasca, zh: 恰斯卡}
+  - {id: mualani, zh: 玛拉妮}
+  - {id: kinich, zh: 基尼奇}
+  - {id: emilie, zh: 艾梅莉埃}
+  - {id: chevreuse, zh: 夏沃蕾}
+  - {id: layla, zh: 莱依拉}
+  - {id: diona, zh: 迪奥娜}
+  - {id: rosaria, zh: 罗莎莉亚}
+  - {id: escoffier, zh: 爱可菲}
+  - {id: ganyu, zh: 甘雨}
+  - {id: ayaka, zh: 神里绫华, aliases: [绫华]}
+  - {id: wriothesley, zh: 莱欧斯利}
+  - {id: skirk, zh: 丝柯克}
+  - {id: navia, zh: 娜维娅}
+  - {id: chiori, zh: 千织}
+  - {id: noelle, zh: 诺艾尔}
+  - {id: alhaitham, zh: 艾尔海森}
+  - {id: wanderer, zh: 流浪者, aliases: [散兵]}
+  - {id: hutao, zh: 胡桃}
+  - {id: arlecchino, zh: 阿蕾奇诺, aliases: [仆人]}
+  - {id: lyney, zh: 林尼}
+  - {id: yoimiya, zh: 宵宫}
+  - {id: clorinde, zh: 克洛琳德}
+  - {id: varesa, zh: 瓦蕾莎}
+  - {id: venti, zh: 温迪}
+  - {id: jean, zh: 琴}
+  - {id: faruzan, zh: 珐露珊}
+  - {id: lynette, zh: 琳妮特}
+  - {id: shenhe, zh: 申鹤}
+  - {id: charlotte, zh: 夏洛蒂}
+  - {id: sigewinne, zh: 希格雯}
+  - {id: candace, zh: 坎蒂丝}
+  - {id: fischl, zh: 菲谢尔, aliases: [皇女]}
+  - {id: beidou, zh: 北斗}
+  - {id: thoma, zh: 托马}
+  - {id: kirara, zh: 绮良良}
+  - {id: yaoyao, zh: 瑶瑶}
+  - {id: traveler, zh: 旅行者, aliases: [主角]}
+  # 新角色，id 待核对
+  - {id: varka, zh: 法尔加}
+  - {id: vesna, zh: 微丝娜}
+  - {id: odette, zh: 奥黛塔}
+  - {id: woyanisha, zh: 沃雅妮莎}
+  - {id: nike, zh: 妮可}
+  - {id: flins, zh: 菲林斯}
+  - {id: nefer, zh: 奈芙尔}
+  - {id: sandrone, zh: 桑多涅}
+
+artifacts:
+  - {id: emblem_of_severed_fate, zh: 绝缘之旗印, aliases: [绝缘]}
+  - {id: noblesse_oblige, zh: 昔日宗室之仪, aliases: [宗室]}
+  - {id: viridescent_venerer, zh: 翠绿之影, aliases: [风套]}
+  - {id: tenacity_of_the_millelith, zh: 千岩牢固, aliases: [千岩]}
+  - {id: deepwood_memories, zh: 深林的记忆, aliases: [草套]}
+  - {id: crimson_witch_of_flames, zh: 炽烈的炎之魔女, aliases: [魔女]}
+  - {id: blizzard_strayer, zh: 冰风迷途的勇士, aliases: [冰套]}
+  - {id: heart_of_depth, zh: 沉沦之心, aliases: [水套]}
+  - {id: gladiators_finale, zh: 角斗士的终幕礼, aliases: [角斗士]}
+  - {id: wanderers_troupe, zh: 流浪大地的乐团, aliases: [乐团]}
+  - {id: ocean_hued_clam, zh: 海染砗磲, aliases: [海染]}
+  - {id: husk_of_opulent_dreams, zh: 华馆梦醒形骸记, aliases: [华馆]}
+  - {id: shimenawas_reminiscence, zh: 追忆之注连, aliases: [追忆]}
+  - {id: echoes_of_an_offering, zh: 来歆余响}
+  - {id: vermillion_hereafter, zh: 辰砂往生录, aliases: [辰砂]}
+  - {id: gilded_dreams, zh: 饰金之梦, aliases: [饰金]}
+  - {id: flower_of_paradise_lost, zh: 乐园遗落之花, aliases: [乐园]}
+  - {id: nymphs_dream, zh: 水仙之梦, aliases: [水仙]}
+  - {id: obsidian_codex, zh: 黑曜秘典, aliases: [黑曜]}
+  - {id: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, aliases: [绘卷]}
+  - {id: thundering_fury, zh: 如雷的盛怒, aliases: [如雷]}
+  - {id: pale_flame, zh: 苍白之火, aliases: [苍白]}
+
+# 写死的错字纠正（AI 字幕里实际见到的再往这里加）。左边错，右边对。
+typos:
+  万业: 万叶
+  终离: 钟离
