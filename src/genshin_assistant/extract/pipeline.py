@@ -26,9 +26,13 @@ def core_id(kb: KnowledgeBase, target: Target) -> str:
 
 
 def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model: JSONModel, work: Path,
-                   refresh: bool = False, log=print) -> tuple[Path, Path] | None:
+                   refresh: bool = False, log=print, whitelist: list[str] | None = None) -> tuple[Path, Path] | None:
     bili_dir = work / "bili"
     materials = load_materials(bili_dir, target.id)
+    if whitelist is not None:  # 白名单可能是取材之后才加的，按当前配置重算
+        wl = set(whitelist)
+        for m in materials:
+            m.whitelisted = m.up in wl or str(m.up_mid) in wl
     if not materials:
         log(f"  {target.zh} 还没有取材，先跑 bili harvest {target.zh}")
         return None

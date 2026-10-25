@@ -230,3 +230,26 @@ def test_harvest_backfills_videos_without_subtitles(tmp_path, monkeypatch):
     got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"], max_videos=2), hv.SourceConfig({}, []),
                      tmp_path, log=lambda *_: None)
     assert [m.bvid for m in got] == ["BV1", "BV2"]
+
+
+def test_whitelisted_up_may_predate_release_by_test_server_window():
+    t = Target("neuvillette", "那维莱特", since=date(2023, 11, 8))
+    beta = 1696550400  # 2023-10-06，测试服阶段
+    hits = [VideoHit("BV1", "那维莱特养成攻略", "贪欲九头蛇_", 1, 9, beta, 1500),
+            VideoHit("BV2", "那维莱特养成攻略", "路人", 2, 9, beta, 1500)]
+    assert [h.bvid for h in select_videos(hits, t, ["贪欲九头蛇_"])] == ["BV1"]
+
+
+def test_harvest_prefers_subtitled_videos_and_uses_pinned_only_as_filler(tmp_path, monkeypatch):
+    from genshin_assistant.bili import harvest as hv
+    from genshin_assistant.bili.api import Comment, VideoInfo
+    hits = [VideoHit(f"BV{i}", f"薇斯纳攻略{i}", "x", i, 100 - i, 1, 600) for i in range(3)]
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": hits)
+    monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, "up", 9))
+    monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [Comment("up", 9, "文字版总结")])
+    monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []) if i.bvid == "BV0" else ("ai-zh", [SubtitleLine(0, 1, "x")]))
+    cfg = hv.SourceConfig({}, [])
+    got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"], max_videos=2), cfg, tmp_path, log=lambda *_: None)
+    assert [m.bvid for m in got] == ["BV1", "BV2"]  # BV0 只有置顶评论，被有字幕的挤掉
+    got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"], max_videos=5), cfg, tmp_path, log=lambda *_: None)
+    assert [m.bvid for m in got] == ["BV1", "BV2", "BV0"]  # 名额够才用它兜底

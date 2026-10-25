@@ -54,6 +54,8 @@ characters:
   - {id: kirara, zh: 绮良良}
   - {id: yaoyao, zh: 瑶瑶}
   - {id: qiqi, zh: 七七}
+  - {id: mona, zh: 莫娜}
+  - {id: yae_miko, zh: 八重神子, aliases: [八重]}
   - {id: traveler, zh: 旅行者, aliases: [主角]}
   # 新角色，id 待核对
   - {id: varka, zh: 法尔伽, aliases: [法尔加, 大团长]}
@@ -62,9 +64,18 @@ characters:
   - {id: woyanisha, zh: 沃雅妮莎}
   - {id: nike, zh: 妮可}
   - {id: durin, zh: 杜林}
+  - {id: lauma, zh: 拉乌玛}
   - {id: flins, zh: 菲林斯}
   - {id: nefer, zh: 奈芙尔}
   - {id: sandrone, zh: 桑多涅}
+
+weapons:
+  - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, aliases: [讨龙]}
+  - {id: favonius_sword, zh: 西风剑}
+  - {id: favonius_lance, zh: 西风长枪}
+  - {id: favonius_codex, zh: 西风秘典}
+  - {id: sacrificial_sword, zh: 祭礼剑}
+  - {id: freedom_sworn, zh: 苍古自由之誓, aliases: [苍古]}
 
 artifacts:
   - {id: emblem_of_severed_fate, zh: 绝缘之旗印, aliases: [绝缘]}

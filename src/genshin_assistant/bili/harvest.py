@@ -13,6 +13,8 @@ import yaml
 from .api import Comment, SubtitleLine, VideoHit, pinned_comments, search_videos, subtitles, video_info
 from .client import BiliClient, BiliError, RateLimited
 
+# 白名单 UP 主常在测试服阶段就出攻略（那维莱特的两位都是上线前一个月发的），放宽这么多天
+WHITELIST_EARLY_DAYS = 60
 DEFAULT_QUERIES = ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替"]
 # 标题里有这些词的多半不是配队养成攻略（试点里选进过“法尔伽幻化武器攻略”）
 DEFAULT_EXCLUDE = ["幻化", "外观", "剧情", "抽卡", "抽取记录", "爆料", "测试服", "前瞻", "手书", "MMD", "cos", "鬼畜"]
@@ -123,7 +125,7 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
             why = f"标题、简介、标签里没有「{'/'.join(require_words)}」"
         elif bad := next((w for w in exclude_words if w.lower() in h.title.lower()), None):
             why = f"标题含排除词「{bad}」"
-        elif h.pubdate < since_ts:
+        elif h.pubdate < since_ts - (WHITELIST_EARLY_DAYS * 86400 if h.author in wl or str(h.mid) in wl else 0):
             why = f"发布于上线日期 {target.since} 之前"
         elif h.duration < min_duration:
             why = f"时长 {h.duration} 秒，太短"
@@ -171,16 +173,19 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
             published = datetime.fromtimestamp(h.pubdate, timezone.utc).date() if h.pubdate else "?"
             log(f"    ✗ {h.bvid} {published} {h.duration // 60}分 {why}：{h.title}")
     wl = set(cfg.whitelist)
-    results = []
+    results: list[Material] = []
+    no_subs: list[Material] = []  # 只有置顶评论、没有字幕的：有字幕的候选用完了才补进来
     for h in chosen:
         if len(results) >= target.max_videos:
             break
         path = out_dir / target.id / f"{h.bvid}.json"
         if path.exists() and not refresh:
             m = Material.load(path)
-            if m.subtitles or m.pinned:
+            if m.subtitles:
                 results.append(m)
                 log(f"  {h.bvid} 已有，跳过：{h.title}")
+            elif m.pinned:
+                no_subs.append(m)
             continue
         try:
             info = video_info(client, h.bvid)
@@ -197,12 +202,17 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
                      whitelisted=info.owner in wl or str(info.owner_mid) in wl,
                      fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         m.save(path)
-        if not lines and not pinned:
-            # 没字幕也没置顶评论，只剩简介，信息太少：换下一个候选补上
-            log(f"  {h.bvid} 没有字幕和置顶评论，换下一个：{info.title}")
+        if not lines:
+            # 没有字幕（可能是硬字幕或 UP 关了 AI 字幕），信息太少：先换下一个候选，名额不够再用它的置顶评论兜底
+            log(f"  {h.bvid} 没有字幕，换下一个{'（有置顶评论，备用）' if pinned else ''}：{info.title}")
+            if pinned:
+                no_subs.append(m)
             continue
         results.append(m)
         log(f"  {h.bvid} 字幕 {len(lines)} 行（{lan or '无字幕'}），置顶 {len(pinned)} 条：{info.title}")
+    for m in no_subs[: max(0, target.max_videos - len(results))]:
+        log(f"  {m.bvid} 有字幕的候选不够，用置顶评论兜底：{m.title}")
+        results.append(m)
     # 记下这次选中的视频：选片规则变了以后，目录里旧的视频文件不再参与抽取
     (out_dir / target.id).mkdir(parents=True, exist_ok=True)
     (out_dir / target.id / "selection.json").write_text(

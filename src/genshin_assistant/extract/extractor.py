@@ -182,6 +182,9 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
             return False
         if str(tag) in ctx.kb.tags:
             return True
+        name = str(tag).removeprefix("new:")
+        if g.resolve(name, "weapon") or g.resolve(name, "artifact"):
+            return False  # 模型把武器、圣遗物名当成了功能，这不是新功能，直接忽略
         flags.append(f"词表外功能：{str(tag).removeprefix('new:')}")
         return False
 

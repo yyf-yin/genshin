@@ -160,7 +160,8 @@ def _bili(args, kb) -> None:
             if cmd in ("harvest", "run"):
                 harvest(client, t, cfg, work / "bili", refresh=args.refresh, explain=args.explain)
             if cmd in ("extract", "run"):
-                out = extract_target(kb, glossary, t, model, work, refresh=args.refresh)
+                out = extract_target(kb, glossary, t, model, work, refresh=args.refresh,
+                                     whitelist=cfg.whitelist)
                 if out:
                     print(f"  草稿：{out[0]}\n  报告：{out[1]}")
         print(f"本次 B 站请求 {client.requests_made} 次")
