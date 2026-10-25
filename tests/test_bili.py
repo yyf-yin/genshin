@@ -200,3 +200,13 @@ def test_harvest_searches_each_whitelisted_up_by_name(tmp_path, monkeypatch):
     hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh} 配队"]), cfg, tmp_path, log=lambda *_: None)
     assert queries == [("薇斯纳 配队", "totalrank"), ("薇斯纳 配队", "pubdate"),
                        ("贪欲九头蛇_ 薇斯纳", "totalrank"), ("卡特亚 薇斯纳", "totalrank")]
+
+
+def test_load_materials_follows_latest_selection(tmp_path):
+    import json as _json
+    from genshin_assistant.bili.harvest import Material, load_materials
+    for b in ("BV1", "BV2"):
+        Material(b, "t", "up", 1, 0, 600, "", [], "", []).save(tmp_path / "vesna" / f"{b}.json")
+    assert [m.bvid for m in load_materials(tmp_path, "vesna")] == ["BV1", "BV2"]
+    (tmp_path / "vesna" / "selection.json").write_text(_json.dumps(["BV2"]), encoding="utf-8")
+    assert [m.bvid for m in load_materials(tmp_path, "vesna")] == ["BV2"]

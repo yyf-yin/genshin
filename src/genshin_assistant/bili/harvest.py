@@ -195,8 +195,18 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         m.save(path)
         results.append(m)
         log(f"  {h.bvid} 字幕 {len(lines)} 行（{lan or '无字幕'}），置顶 {len(pinned)} 条：{info.title}")
+    # 记下这次选中的视频：选片规则变了以后，目录里旧的视频文件不再参与抽取
+    (out_dir / target.id).mkdir(parents=True, exist_ok=True)
+    (out_dir / target.id / "selection.json").write_text(
+        json.dumps([m.bvid for m in results], ensure_ascii=False), encoding="utf-8")
     return results
 
 
 def load_materials(out_dir: Path, target_id: str) -> list[Material]:
-    return [Material.load(p) for p in sorted((out_dir / target_id).glob("BV*.json")) if not p.name.endswith(".claims.json")]
+    """最近一次 harvest 选中的视频；没有 selection.json（旧版本取的材）就读目录里全部视频。"""
+    d = out_dir / target_id
+    sel = d / "selection.json"
+    if sel.exists():
+        return [Material.load(d / f"{b}.json") for b in json.loads(sel.read_text(encoding="utf-8"))
+                if (d / f"{b}.json").exists()]
+    return [Material.load(p) for p in sorted(d.glob("BV*.json")) if not p.name.endswith(".claims.json")]
