@@ -1,0 +1,24 @@
+# 草稿数据，未经审核。
+char: neuvillette
+cons: "0-6"
+weapons:
+  - {id: tome_of_the_eternal_flow, zh: 万世流涌大典, rank: 1, source: limited_5star}
+  - {id: prototype_amber, zh: 试作金珀, rank: 4, source: craftable, note: 平民选择}
+artifact_sets:
+  - [{set: marechaussee_hunter, zh: 逐影猎人, pieces: 4}]
+main_stats: {sands: [hp%], goblet: [hydro_dmg], circlet: [crit_rate, crit_dmg]}
+substats: [crit_rate, crit_dmg, hp%, energy_recharge]
+energy_recharge: [100, 130]
+talents: [normal, burst, skill]
+---
+char: furina
+cons: "0-6"
+weapons:
+  - {id: splendor_of_tranquil_waters, zh: 静水流涌之辉, rank: 1, source: limited_5star}
+  - {id: fleuve_cendre_ferryman, zh: 船坞长剑, rank: 4, source: craftable, note: 平民选择}
+artifact_sets:
+  - [{set: golden_troupe, zh: 黄金剧团, pieces: 4}]
+main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [crit_rate, crit_dmg]}
+substats: [crit_rate, crit_dmg, hp%, energy_recharge]
+energy_recharge: [160, 200]
+talents: [skill, burst, normal]

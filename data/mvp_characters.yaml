@@ -1,0 +1,28 @@
+# 第一版覆盖的主C（来自方案文档里的候选表，2026-10-25）。
+# status: todo 未录入 / draft 已录入待审核 / verified 已审核
+characters:
+  - {zh: 那维莱特, element: hydro, status: draft, note: 命座规则示例（0 命需抗打断）}
+  - {zh: 胡桃, element: pyro, status: todo}
+  - {zh: 阿蕾奇诺, element: pyro, status: todo}
+  - {zh: 玛薇卡, element: pyro, status: todo}
+  - {zh: 林尼, element: pyro, status: todo}
+  - {zh: 宵宫, element: pyro, status: todo}
+  - {zh: 雷电将军, element: electro, status: todo}
+  - {zh: 克洛琳德, element: electro, status: todo}
+  - {zh: 瓦蕾莎, element: electro, status: todo}
+  - {zh: 菲林斯, element: electro, status: todo, note: 待确认}
+  - {zh: 神里绫华, element: cryo, status: todo}
+  - {zh: 莱欧斯利, element: cryo, status: todo, note: 多玩法：值伤/星超导}
+  - {zh: 丝柯克, element: cryo, status: todo}
+  - {zh: 甘雨, element: cryo, status: todo, note: 多玩法：蓄力/融化}
+  - {zh: 桑多涅, element: cryo, status: todo}
+  - {zh: 娜维娅, element: geo, status: todo}
+  - {zh: 千织, element: geo, status: todo}
+  - {zh: 诺艾尔, element: geo, status: todo, note: 多玩法：常规/月结晶}
+  - {zh: 艾尔海森, element: dendro, status: todo}
+  - {zh: 基尼奇, element: dendro, status: todo}
+  - {zh: 奈芙尔, element: dendro, status: todo, note: 待确认}
+  - {zh: 流浪者, element: anemo, status: todo}
+  - {zh: 恰斯卡, element: anemo, status: todo}
+  - {zh: 法尔加, element: anemo, status: todo, note: 整队限制示例，待确认}
+  - {zh: 微丝娜, element: anemo, status: todo, note: 功能分级示例，待确认}

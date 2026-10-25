@@ -1,0 +1,84 @@
+# 草稿数据，未经审核（verified: false）。标签和分数需要按攻略核对。
+id: neuvillette
+zh: 那维莱特
+aliases: [水龙, 水龙王]
+element: hydro
+weapon: catalyst
+rarity: 5
+playstyles:
+  - id: default
+    zh: 重击主C
+    provides:
+      - {tag: main_dps, score: 1.0}
+    needs:
+      - tag: interruption_res
+        weight: 0.3
+        when: "cons < 1"
+        reason: 0 命重击蓄力容易被打断，1 命自带抗打断
+---
+id: furina
+zh: 芙宁娜
+aliases: [芙芙, 水神]
+element: hydro
+weapon: sword
+rarity: 5
+playstyles:
+  - id: default
+    zh: 后台增伤
+    provides:
+      - {tag: team_dmg_buff, score: 1.0}
+      - {tag: hydro_application, score: 0.6}
+      - {tag: sub_dps, score: 0.6}
+---
+id: kazuha
+zh: 枫原万叶
+aliases: [万叶]
+element: anemo
+weapon: sword
+rarity: 5
+playstyles:
+  - id: default
+    zh: 聚怪减抗
+    provides:
+      - {tag: grouping, score: 1.0}
+      - {tag: elemental_shred, score: 1.0}
+      - {tag: team_dmg_buff, score: 0.6}
+---
+id: sucrose
+zh: 砂糖
+element: anemo
+weapon: catalyst
+rarity: 4
+playstyles:
+  - id: default
+    zh: 聚怪减抗
+    provides:
+      - {tag: grouping, score: 0.8}
+      - {tag: elemental_shred, score: 1.0}
+      - {tag: em_share, score: 1.0}
+---
+id: zhongli
+zh: 钟离
+aliases: [岩王爷]
+element: geo
+weapon: polearm
+rarity: 5
+playstyles:
+  - id: default
+    zh: 护盾辅助
+    provides:
+      - {tag: shield, score: 1.0}
+      - {tag: interruption_res, score: 1.0}
+      - {tag: universal_shred, score: 1.0}
+---
+id: baizhu
+zh: 白术
+element: dendro
+weapon: catalyst
+rarity: 5
+playstyles:
+  - id: default
+    zh: 治疗辅助
+    provides:
+      - {tag: healer, score: 1.0}
+      - {tag: interruption_res, score: 0.7}

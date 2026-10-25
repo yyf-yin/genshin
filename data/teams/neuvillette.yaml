@@ -1,0 +1,31 @@
+# 草稿数据，未经审核。
+id: neuvillette_hydro
+zh: 那维莱特 · 芙宁娜 · 风 · 生存位
+core: {char: neuvillette}
+verified: false
+source: 草稿，待按攻略核对
+slots:
+  - {id: dps, zh: 主C, fixed: {char: neuvillette}}
+  - id: buffer
+    zh: 增伤副C
+    functions:
+      - {tag: team_dmg_buff, level: core}
+      - {tag: sub_dps, level: minor, weight: 0.2}
+    candidates:
+      - {char: furina, score: 1.0}
+  - id: anemo
+    zh: 聚怪减抗
+    functions:
+      - {tag: grouping, level: core}
+      - {tag: elemental_shred, level: major, weight: 0.3}
+    candidates:
+      - {char: kazuha, score: 1.0}
+      - {char: sucrose, score: 0.75}
+  - id: flex
+    zh: 生存位
+    functions:
+      - {tag: healer, level: minor, weight: 0.3}
+      - {tag: shield, level: minor, weight: 0.3}
+    candidates:
+      - {char: zhongli, score: 0.9}
+      - {char: baizhu, score: 0.85}
