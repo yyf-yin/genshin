@@ -99,6 +99,7 @@ def _add_bili_parser(sub) -> None:
         x = bs.add_parser(name, help=helptext)
         x.add_argument("characters", nargs="*", help="角色名；不填就跑 sources.yaml 里 pilot: true 的角色")
         x.add_argument("--refresh", action="store_true", help="忽略本地缓存重新取材 / 重新抽取")
+        x.add_argument("--explain", action="store_true", help="列出被筛掉的视频和原因")
     f = bs.add_parser("frames", help="在字幕提到配装的时间点抽帧拼图（给人看配装面板）")
     f.add_argument("bvid")
     f.add_argument("--at", help="手动指定时间点，逗号分隔，如 1:20,3:05")
@@ -157,7 +158,7 @@ def _bili(args, kb) -> None:
         for t in targets:
             print(f"== {t.zh}")
             if cmd in ("harvest", "run"):
-                harvest(client, t, cfg, work / "bili", refresh=args.refresh)
+                harvest(client, t, cfg, work / "bili", refresh=args.refresh, explain=args.explain)
             if cmd in ("extract", "run"):
                 out = extract_target(kb, glossary, t, model, work, refresh=args.refresh)
                 if out:

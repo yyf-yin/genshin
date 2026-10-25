@@ -164,3 +164,18 @@ def test_build_moments_picks_spaced_build_mentions():
     lines = [SubtitleLine(10, 12, "先说圣遗物"), SubtitleLine(12, 14, "主词条生命"), SubtitleLine(40, 42, "武器选择"),
              SubtitleLine(60, 62, "聊聊剧情")]
     assert build_moments(lines) == [11.5, 41.5]
+
+
+def test_select_videos_reports_why_videos_were_dropped():
+    t = Target("varka", "法尔加", since=date(2026, 2, 19))
+    new = 1775000000  # 2026-04
+    hits = [
+        VideoHit("BV1", "法尔加幻化武器超简单的攻略", "x", 1, 9, new, 300),
+        VideoHit("BV2", "新角色配队思路", "x", 2, 9, new, 300, description="法尔加双风队"),  # 角色名只在简介里
+        VideoHit("BV3", "法尔加配队", "x", 3, 9, 1760000000, 300),
+    ]
+    rejected = []
+    kept = select_videos(hits, t, [], exclude_words=["幻化"], rejected=rejected)
+    assert [h.bvid for h in kept] == ["BV2"]
+    assert [(h.bvid, why) for h, why in rejected] == [
+        ("BV1", "标题含排除词「幻化」"), ("BV3", "发布于上线日期 2026-02-19 之前")]
