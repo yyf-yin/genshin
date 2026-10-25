@@ -10,7 +10,7 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 
-from .client import BiliClient, BiliError
+from .client import BiliClient, BiliError, RateLimited
 
 
 @dataclass
@@ -117,10 +117,16 @@ def subtitles(client: BiliClient, info: VideoInfo, prefer: str = "ai-zh") -> tup
     subs = (p1.get("subtitle") or {}).get("subtitles") or []
     if not subs:
         # 兜底：播放器实际调用的端点
+        # 没字幕的视频这个端点会回 404（试点里 6 个视频这样），当作没有字幕
         ext = json.dumps({"video_type": 1}, separators=(",", ":"))
-        p2 = client.get_json("/x/v2/subtitle/web/view", {
-            "oid": info.aid, "pid": info.aid, "context_ext": ext, "type": 1, "cur_production_type": 0,
-            "preferred_language": prefer, "playlist_switch": 0}, referer=ref)
+        try:
+            p2 = client.get_json("/x/v2/subtitle/web/view", {
+                "oid": info.aid, "pid": info.aid, "context_ext": ext, "type": 1, "cur_production_type": 0,
+                "preferred_language": prefer, "playlist_switch": 0}, referer=ref)
+        except RateLimited:
+            raise
+        except BiliError:
+            p2 = {}
         subs = (p2.get("subtitle") or {}).get("subtitles") or []
     if not subs:
         return "", []

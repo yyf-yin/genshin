@@ -210,3 +210,23 @@ def test_load_materials_follows_latest_selection(tmp_path):
     assert [m.bvid for m in load_materials(tmp_path, "vesna")] == ["BV1", "BV2"]
     (tmp_path / "vesna" / "selection.json").write_text(_json.dumps(["BV2"]), encoding="utf-8")
     assert [m.bvid for m in load_materials(tmp_path, "vesna")] == ["BV2"]
+
+
+def test_subtitle_fallback_404_means_no_subtitles(tmp_path):
+    from genshin_assistant.bili.api import VideoInfo
+    player = {"code": 0, "data": {"subtitle": {"subtitles": []}}}
+    c, _, _ = client(tmp_path, {"/nav": NAV, "/player/wbi/v2": player, "/subtitle/web/view": (404, b"")})
+    assert subtitles(c, VideoInfo("BV1", 1, 2, "t", "", 0, 0, "up", 9)) == ("", [])
+
+
+def test_harvest_backfills_videos_without_subtitles(tmp_path, monkeypatch):
+    from genshin_assistant.bili import harvest as hv
+    from genshin_assistant.bili.api import Comment, VideoInfo
+    hits = [VideoHit(f"BV{i}", f"薇斯纳攻略{i}", "x", i, 100 - i, 1, 600) for i in range(4)]
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": hits)
+    monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, "up", 9))
+    monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
+    monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []) if i.bvid == "BV0" else ("ai-zh", [SubtitleLine(0, 1, "x")]))
+    got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"], max_videos=2), hv.SourceConfig({}, []),
+                     tmp_path, log=lambda *_: None)
+    assert [m.bvid for m in got] == ["BV1", "BV2"]

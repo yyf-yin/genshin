@@ -11,7 +11,7 @@ from .compare import annotate, kb_not_mentioned
 from .draft import write_draft
 from .extractor import ExtractContext, extract_video
 from .glossary import Glossary
-from .llm import JSONModel
+from .llm import JSONModel, LLMError
 from .schema import VideoClaims
 from .vote import aggregate
 
@@ -40,13 +40,17 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
         if not m.subtitles and not m.desc.strip() and not m.pinned:
             log(f"  {m.bvid} 没有字幕、简介和置顶评论，跳过")
             continue
-        usable.append(m)
         cache = bili_dir / target.id / f"{m.bvid}.claims.json"
         if cache.exists() and not refresh:
             vc = VideoClaims(**json.loads(cache.read_text(encoding="utf-8")))
         else:
-            vc = extract_video(m, ctx, model)
+            try:
+                vc = extract_video(m, ctx, model)
+            except LLMError as e:
+                log(f"  {m.bvid} 抽取失败，跳过（下次重跑会再试）：{e}")
+                continue
             cache.write_text(vc.model_dump_json(indent=1), encoding="utf-8")
+        usable.append(m)
         log(f"  {m.bvid} 保留 {len(vc.claims)} 条，丢弃 {len(vc.rejected)} 条：{m.title}")
         videos.append(vc)
     findings = aggregate(videos)

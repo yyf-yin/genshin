@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from ..bili.harvest import Material
 from ..kb import KnowledgeBase
 from .glossary import Glossary
-from .llm import JSONModel
+from .llm import JSONModel, LLMTruncated
 from .schema import BUILD_FIELDS, Claim, Evidence, VideoClaims
 
 SYSTEM_PROMPT = """你是原神攻略整理助手。从一个 B 站攻略视频的简介、置顶评论和字幕里，抽取关于核心角色「{core}」的结论，
@@ -76,12 +76,30 @@ def corrected_material(m: Material, g: Glossary) -> tuple[dict[str, str], list[t
     return texts, lines, counter
 
 
-def build_user_prompt(m: Material, texts: dict[str, str], lines: list[tuple[float, str]]) -> str:
+def build_user_prompt(m: Material, texts: dict[str, str], lines: list[tuple[float, str]],
+                      part: tuple[int, int] = (1, 1)) -> str:
     parts = [f"视频：{m.title}", f"UP 主：{m.up}    发布：{m.published}    BV：{m.bvid}"]
-    parts.append("\n【简介 desc】\n" + (texts["desc"] or "（无）"))
-    parts.append("\n【置顶评论 pinned】\n" + (texts["pinned"] or "（无）"))
-    parts.append("\n【字幕 subtitle】\n" + ("\n".join(f"[{_fmt(t)}] {s}" for t, s in lines) or "（无字幕）"))
+    if part[0] == 1:
+        parts.append("\n【简介 desc】\n" + (texts["desc"] or "（无）"))
+        parts.append("\n【置顶评论 pinned】\n" + (texts["pinned"] or "（无）"))
+    else:
+        parts.append("\n（简介和置顶评论已在前面的分段处理过，这一段只看字幕）")
+    label = f"（第 {part[0]}/{part[1]} 段）" if part[1] > 1 else ""
+    parts.append(f"\n【字幕 subtitle】{label}\n" + ("\n".join(f"[{_fmt(t)}] {s}" for t, s in lines) or "（无字幕）"))
     return "\n".join(parts)
+
+
+def chunk_lines(lines: list[tuple[float, str]], budget: int) -> list[list[tuple[float, str]]]:
+    """按字数把字幕切段。长视频一次喂进去，抽出来的 JSON 会超过模型的输出上限被截断。"""
+    chunks: list[list[tuple[float, str]]] = [[]]
+    size = 0
+    for line in lines:
+        if chunks[-1] and size + len(line[1]) > budget:
+            chunks.append([])
+            size = 0
+        chunks[-1].append(line)
+        size += len(line[1]) + 8
+    return chunks
 
 
 # 词条中文名 → 知识库配装里用的写法
@@ -176,6 +194,10 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
         tag_ok(d.get("tag"))
         if d.get("level") not in ("core", "major", "minor"):
             flags.append(f"分级不合法：{d.get('level')}")
+    elif c.kind == "team_constraint" and d.get("rule"):
+        for tag in re.findall(r"has_tag\(\s*['\"]([^'\"]+)", d["rule"]):
+            if tag not in ctx.kb.tags:
+                flags.append(f"规则引用了词表外标签：{tag}")
     elif c.kind == "substitution":
         d["original"] = char_id(d.get("original"))
         d["substitute"] = char_id(d.get("substitute"))
@@ -200,19 +222,36 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
     return c.model_copy(update={"subject": subject, "data": d, "flags": sorted(set(flags))})
 
 
-def extract_video(m: Material, ctx: ExtractContext, model: JSONModel) -> VideoClaims:
+def _ask(model: JSONModel, system: str, m: Material, texts, chunk, part, total) -> list[dict]:
+    """问一段；输出被截断就把这段对半再问，最多拆到 40 行一段。返回每次回答（可能多个）。"""
+    try:
+        return [model.complete_json(system, build_user_prompt(m, texts, chunk, (part, total)))]
+    except LLMTruncated:
+        if len(chunk) <= 40:
+            raise
+        half = len(chunk) // 2
+        return (_ask(model, system, m, texts, chunk[:half], part, total)
+                + _ask(model, system, m, texts, chunk[half:], part, total))
+
+
+def extract_video(m: Material, ctx: ExtractContext, model: JSONModel, chunk_chars: int = 6000) -> VideoClaims:
     texts, lines, counter = corrected_material(m, ctx.glossary)
     tags = "\n".join(f"{t.id}: {t.zh}" for t in ctx.kb.tags.values())
     system = SYSTEM_PROMPT.format(core=ctx.core_zh, tags=tags, chars=ctx.glossary.for_prompt(),
                                   fields=" / ".join(BUILD_FIELDS))
-    raw = model.complete_json(system, build_user_prompt(m, texts, lines))
     loc = Locator(texts, lines)
     out = VideoClaims(bvid=m.bvid, title=m.title, up=m.up, published=m.published, model=model.model,
                       corrections={f"{w}→{r}": n for (w, r), n in counter.items() if w != r})
-    if raw.get("relevant") is False:
-        out.rejected.append({"claim": None, "why": "模型判断不是该角色的原神攻略视频"})
-        return out
-    for item in raw.get("claims") or []:
+    chunks = chunk_lines(lines, chunk_chars)
+    items: list[dict] = []
+    for i, chunk in enumerate(chunks, 1):
+        answers = _ask(model, system, m, texts, chunk, i, len(chunks))
+        if i == 1 and answers[0].get("relevant") is False:
+            out.rejected.append({"claim": None, "why": "模型判断不是该角色的原神攻略视频"})
+            return out
+        for raw in answers:
+            items += raw.get("claims") or []
+    for item in items:
         try:
             claim = Claim(**{k: v for k, v in item.items() if k in Claim.model_fields and k not in ("bvid", "flags")})
         except (ValidationError, TypeError) as e:

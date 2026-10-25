@@ -204,3 +204,46 @@ def test_main_stat_names_are_normalized_before_comparing(kb, glossary):
     findings = aggregate([vc])
     annotate(findings, kb, "neuvillette")
     assert {f.data["field"]: f.kb_status for f in findings} == {"sands": "一致", "goblet": "冲突（知识库：hydro_dmg）"}
+
+
+def test_long_subtitles_are_chunked_and_truncated_chunks_split(kb, glossary):
+    from genshin_assistant.extract.llm import LLMTruncated
+    lines = [(i * 10, f"第{i}句 队友首选芙宁娜{i:03d}") for i in range(100)]
+
+    class Truncating(FakeModel):
+        def complete_json(self, system, user):
+            self.prompts.append((system, user))
+            n = user.count("队友首选芙宁娜")
+            if n > 50:
+                raise LLMTruncated("截断")
+            first = next(s for t, s in lines if s.split(" ")[1] in user)
+            return {"claims": [{"kind": "teammate", "subject": "neuvillette", "data": {"char": "芙宁娜"},
+                                "evidence": ev(first.split(" ")[1])}]}
+
+    model = Truncating([])
+    vc = extract_video(material(lines=lines, desc="简介"), ExtractContext(kb, glossary, "neuvillette", "那维莱特"),
+                       model, chunk_chars=100000)
+    assert len(model.prompts) == 3  # 整段被截断 → 对半拆成两段
+    assert all("【简介 desc】" in u for _, u in model.prompts)  # 拆开的两半仍属于第 1 段，都带简介
+    assert len(vc.claims) == 2 and {c.evidence[0].t for c in vc.claims} == {0, 500}
+
+
+def test_chunk_lines_respects_budget():
+    from genshin_assistant.extract.extractor import chunk_lines
+    chunks = chunk_lines([(i, "字" * 10) for i in range(10)], budget=40)
+    assert [len(c) for c in chunks] == [2, 2, 2, 2, 2]  # 每行按字数加 8 个字的时间戳计
+
+
+def test_pipeline_skips_video_when_model_fails(tmp_path, kb, glossary):
+    from genshin_assistant.extract.llm import LLMError
+    work = tmp_path / "work"
+    material("BV1").save(work / "bili" / "neuvillette" / "BV1.json")
+
+    class Broken(FakeModel):
+        def complete_json(self, system, user):
+            raise LLMError("坏了")
+
+    logs = []
+    yml, _ = extract_target(kb, glossary, Target("neuvillette", "那维莱特"), Broken([]), work, log=logs.append)
+    assert yaml.safe_load(yml.read_text(encoding="utf-8"))["summary"]["videos"] == 0
+    assert any("抽取失败" in x for x in logs) and not (work / "bili" / "neuvillette" / "BV1.claims.json").exists()

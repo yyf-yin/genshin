@@ -104,7 +104,7 @@ class Material:
 
 def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], min_duration: int = 120,
                   exclude_words: list[str] = (), rejected: list[tuple[VideoHit, str]] | None = None,
-                  require_words: list[str] = ()) -> list[VideoHit]:
+                  require_words: list[str] = (), limit: int | None = -1) -> list[VideoHit]:
     """过滤并排序：标题或简介里要有角色名；标题、简介或标签里要有 require_words 之一（如“原神”）；
     标题不含排除词；上线日期之后发布；不要短视频；
     白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。"""
@@ -133,7 +133,7 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
             continue
         kept.append(h)
     kept.sort(key=lambda h: (not (h.author in wl or str(h.mid) in wl), -h.play))
-    return kept[: target.max_videos]
+    return kept[: target.max_videos if limit == -1 else limit]
 
 
 def whitelist_names(whitelist: list[str]) -> list[str]:
@@ -163,9 +163,9 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         hits += found
     rejected: list[tuple[VideoHit, str]] = []
     chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected,
-                           cfg.require_words)
+                           cfg.require_words, limit=None)
     reasons = Counter(why.split("「")[0].split(" ")[0] for _, why in rejected)
-    log(f"  选中 {len(chosen)} 个视频；筛掉 {len(rejected)} 个：" + "，".join(f"{k} {n}" for k, n in reasons.items()))
+    log(f"  候选 {len(chosen)} 个视频（取前 {target.max_videos} 个能用的）；筛掉 {len(rejected)} 个：" + "，".join(f"{k} {n}" for k, n in reasons.items()))
     if explain:
         for h, why in rejected:
             published = datetime.fromtimestamp(h.pubdate, timezone.utc).date() if h.pubdate else "?"
@@ -173,10 +173,14 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
     wl = set(cfg.whitelist)
     results = []
     for h in chosen:
+        if len(results) >= target.max_videos:
+            break
         path = out_dir / target.id / f"{h.bvid}.json"
         if path.exists() and not refresh:
-            results.append(Material.load(path))
-            log(f"  {h.bvid} 已有，跳过：{h.title}")
+            m = Material.load(path)
+            if m.subtitles or m.pinned:
+                results.append(m)
+                log(f"  {h.bvid} 已有，跳过：{h.title}")
             continue
         try:
             info = video_info(client, h.bvid)
@@ -193,6 +197,10 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
                      whitelisted=info.owner in wl or str(info.owner_mid) in wl,
                      fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         m.save(path)
+        if not lines and not pinned:
+            # 没字幕也没置顶评论，只剩简介，信息太少：换下一个候选补上
+            log(f"  {h.bvid} 没有字幕和置顶评论，换下一个：{info.title}")
+            continue
         results.append(m)
         log(f"  {h.bvid} 字幕 {len(lines)} 行（{lan or '无字幕'}），置顶 {len(pinned)} 条：{info.title}")
     # 记下这次选中的视频：选片规则变了以后，目录里旧的视频文件不再参与抽取

@@ -86,4 +86,4 @@ class VideoClaims(BaseModel):
 
 
 def _squash(s: str) -> str:
-    return "".join(str(s).split()).lower()
+    return "".join(str(s).split()).lower().replace('"', "'")

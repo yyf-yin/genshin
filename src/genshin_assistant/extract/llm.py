@@ -19,6 +19,10 @@ class LLMError(RuntimeError):
     pass
 
 
+class LLMTruncated(LLMError):
+    """输出被 max_tokens 截断（finish_reason=length）。调用方应该把材料拆小再试。"""
+
+
 class JSONModel(Protocol):
     model: str
 
@@ -51,10 +55,17 @@ class DeepSeek:
         resp = self._post(f"{self.base_url}/chat/completions", body,
                           {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"})
         try:
-            content = resp["choices"][0]["message"]["content"]
+            choice = resp["choices"][0]
+            content = choice["message"]["content"]
+        except (KeyError, IndexError, TypeError) as e:
+            raise LLMError(f"DeepSeek 返回格式不对：{str(resp)[:300]}") from e
+        reason = choice.get("finish_reason")
+        if reason == "length":
+            raise LLMTruncated(f"DeepSeek 输出被截断（finish_reason=length，已输出 {len(content)} 字）")
+        try:
             result = json.loads(content)
-        except (KeyError, IndexError, TypeError, ValueError) as e:
-            raise LLMError(f"DeepSeek 返回的不是合法 JSON：{str(resp)[:200]}") from e
+        except ValueError as e:
+            raise LLMError(f"DeepSeek 返回的不是合法 JSON（finish_reason={reason}）：…{content[-200:]}") from e
         if cached:
             cached.parent.mkdir(parents=True, exist_ok=True)
             cached.write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
