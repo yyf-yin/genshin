@@ -1,0 +1,35 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: linnea
+zh: 莉奈娅
+aliases:
+- Linnea
+element: geo
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「对策·露米呀吼吼！」：此外，连续点按元素战技时，提高莉奈娅的抗打断能力。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「备忘·绝境生存指南」：也需要适度的休息！莉奈娅呼唤露米以超厉害形态出击，为附近的队伍中所有角色恢复生命值，并在接下来的一段时间内，持续为附近的当前场上角色恢复生命值，回复量受益于莉奈娅
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「月兆祝赐·栖地考察」：队伍中的角色触发水元素结晶反应时，将转为触发月结晶反应，且基于莉奈娅的防御力，提升队伍中角色造成的月结晶反应的基础伤害：每100点防御力都将提升0.7%月结晶反应的基础伤害，至多通过这种方式提升14
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「喜或悲的谕告」：触发月笼谐奏后的8秒内，队伍中所有元素类型为水元素与岩元素的角色的暴击伤害提升40%，且露米在究极厉害形态下使用百万吨重锤的暴击伤害额外提升150%。
+    source: hints
+  - tag: buff:elevate
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「黄金猎犬之梦」：月兆·满辉：队伍中附近的角色造成的月结晶反应伤害擢升25%。
+    source: hints
+verified: false

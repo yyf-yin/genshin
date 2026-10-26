@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: lisa
+zh: 丽莎
+aliases:
+- Lisa
+element: electro
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「空间电势结界」：苍雷长按时，具有如下效果： ·防御力提升25%； ·提高丽莎的抗打断能力。
+    source: hints
+verified: false

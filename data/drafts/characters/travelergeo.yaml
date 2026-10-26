@@ -1,0 +1,23 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: travelergeo
+zh: 旅行者(岩元素)
+aliases:
+- Traveler (Geo)
+element: geo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:crit_rate
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「巍然的青岩」：队伍中角色处于岩潮叠嶂的岩嶂包围中时，暴击率提升10%，并提高抗打断能力。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「巍然的青岩」：队伍中角色处于岩潮叠嶂的岩嶂包围中时，暴击率提升10%，并提高抗打断能力。
+    source: hints
+verified: false

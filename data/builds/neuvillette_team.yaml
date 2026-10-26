@@ -22,3 +22,27 @@ main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [crit_rate, 
 substats: [crit_rate, crit_dmg, hp%, energy_recharge]
 energy_recharge: [160, 200]
 talents: [skill, burst, normal]
+---
+char: kazuha
+cons: "0-6"
+weapons:
+  - {id: freedom_sworn, zh: 苍古自由之誓, rank: 1, source: limited_5star}
+  - {id: iron_sting, zh: 铁蜂刺, rank: 3, source: gacha_4star, note: 平民选择}
+artifact_sets:
+  - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4}]
+main_stats: {sands: [em], goblet: [em], circlet: [em]}
+substats: [em, energy_recharge]
+energy_recharge: [140, 180]
+talents: [burst, skill]
+---
+char: sucrose
+cons: "0-6"
+weapons:
+  - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, rank: 1, source: gacha_4star, note: 给下一个登场的主C加攻击}
+  - {id: hakushin_ring, zh: 白辰之环, rank: 3, source: event}
+artifact_sets:
+  - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4}]
+main_stats: {sands: [em], goblet: [em], circlet: [em]}
+substats: [em, energy_recharge]
+energy_recharge: [140, 180]
+talents: [skill, burst]

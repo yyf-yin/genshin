@@ -1,0 +1,238 @@
+# 元素反应。手写。官方说明原文见 official_tutorials.yaml（tutorial 字段是那里的主题名）。
+# category：
+#   amplifying     增幅：乘在触发那一下伤害上，吃攻击/暴击/防御，吃精通
+#   transformative 剧变：独立伤害，只看等级、精通、反应加成和抗性，不吃防御（部分新版本后可以暴击，看天赋）
+#   additive       激化：给触发那一下加固定伤害，再走正常乘区
+#   lunar          月曜（6.0 挪德卡莱起）：需要队伍里有能开启对应月曜反应的角色，替代原反应；可以暴击
+#   stellar        星烁（7.0 至冬起）：需要队伍里有能开启对应星烁反应的角色，替代原反应；可以暴击
+#   other          没有直接伤害或只有附加效果
+# multiplier：增幅反应是倍率；剧变/月曜反应是乘在等级系数上的反应系数（见 damage.yaml）。
+# 哪些角色能开启月曜/星烁反应不在这里写，导入脚本从天赋原文提取到角色数据的 enables 字段
+# （python -m genshin_assistant enablers 月感电）。
+# roles：这个反应对队伍分工的典型要求，用 data/tags.yaml 的标签写，给推荐引擎和大模型解释用。
+
+reactions:
+  - id: vaporize
+    zh: 蒸发
+    elements: [hydro, pyro]
+    category: amplifying
+    multiplier: {hydro_trigger: 2.0, pyro_trigger: 1.5}
+    tutorial: vaporize
+    verified: true
+    notes: |-
+      水打火（水触发）2 倍，火打水 1.5 倍。反应会消耗底层元素，所以「火C蒸发」要求队友挂水的频率够但不能盖过火。
+      常见形态：胡桃、玛薇卡等火C配后台挂水（行秋、夜兰）；或水C配后台挂火（班尼特、香菱）。
+    roles: [application:hydro, application:pyro]
+
+  - id: melt
+    zh: 融化
+    elements: [pyro, cryo]
+    category: amplifying
+    multiplier: {pyro_trigger: 2.0, cryo_trigger: 1.5}
+    tutorial: melt
+    verified: true
+    notes: 火打冰 2 倍，冰打火 1.5 倍。冰C融化（甘雨、神里）需要后台持续挂火（香菱、班尼特）。
+    roles: [application:pyro, application:cryo]
+
+  - id: overloaded
+    zh: 超载
+    elements: [pyro, electro]
+    category: transformative
+    multiplier: 2.75
+    tutorial: overloaded
+    verified: true
+    notes: 火元素范围伤害并击飞，击飞会打乱输出循环，近战队伍通常避免。
+    roles: [application:pyro, application:electro]
+
+  - id: superconduct
+    zh: 超导
+    elements: [cryo, electro]
+    category: transformative
+    multiplier: 1.5
+    tutorial: superconduct
+    verified: true
+    notes: 冰元素范围伤害，并使敌人物理抗性 -40%，持续 12 秒。物理C的减抗手段。队伍里有桑多涅等星烁角色时转为星超导。
+    roles: [application:cryo, application:electro]
+
+  - id: electro_charged
+    zh: 感电
+    elements: [electro, hydro]
+    category: transformative
+    multiplier: 2.0
+    tutorial: electro_charged
+    verified: true
+    notes: 水雷同时存在时持续造成雷伤，可以传导到附近带水的敌人。数值为 5.x 及以前；队伍里有月感电角色时转为月感电。
+    roles: [application:electro, application:hydro]
+
+  - id: swirl
+    zh: 扩散
+    elements: [anemo, pyro|hydro|electro|cryo]
+    category: transformative
+    multiplier: 0.6
+    tutorial: swirl
+    verified: true
+    notes: |-
+      风接触火水雷冰时造成对应元素伤害并扩散附着。风系辅助的价值主要不在扩散伤害，而在：
+      翠绿之影 4 件套对扩散元素减抗 40%、万叶类的元素伤害加成、聚怪。
+      队伍里有星扩散角色时，冰元素扩散转为星扩散。
+    roles: [application:anemo, grouping]
+
+  - id: crystallize
+    zh: 结晶
+    elements: [geo, pyro|hydro|electro|cryo]
+    category: other
+    tutorial: crystallize
+    verified: true
+    notes: 生成对应元素的晶片，拾取获得护盾（对同元素伤害吸收 250%）。护盾量和精通、等级有关。队伍里有月结晶角色时，岩打水转为月结晶。
+    roles: [shield]
+
+  - id: frozen
+    zh: 冻结
+    elements: [cryo, hydro]
+    category: other
+    tutorial: frozen
+    verified: true
+    notes: 冻住敌人；被冻结时受到重攻击（大剑、岩元素、下落攻击等）会触发碎冰（剧变，系数 3.0，物理伤害）。冻结队核心在于水冰双挂，常配风系聚怪和减抗。
+    roles: [application:cryo, application:hydro]
+
+  - id: quicken
+    zh: 原激化
+    elements: [dendro, electro]
+    category: other
+    tutorial: quicken
+    verified: true
+    notes: 雷草相遇进入原激化状态，此后雷/草攻击分别触发超激化/蔓激化。
+    roles: [application:dendro, application:electro]
+
+  - id: aggravate
+    zh: 超激化
+    elements: [electro, quicken]
+    category: additive
+    multiplier: 1.15
+    tutorial: quicken
+    verified: true
+    notes: 雷攻击命中原激化状态的敌人时，额外伤害 = 1.15 × 等级系数 × (1 + 激化精通加成 + 反应加成)，加进基础伤害后正常计算暴击、增伤、防御、抗性。
+    roles: [application:dendro]
+
+  - id: spread
+    zh: 蔓激化
+    elements: [dendro, quicken]
+    category: additive
+    multiplier: 1.25
+    tutorial: quicken
+    verified: true
+    notes: 草攻击命中原激化状态的敌人时，额外伤害 = 1.25 × 等级系数 × (1 + 激化精通加成 + 反应加成)。
+    roles: [application:electro]
+
+  - id: bloom
+    zh: 绽放
+    elements: [dendro, hydro]
+    category: transformative
+    multiplier: 2.0
+    tutorial: bloom
+    verified: true
+    notes: 生成草原核，一段时间后爆炸造成草伤（伤害按触发绽放者的精通）。队伍里有月绽放角色时转为月绽放。
+    roles: [application:dendro, application:hydro]
+
+  - id: hyperbloom
+    zh: 超绽放
+    elements: [electro, dendro_core]
+    category: transformative
+    multiplier: 3.0
+    tutorial: bloom
+    verified: true
+    notes: 雷元素命中草原核，生成追踪弹，伤害按触发超绽放者（挂雷的人）的精通。代表：草神/久岐忍超绽放。
+    roles: [application:electro]
+
+  - id: burgeoning
+    zh: 烈绽放
+    elements: [pyro, dendro_core]
+    category: transformative
+    multiplier: 3.0
+    tutorial: bloom
+    verified: true
+    notes: 火元素命中草原核，范围草伤，伤害按挂火者的精通。
+    roles: [application:pyro]
+
+  - id: burning
+    zh: 燃烧
+    elements: [pyro, dendro]
+    category: transformative
+    multiplier: 0.25
+    verified: true
+    notes: 每 0.25 秒一跳的持续火伤，并持续挂火。燃烧可以和蒸发、融化叠用（燃烧烈绽放、燃烧蒸发等）。
+    roles: [application:pyro, application:dendro]
+
+  # ---------- 月曜反应（挪德卡莱，6.0 起） ----------
+  # 共同点（官方教程）：伤害可以暴击，且「取决于所有在反应中施加元素的角色」。
+  # 社区实测的合并规则：各角色分别算一份伤害，最高的 ×1，第二高的 ×1/2，其余 ×1/12，再相加（未核实）。
+  # 月曜反应不吃防御区；精通收益公式为 6 × EM / (EM + 2000)（未核实）。
+
+  - id: lunar_charged
+    zh: 月感电
+    elements: [electro, hydro]
+    category: lunar
+    replaces: electro_charged
+    multiplier: 1.8
+    tutorial: lunar_charged
+    verified: false
+    notes: 形成雷暴云，持续对同时带水和雷的目标落雷。系数 1.8 来自社区资料，待核实。
+    roles: [application:electro, application:hydro]
+
+  - id: lunar_bloom
+    zh: 月绽放
+    elements: [dendro, hydro]
+    category: lunar
+    replaces: bloom
+    multiplier: 1.0
+    tutorial: lunar_bloom
+    verified: false
+    notes: |-
+      在绽放的基础上，触发后 2.5 秒内每 2.5 秒给队伍一枚「草露」（上限 3 枚）。部分角色（奈芙尔）消耗草露打出月绽放伤害。
+      系数 1.0 来自社区资料，待核实。
+    roles: [application:dendro, application:hydro]
+
+  - id: lunar_crystallize
+    zh: 月结晶
+    elements: [geo, hydro]
+    category: lunar
+    replaces: crystallize
+    multiplier: null
+    tutorial: lunar_crystallize
+    verified: false
+    notes: 在目标附近生成三枚月笼；每触发三次月结晶，引发一次月笼谐奏，造成可暴击的岩伤。系数待补。
+    roles: [application:geo, application:hydro]
+
+  # ---------- 星烁反应（至冬，7.0 起） ----------
+  # 官方教程：满足特定条件时，超导/冰元素扩散分别转为星超导/星扩散，伤害可以暴击。
+  # 「特定条件」= 队伍里有天赋写明「将转为触发星超导/星扩散反应」的角色，例如桑多涅的第三个固有天赋。
+  # 星烁反应的系数、是否吃防御、精通公式目前都没有可靠资料，先不填数值。
+
+  - id: stellar_superconduct
+    zh: 星超导
+    elements: [cryo, electro]
+    category: stellar
+    replaces: superconduct
+    multiplier: null
+    tutorial: stellar_superconduct
+    verified: false
+    notes: |-
+      创造「星辉棱晶」，并把附近区域短暂变为「极星辉域」：
+      - 领域内所有角色获得冰、雷元素伤害加成；
+      - 敌人在领域里被冰/雷攻击命中时，领域「冻存」元素力，每 4 秒释放一次，进一步提升上述加成，并提升星超导的基础反应系数，持续 4 秒；
+      - 领域内敌人物理抗性降低。
+      部分角色在领域中获得「辉映·星超导」，技能强化或转为造成星超导伤害。
+    roles: [application:cryo, application:electro]
+
+  - id: stellar_swirl
+    zh: 星扩散
+    elements: [anemo, cryo]
+    category: stellar
+    replaces: swirl
+    multiplier: null
+    tutorial: stellar_swirl
+    verified: false
+    notes: |-
+      造成一次风伤，并创造「星辉风旋」（同一范围至多一个）。多次触发星扩散会把风旋升到二级；风旋在一段时间后或触发若干次星扩散后引爆，造成冰元素范围伤害，二级范围更大、伤害更高。
+      触发星扩散后 8 秒内，附近部分角色获得「辉映·星扩散」。翠绿之影 4 件套对星扩散也有效（伤害 +20%，减冰抗 40%）。
+    roles: [application:cryo]

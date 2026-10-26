@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: travelercryo
+zh: 旅行者(冰元素)
+aliases:
+- Traveler (Cryo)
+element: cryo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:atk_pct
+    score: 0.4
+    evidence: 固有天赋「星耀祝礼·幻变冰镜」：触发超导/冰元素扩散反应时，将转为触发星超导/星扩散反应，且基于旅行者的攻击力，提升队伍中角色造成的上述反应的基础伤害：每100点攻击力都将提升0.35%上述反应的基础伤害，至多通过这种方式提升7%伤害。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「星耀祝礼·幻变冰镜」：触发超导/冰元素扩散反应时，将转为触发星超导/星扩散反应，且基于旅行者的攻击力，提升队伍中角色造成的上述反应的基础伤害：每100点攻击力都将提升0.35%上述反应的基础伤害，至多通过这种方式提升7%
+    source: hints
+verified: false

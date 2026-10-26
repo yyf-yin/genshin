@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: kirara
+zh: 绮良良
+aliases:
+- Kirara
+element: dendro
+weapon: sword
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「呜喵町飞足」：安全运输护盾对草元素伤害有250%的吸收效果。护盾的伤害吸收量受益于绮良良的生命值上限，且至多不超过绮良良生命值上限的一定比例，剩余的伤害吸收
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「沿途百景会心」：绮良良施放元素战技或元素爆发后的15秒内，附近的队伍中所有角色获得12%所有元素伤害加成。
+    source: hints
+verified: false

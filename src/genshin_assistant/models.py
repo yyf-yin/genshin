@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -26,9 +27,12 @@ class Level(str, Enum):
 
 
 class Tag(BaseModel):
+    """param 不为空时，用法是「id:参数」，例如 reaction_buff:stellar_swirl、element:cryo。"""
+
     id: str
     zh: str
     desc: str = ""
+    param: Literal["reaction", "element", "zone"] | None = None
 
 
 class TagGrant(BaseModel):
@@ -37,23 +41,57 @@ class TagGrant(BaseModel):
     tag: str
     score: float = Field(1.0, ge=0, le=1)
     when: str | None = None
+    value: float | None = None  # 增益的大致数值：百分比写小数（0.2 = 20%），固定值写点数
+    evidence: str = ""  # 天赋原文片段
+    source: str = ""
 
 
 class Need(BaseModel):
-    """角色对队友的需求。队里没人提供时，按 weight 扣分。"""
+    """角色对队友的需求。队友里提供者不够 count 个时，按 weight 扣分。"""
+
+    tag: str
+    weight: float = Field(ge=0, le=1)
+    count: int = Field(1, ge=1)
+    when: str | None = None
+    reason: str = ""
+    evidence: str = ""
+    source: str = ""
+
+
+class Avoid(BaseModel):
+    """角色排斥的队友功能，例如莱欧斯利排斥治疗。队友里有人提供时，按 weight 扣分。"""
 
     tag: str
     weight: float = Field(ge=0, le=1)
     when: str | None = None
     reason: str = ""
+    evidence: str = ""
+    source: str = ""
+
+
+class TeamRule(BaseModel):
+    """角色自带的整队规则，写法同模板的 constraints。hard 不满足时队伍不成立，否则按 weight 扣分。"""
+
+    id: str
+    rule: str
+    hard: bool = False
+    weight: float = Field(0.0, ge=0, le=1)
+    when: str | None = None
+    reason: str = ""
+    evidence: str = ""
+    source: str = ""
 
 
 class Playstyle(BaseModel):
     id: str = "default"
     zh: str = ""
     when: str | None = None
+    field: Literal["on_field", "off_field", "flex"] | None = None  # 站场 / 后台 / 都可以（不用 on/off：YAML 会读成布尔值）
     provides: list[TagGrant] = []
+    traits: list[TagGrant] = []  # 只给自己的能力，例如自带抗打断；满足自己的同名需求
     needs: list[Need] = []
+    avoids: list[Avoid] = []
+    team_rules: list[TeamRule] = []
 
 
 class Character(BaseModel):
@@ -71,6 +109,17 @@ class Character(BaseModel):
             if p.id == pid:
                 return p
         raise KeyError(f"{self.id} 没有玩法 {pid}")
+
+
+class EquipmentBuff(BaseModel):
+    """会给队友加成的圣遗物套装或武器。角色的配装选了它，引擎就把这些功能加到角色身上。"""
+
+    kind: Literal["artifact_set", "weapon"]
+    zh: str
+    pieces: int = 4  # 套装件数，武器忽略
+    provides: list[TagGrant]
+    note: str = ""
+    verified: bool = False
 
 
 class CharRef(BaseModel):

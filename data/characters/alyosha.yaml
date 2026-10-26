@@ -1,0 +1,23 @@
+# 按游戏内天赋原文手写（verified: false，待对照攻略复核）。
+id: alyosha
+zh: 阿罗夏
+aliases: [Alyosha]
+element: electro
+weapon: polearm
+rarity: 4
+playstyles:
+  - id: default
+    zh: 后台雷挂件兼治疗
+    field: off_field
+    provides:
+      - {tag: sub_dps, score: 0.7, evidence: 官方定位：兼具后台输出能力与治疗能力的雷元素角色}
+      - {tag: application:electro, score: 0.7, evidence: 元素爆发：图加林每隔2秒撕咬一名敌人，轰霆猎场每隔2秒造成一次雷元素范围伤害}
+      - {tag: healer, score: 0.7, evidence: 固有天赋「惊醒沉睡的林线」：图加林进行攻击时，还会为队伍中附近的当前场上角色恢复生命值，回复量相当于阿罗夏攻击力的120%}
+      - {tag: buff:atk_pct, score: 0.7, evidence: 弋猎印记：激活时使队伍中附近的所有角色获得猎者之准效果：处于场上时，攻击力提升（数值未在原文中）}
+      - tag: reaction_buff:stellar_superconduct
+        score: 0.7
+        value: 0.2
+        evidence: 固有天赋「星赴险域」：辉映·星超导：猎者之准效果还会使角色处于场上时造成的星超导反应伤害提升20%
+      - {tag: buff:em, score: 0.7, value: 100, when: "cons >= 6", evidence: 6 命：猎者之准叠加至2层时，还会使当前场上角色的元素精通提升100点}
+      - {tag: healer, score: 1.0, when: "cons >= 4", evidence: 4 命：图加林进行攻击时，还会为队伍中附近的生命值百分比最低的角色恢复生命值}
+verified: false

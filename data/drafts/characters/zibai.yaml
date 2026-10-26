@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: zibai
+zh: 兹白
+aliases:
+- Zibai
+element: geo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: main_dps
+    score: 0.7
+    evidence: 官方定位：兹白是一位可以使队伍中的角色能触发月结晶反应，并可以直接造成月结晶伤害的岩元素输出型角色。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「月兆祝赐·浮明若流」：队伍中的角色触发水元素结晶反应时，将转为触发月结晶反应，且基于兹白的防御力，提升队伍中角色造成的月结晶反应的基础伤害：每100点防御力都将提升0.7%月结晶反应的基础伤害，至多通过这种方式提升14
+    source: hints
+verified: false

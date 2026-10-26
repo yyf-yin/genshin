@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yumemizukimizuki
+zh: 梦见月瑞希
+aliases:
+- Yumemizuki Mizuki
+element: anemo
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 元素战技「秋沙歌枕巡礼」：元素爆发安乐秘汤疗法中的梦见风名物点心的拾取距离； ·基于梦见月瑞希的元素精通，提升队伍中附近的角色触发的扩散反应与星扩散反应造成的伤害； ·梦见月瑞希退场时，或是再次施放技能时，梦浮状态将会结束。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「安乐秘汤疗法」：便会发生爆炸并释放梦念冲击波，对周围的敌人造成一次风元素范围伤害，否则会为拾取者恢复生命值，回复量受益于梦见月瑞希的元素精通。
+    source: hints
+  - tag: grouping
+    score: 0.4
+    evidence: 元素爆发「安乐秘汤疗法」：唤起无数「美梦」与「噩梦」的回忆，牵引附近的物体与敌人，造成风元素范围伤害，并召唤出小貘来帮忙。
+    source: hints
+verified: false

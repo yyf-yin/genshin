@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yelan
+zh: 夜兰
+aliases:
+- Yelan
+element: hydro
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素战技「萦络纵命索」：牵引「络命丝」疾走，缠络标记途径的敌人。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「萦络纵命索」：长按 持续疾走，并在该状态下提高夜兰的抗打断能力。
+    source: hints
+verified: false

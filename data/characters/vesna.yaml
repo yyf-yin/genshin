@@ -1,0 +1,37 @@
+# 按游戏内天赋原文手写（verified: false，待对照攻略复核）。
+id: vesna
+zh: 薇斯纳
+aliases: [Vesna]
+element: anemo
+weapon: sword
+rarity: 5
+playstyles:
+  - id: default
+    zh: 巡风列装站场星扩散C
+    field: on_field
+    provides:
+      - {tag: main_dps, score: 1.0, evidence: 官方定位：可以直接造成星扩散反应伤害的风元素输出型角色}
+      - tag: reaction_buff:stellar_swirl
+        score: 0.4
+        value: 0.14
+        evidence: 固有天赋「星耀祝礼·散华序饰」：基于薇斯纳的攻击力，提升队伍中角色造成的星扩散反应的基础伤害……至多 14%
+    traits:
+      - {tag: interruption_res, score: 1.0, evidence: 巡风列装：提升薇斯纳的抗打断能力}
+    needs:
+      - tag: application:cryo
+        weight: 0.5
+        reason: 灵剑只有在辉映·星扩散下才转星扩散伤害，需要队友稳定挂冰让她扩散
+        evidence: 固有天赋「星耀祝礼·散华序饰」：队伍中的角色在附近触发星扩散反应后的8秒内，薇斯纳将会进入辉映·星扩散状态
+    team_rules:
+      - id: vesna_cryo_anemo
+        weight: 0.1
+        rule: "count_any(['cryo', 'anemo']) >= 3"
+        reason: 每个冰、风队友加 6% 攻击力（4 命 18%），其他元素换成 25 点精通（4 命 75）；星烁伤害看攻击力，所以偏好冰风（推断，待攻略确认）
+        evidence: 固有天赋「理典·冬之凯风」
+      - id: vesna_cryo_anemo_c4
+        weight: 0.15
+        when: "cons >= 4"
+        rule: "count_any(['cryo', 'anemo']) >= 3"
+        reason: 4 命把上面的效果变成三倍，偏好更明显
+        evidence: 4 命「先代的荣膺」
+verified: false

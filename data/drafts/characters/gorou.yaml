@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: gorou
+zh: 五郎
+aliases:
+- Gorou
+element: geo
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「犬坂吠吠方圆阵」：·一名角色时：「坚牢」：防御力提升； ·二名角色时：「难破」：除上述效果外，提升抗打断能力； ·三名角色时：「摧碎」：除上述效果外，获得岩元素伤害加成。
+    source: hints
+  - tag: healer
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「犬舐·温如水」：大将威仪在具有「难破」或「摧碎」的效果时，每1.5秒，为领域内的当前场上角色恢复生命值，回复量相当于五郎自己防御力的50%。
+    source: hints
+verified: false

@@ -8,12 +8,14 @@ rarity: 5
 playstyles:
   - id: default
     zh: 重击主C
+    field: on_field
     provides:
       - {tag: main_dps, score: 1.0}
+    traits:
+      - {tag: interruption_res, when: "cons >= 1", evidence: 1 命：进行重击·衡平推裁时，抗打断能力提升}
     needs:
       - tag: interruption_res
         weight: 0.3
-        when: "cons < 1"
         reason: 0 命重击蓄力容易被打断，1 命自带抗打断
 ---
 id: furina
@@ -25,10 +27,13 @@ rarity: 5
 playstyles:
   - id: default
     zh: 后台增伤
+    field: off_field
     provides:
-      - {tag: team_dmg_buff, score: 1.0}
-      - {tag: hydro_application, score: 0.6}
+      - {tag: buff:dmg_bonus, score: 1.0, value: 0.75, evidence: 元素爆发「万众狂欢」：基于芙宁娜持有的「气氛值」，附近的队伍中所有角色造成的伤害提升}
+      - {tag: hp_drain, score: 1.0, evidence: 元素战技的沙龙成员攻击时会消耗队伍中附近所有角色的生命值}
+      - {tag: application:hydro, score: 0.6}
       - {tag: sub_dps, score: 0.6}
+      - {tag: healer, score: 0.4}
 ---
 id: kazuha
 zh: 枫原万叶
@@ -39,10 +44,15 @@ rarity: 5
 playstyles:
   - id: default
     zh: 聚怪减抗
+    field: off_field
     provides:
       - {tag: grouping, score: 1.0}
-      - {tag: elemental_shred, score: 1.0}
-      - {tag: team_dmg_buff, score: 0.6}
+      - {tag: application:anemo, score: 0.8}
+      # 按扩散的元素给全队加成，实际只对被扩散到的元素生效
+      - {tag: element_dmg_buff:pyro, score: 1.0, value: 0.4, evidence: 固有天赋「风物之诗咏」：枫原万叶的每点元素精通，会为队伍中所有角色提供0.04%对应元素伤害加成}
+      - {tag: element_dmg_buff:hydro, score: 1.0, value: 0.4}
+      - {tag: element_dmg_buff:electro, score: 1.0, value: 0.4}
+      - {tag: element_dmg_buff:cryo, score: 1.0, value: 0.4}
 ---
 id: sucrose
 zh: 砂糖
@@ -52,10 +62,11 @@ rarity: 4
 playstyles:
   - id: default
     zh: 聚怪减抗
+    field: off_field
     provides:
       - {tag: grouping, score: 0.8}
-      - {tag: elemental_shred, score: 1.0}
-      - {tag: em_share, score: 1.0}
+      - {tag: application:anemo, score: 0.8}
+      - {tag: buff:em, score: 1.0, value: 200, evidence: 固有天赋：基于砂糖元素精通的20%，提升队伍中其他角色的元素精通}
 ---
 id: zhongli
 zh: 钟离
@@ -66,10 +77,11 @@ rarity: 5
 playstyles:
   - id: default
     zh: 护盾辅助
+    field: off_field
     provides:
       - {tag: shield, score: 1.0}
       - {tag: interruption_res, score: 1.0}
-      - {tag: universal_shred, score: 1.0}
+      - {tag: universal_shred, score: 1.0, value: 0.2}
 ---
 id: baizhu
 zh: 白术
@@ -79,6 +91,7 @@ rarity: 5
 playstyles:
   - id: default
     zh: 治疗辅助
+    field: off_field
     provides:
       - {tag: healer, score: 1.0}
       - {tag: interruption_res, score: 0.7}

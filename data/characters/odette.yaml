@@ -1,0 +1,46 @@
+# 按游戏内天赋原文手写（verified: false，待对照攻略复核）。
+id: odette
+zh: 奥黛塔
+aliases: [Odette]
+element: cryo
+weapon: sword
+rarity: 5
+playstyles:
+  - id: default
+    zh: 后台星烁副C兼辅助
+    field: off_field
+    provides:
+      - {tag: sub_dps, score: 1.0, evidence: 官方定位：兼具后台输出与辅助能力；独舞倒影留驻在场上间歇性攻击附近的敌人}
+      - {tag: application:cryo, score: 1.0, evidence: 独舞倒影：交替呈现拂羽与旋翼两种舞步……间歇性攻击附近的敌人，造成冰元素范围伤害}
+      - tag: reaction_buff:stellar_superconduct
+        score: 1.0
+        value: 0.6
+        evidence: 华彩：每层华彩都会使角色造成的星烁反应伤害提升15%……奥黛塔处于队伍后台时，每秒会清除1层华彩，并使队伍中附近的其他角色获得对应层数的华彩（召唤倒影获得 4 层）
+      - tag: reaction_buff:stellar_swirl
+        score: 1.0
+        value: 0.6
+        evidence: 同上
+      - tag: shred:cryo
+        score: 0.7
+        value: 0.2
+        when: "cons >= 2"
+        evidence: 2 命：独舞倒影在场时，若奥黛塔处于辉映·星烁状态，独舞倒影附近敌人的对应元素抗性还会降低20%（星超导：冰、雷；星扩散：冰、风）
+      - {tag: shred:electro, score: 0.4, value: 0.2, when: "cons >= 2", evidence: 同上，只在辉映·星超导时}
+      - {tag: shred:anemo, score: 0.4, value: 0.2, when: "cons >= 2", evidence: 同上，只在辉映·星扩散时}
+      - tag: buff:atk_pct
+        score: 0.7
+        value: 0.28
+        when: "cons >= 2"
+        evidence: 2 命：每层华彩还会使角色的攻击力提升7%
+      - tag: buff:elevate
+        score: 1.0
+        value: 0.25
+        when: "cons >= 6"
+        evidence: 6 命：处于华彩影响下的角色，对敌人造成的星烁反应伤害擢升25%
+    team_rules:
+      - id: odette_needs_stellar_trigger
+        weight: 0.5
+        rule: "count_any(['electro', 'anemo']) >= 1"
+        reason: 华彩只加星烁反应伤害，倒影的额外星烁伤害也要辉映状态；没有雷、风队友就打不出星超导/星扩散
+        evidence: 柔板·破晓终奏：若奥黛塔处于辉映·星烁状态，则独舞倒影的两种舞步还会额外造成视为对应星烁反应伤害的冰元素范围伤害
+verified: false

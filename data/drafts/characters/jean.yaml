@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: jean
+zh: 琴
+aliases:
+- Jean
+element: anemo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素战技「风压剑」：长按 以持续消耗体力为代价，令旋风将周围的敌人与物体牵引至面前。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「蒲公英之风」：同时，为队伍中的所有角色瞬间恢复大量生命值，回复量受益于琴的攻击力。
+    source: hints
+verified: false

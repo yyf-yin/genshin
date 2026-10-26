@@ -27,7 +27,7 @@ def _status(f: Finding, kb: KnowledgeBase, core: str) -> str:
             return f"{CONFLICT}（视频说不推荐，知识库列为候选）" if hit else AGREE
         return AGREE if hit else MISSING
     if f.kind == "slot_function":
-        levels = {fn.level.value for t in teams for s in t.slots for fn in s.functions if fn.tag == d.get("tag")}
+        levels = {fn.level.value for t in teams for s in t.slots for fn in s.functions if tag_covers(fn.tag, d.get("tag"))}
         if not levels:
             return MISSING
         if f.value in levels:
@@ -106,6 +106,15 @@ def annotate(findings: list[Finding], kb: KnowledgeBase, core: str) -> None:
         f.kb_status = _status(f, kb, core)
 
 
+def tag_covers(kb_tag: str, tag: str | None) -> bool:
+    """知识库槽位写「buff:*」时，视频说的任何 buff:xxx 都算对上。"""
+    if not tag:
+        return False
+    if kb_tag.endswith(":*"):
+        return tag.partition(":")[0] == kb_tag[:-2]
+    return kb_tag == tag
+
+
 def kb_not_mentioned(findings: list[Finding], kb: KnowledgeBase, core: str) -> list[str]:
     """知识库里有、但没有任何视频提到的内容（看 AI 草稿漏了什么）。"""
     mentioned_chars = {f.data.get("char") for f in findings if f.kind == "teammate"}
@@ -120,7 +129,7 @@ def kb_not_mentioned(findings: list[Finding], kb: KnowledgeBase, core: str) -> l
                 if c.char not in mentioned_chars:
                     out.append(f"队伍 {t.id} 槽位 {s.id} 的候选 {c.char}")
             for fn in s.functions:
-                if fn.tag not in mentioned_tags:
+                if not any(tag_covers(fn.tag, m) for m in mentioned_tags):
                     out.append(f"队伍 {t.id} 槽位 {s.id} 的{LEVEL_ZH[fn.level.value]}功能 {fn.tag}")
         for k in t.constraints:
             out.append(f"队伍 {t.id} 的整队限制 {k.id}（只能人工对照）")

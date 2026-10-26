@@ -1,0 +1,26 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: xingqiu
+zh: 行秋
+aliases:
+- Xingqiu
+element: hydro
+weapon: sword
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「古华剑·画雨笼山」：具有如下特性： ·角色受到伤害时会破碎，降低受到的伤害； ·提高角色的抗打断能力。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 固有天赋「生水要诀」：雨帘剑受击破碎时或持续时间结束时，基于行秋最大生命值的6%，恢复当前角色的生命值。
+    source: hints
+  - tag: shred:hydro
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「天青现虹」：古华剑·裁雨留虹的持续时间延长3秒； 此外，受到剑雨攻击的敌人，水元素抗性降低15%，持续4秒。
+    source: hints
+verified: false

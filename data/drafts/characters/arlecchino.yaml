@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: arlecchino
+zh: 阿蕾奇诺
+aliases:
+- Arlecchino
+element: pyro
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「厄月将升」：血偿勒令，造成火元素范围伤害，并在此后清除元素战技「万相化灰」的冷却时间及为自己恢复生命值，回复量基于她的生命之契数值与攻击力。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「「所有的仇与债皆由我偿…」」：高，提高值为100%；此外，在红死之宴状态下进行普通攻击或重击时，提高阿蕾奇诺的抗打断能力。
+    source: hints
+verified: false

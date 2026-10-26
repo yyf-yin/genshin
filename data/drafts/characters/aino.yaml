@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: aino
+zh: 爱诺
+aliases:
+- Aino
+element: hydro
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素战技「妙思捕手」：向前方投出「妙思捕手」，造成水元素伤害，同时将自己牵引至前方，并在移动结束时对身边的敌人造成水元素范围伤害。
+    source: hints
+verified: false

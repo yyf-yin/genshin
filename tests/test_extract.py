@@ -73,7 +73,7 @@ def test_glossary_resolves_aliases(glossary):
 
 def test_extract_keeps_quoted_claims_with_timestamps_and_drops_fabricated(kb, glossary):
     model = FakeModel([
-        {"kind": "teammate", "subject": "那维莱特", "data": {"char": "芙宁娜", "functions": ["team_dmg_buff"]},
+        {"kind": "teammate", "subject": "那维莱特", "data": {"char": "芙宁娜", "functions": ["buff:dmg_bonus"]},
          "evidence": ev("队友首选芙宁娜 提供全队增伤")},
         {"kind": "substitution", "subject": "neuvillette", "data": {"original": "万叶", "substitute": "砂糖"},
          "evidence": ev("没有万叶的话，可以用砂糖")},  # 标点不同、错字已纠正，也要能定位
@@ -134,7 +134,7 @@ def test_compare_against_hand_entered_kb(kb):
     videos = [VideoClaims(bvid="A", claims=[
         claim("A", char="furina"),
         claim("A", char="nahida"),
-        claim("A", "slot_function", tag="team_dmg_buff", level="core"),
+        claim("A", "slot_function", tag="buff:dmg_bonus", level="core"),
         claim("A", "slot_function", tag="grouping", level="minor"),
         claim("A", "substitution", original="kazuha", substitute="sucrose"),
         claim("A", "build", field="weapon", value="万世流涌大典", id="tome_of_the_eternal_flow", rank=1),
@@ -145,7 +145,7 @@ def test_compare_against_hand_entered_kb(kb):
               for f in findings}
     assert status[("teammate", "furina")] == "一致"
     assert status[("teammate", "nahida")] == "知识库没有"
-    assert status[("slot_function", "team_dmg_buff")] == "一致"
+    assert status[("slot_function", "buff:dmg_bonus")] == "一致"
     assert status[("slot_function", "grouping")] == "冲突（知识库是核心）"
     assert status[("substitution", "sucrose")] == "一致（同槽候选）"
     assert status[("build", "万世流涌大典")] == "一致"

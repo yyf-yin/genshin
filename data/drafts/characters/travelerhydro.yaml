@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: travelerhydro
+zh: 旅行者(水元素)
+aliases:
+- Traveler (Hydro)
+element: hydro
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 固有天赋「无染的澈水」：旅行者拾取源水之滴后将恢复7%生命值。
+    source: hints
+  - tag: shield
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「倾落的迸水」：每2秒一次，露滴命中敌人后，如果旅行者处于水纹护盾的庇护下，则将水纹护盾的伤害吸收量补充至旅行者生命值上限的10%；如果不处于水纹护盾的庇护下，则重新产生水纹护盾。
+    source: hints
+verified: false

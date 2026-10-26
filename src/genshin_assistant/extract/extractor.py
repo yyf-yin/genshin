@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pydantic import ValidationError
 
 from ..bili.harvest import Material
-from ..kb import KnowledgeBase
+from ..kb import ELEMENT_ZH, ZONE_ZH, KnowledgeBase
 from .glossary import Glossary
 from .llm import JSONModel, LLMTruncated
 from .schema import BUILD_FIELDS, Claim, Evidence, VideoClaims
@@ -45,7 +45,7 @@ relevant：这是不是一个讲《原神》角色「{core}」的配队、养成
    一个武器/套装/词条一条 claim。视频说“某些情况下可以换成”的备选，rank 写 2 或更大，不要写 1。energy_recharge 的 value 写成 "120-140" 这种区间
 7. playstyle：角色的不同玩法。data = {{"name": "玩法名", "when": "解锁条件，可选", "description": "说明"}}
 
-功能标签只能从下表选，表里没有合适的就写 "new:中文说明"：
+功能标签只能从下表选，表里没有合适的就写 "new:中文说明"。带 <参数> 的写成「id:参数」，例如 buff:dmg_bonus、shred:hydro、application:cryo：
 {tags}
 
 角色名词表（id: 中文名（别名））：
@@ -183,7 +183,7 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
     def tag_ok(tag) -> bool:
         if not tag:
             return False
-        if str(tag) in ctx.kb.tags:
+        if ctx.kb.tag_error(str(tag)) is None:
             return True
         name = str(tag).removeprefix("new:")
         if g.resolve(name, "weapon") or g.resolve(name, "artifact"):
@@ -202,7 +202,7 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
             flags.append(f"分级不合法：{d.get('level')}")
     elif c.kind == "team_constraint" and d.get("rule"):
         for tag in re.findall(r"has_tag\(\s*['\"]([^'\"]+)", d["rule"]):
-            if tag not in ctx.kb.tags:
+            if ctx.kb.tag_error(tag) is not None:
                 flags.append(f"规则引用了词表外标签：{tag}")
     elif c.kind == "substitution":
         d["original"] = char_id(d.get("original"))
@@ -245,9 +245,30 @@ def _ask(model: JSONModel, system: str, m: Material, texts, chunk, part, total) 
                 + _ask(model, system, m, texts, chunk[half:], part, total))
 
 
+PARAM_HINT = {"element": "参数是元素：" + " ".join(ELEMENT_ZH),
+              "zone": "参数是乘区：" + " ".join(f"{k}（{v}）" for k, v in ZONE_ZH.items()),
+              "reaction": "参数是反应 id"}
+
+
+def tag_menu(kb: KnowledgeBase) -> str:
+    """给模型看的标签表。带参数的标签写成「id:参数」，例如 buff:dmg_bonus、shred:hydro。"""
+    lines = []
+    for t in kb.tags.values():
+        if t.id == "element":
+            continue  # 引擎自动加，不用模型写
+        if t.param:
+            hint = PARAM_HINT[t.param]
+            if t.param == "reaction" and kb.reactions:
+                hint += "：" + " ".join(kb.reactions)
+            lines.append(f"{t.id}:<参数>: {t.zh}（{hint}）")
+        else:
+            lines.append(f"{t.id}: {t.zh}")
+    return "\n".join(lines)
+
+
 def extract_video(m: Material, ctx: ExtractContext, model: JSONModel, chunk_chars: int = 6000) -> VideoClaims:
     texts, lines, counter = corrected_material(m, ctx.glossary)
-    tags = "\n".join(f"{t.id}: {t.zh}" for t in ctx.kb.tags.values())
+    tags = tag_menu(ctx.kb)
     system = SYSTEM_PROMPT.format(core=ctx.core_zh, tags=tags, chars=ctx.glossary.for_prompt(),
                                   fields=" / ".join(BUILD_FIELDS))
     loc = Locator(texts, lines)

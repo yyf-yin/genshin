@@ -1,0 +1,36 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: jahoda
+zh: 雅珂达
+aliases:
+- Jahoda
+element: anemo
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 固有天赋「蜜莓的嘉赏」：发秘器·猎人的七道具中的猫型家用互助协调器对队伍中自己的当前场上角色触发治疗时，若受到治疗的角色生命值高于70%，则该角色的元素精通提升100点，持续6秒。
+    source: hints
+  - tag: buff:em
+    score: 0.4
+    evidence: 固有天赋「蜜莓的嘉赏」：元素爆发秘器·猎人的七道具中的猫型家用互助协调器对队伍中自己的当前场上角色触发治疗时，若受到治疗的角色生命值高于70%，则该角色的元素精通提升100点，持续6秒。
+    source: hints
+  - tag: buff:crit_rate
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「最渺小的幸运」：月兆·满辉：元素战技奇策·财富分配方案中的呼噜噜秘藏瓶装满后的20秒内，队伍中附近的月兆角色的暴击率提升5%，暴击伤害提升40%。
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「最渺小的幸运」：月兆·满辉：元素战技奇策·财富分配方案中的呼噜噜秘藏瓶装满后的20秒内，队伍中附近的月兆角色的暴击率提升5%，暴击伤害提升40%。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「最渺小的幸运」：月兆·满辉：元素战技奇策·财富分配方案中的呼噜噜秘藏瓶装满后的20秒内，队伍中附近的月兆角色的暴击率提升5%，暴击伤害提升40%。
+    source: hints
+verified: false

@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: barbara
+zh: 芭芭拉
+aliases:
+- Barbara
+element: hydro
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「演唱，开始♪」：歌声之环 ·芭芭拉的普通攻击命中时，为队伍中自己的角色，以及附近的友方角色恢复生命值，回复量受益于芭芭拉的生命值上限； ·重击命中时，能产生4倍回复量； ·每隔一段时间，为当前场上自己的角色恢
+    source: hints
+verified: false

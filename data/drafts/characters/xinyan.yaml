@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: xinyan
+zh: 辛焱
+aliases:
+- Xinyan
+element: pyro
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「热情拂扫」：辛焱挥动乐器，对周围的敌人造成火元素伤害，并借由「观众」的「热情」，形成护盾。
+    source: hints
+verified: false

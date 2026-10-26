@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: gaming
+zh: 嘉明
+aliases:
+- Gaming
+element: pyro
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「璨焰金猊舞」：嘉明进入舞兽态势，为嘉明施加短暂的火元素附着，恢复一定的生命值，并召唤可靠的伙伴猊兽·文仔砸击目标，造成火元素范围伤害。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「璨焰金猊舞」：舞兽态势持续期间，提高嘉明的抗打断能力，下落攻击·踏云献瑞落地时，或瑞兽登高楼的向前扑击结束时，若嘉明的生命值高于
+    source: hints
+verified: false

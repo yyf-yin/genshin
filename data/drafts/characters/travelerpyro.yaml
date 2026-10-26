@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: travelerpyro
+zh: 旅行者(火元素)
+aliases:
+- Traveler (Pyro)
+element: pyro
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: energy_battery
+    score: 0.4
+    evidence: 固有天赋「未烬的余火」：此外，队伍中的附近的角色触发「夜魂迸发」时，还将为旅行者恢复4点元素能量。
+    source: hints
+verified: false

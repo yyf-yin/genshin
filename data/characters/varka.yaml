@@ -1,0 +1,35 @@
+# 草稿（verified: false）：配队偏好的样板，元素配置要求用 team_rules 表达。
+id: varka
+zh: 法尔伽
+aliases: [Varka]
+element: anemo
+weapon: claymore
+rarity: 5
+playstyles:
+  - id: default
+    zh: 狂飙突进站场C
+    field: on_field
+    provides:
+      - {tag: main_dps, score: 1.0}
+      - {tag: witch_arcana, score: 1.0, evidence: 完成魔女的课业·无题之题后，法尔伽将成为魔导角色}
+      - tag: element_dmg_buff:anemo
+        score: 0.6
+        when: "cons >= 4"
+        evidence: 4 命：法尔伽触发扩散或星扩散反应时，依据参与反应的元素类型，使队伍中附近的所有角色分别获得20%风元素伤害加成与对应元素伤害加成
+    team_rules:
+      - id: varka_needs_partner_element
+        hard: true
+        rule: "count_any(['pyro', 'hydro', 'electro', 'cryo']) >= 1"
+        reason: 没有火、水、雷、冰队友时，狂飙突进的右手剑不转元素，也没有特殊元素战技「四风将起」
+        evidence: 若队伍中存在火元素、水元素、雷元素或冰元素角色，法尔伽的元素战技烈风终坠将会被替换为特殊的元素战技四风将起
+      - id: varka_140
+        weight: 0.4
+        rule: "count('anemo') >= 2 or max_count(['pyro', 'hydro', 'electro', 'cryo']) >= 2"
+        reason: 队里有 2 名风元素角色或 2 名同元素的火/水/雷/冰角色时，狂飙突进下的攻击造成原本 140% 的伤害
+        evidence: 固有天赋「晓风的行军」：如果队伍中存在至少2名风元素角色，或存在至少2名元素类型相同的火元素、水元素、雷元素或冰元素角色……将造成原本140%的伤害
+      - id: varka_220
+        weight: 0.3
+        rule: "count('anemo') >= 2 and max_count(['pyro', 'hydro', 'electro', 'cryo']) >= 2"
+        reason: 两风加两个同元素的火/水/雷/冰角色同时满足时，提升到 220%，这就是常说的「双风双X」
+        evidence: 固有天赋「晓风的行军」：若队伍中同时存在至少2名风元素角色与至少2名元素类型相同的火元素、水元素、雷元素或冰元素角色，则会使上述效果提升至220%
+verified: false

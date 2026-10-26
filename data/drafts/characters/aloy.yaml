@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: aloy
+zh: 埃洛伊
+aliases:
+- Aloy
+element: cryo
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:atk_pct
+    score: 0.4
+    evidence: 固有天赋「战斗覆盖」：埃洛伊获得冰尘雪野的线圈效果时，埃洛伊的攻击力提升16%，队伍中附近的其他角色的攻击力提升8%，持续10秒。
+    source: hints
+verified: false

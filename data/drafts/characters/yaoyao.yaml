@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yaoyao
+zh: 瑶瑶
+aliases:
+- Yaoyao
+element: dendro
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「云台团团降芦菔」：玉萝卜会在命中角色或敌人时炸裂，对一定范围内的敌人造成草元素伤害，并为其中的角色恢复生命值，回复量受益于瑶瑶的生命值上限；若未命中敌人或角色，白玉萝卜将会留在命中的位置，并在触及角色或敌人时，或持
+    source: hints
+verified: false
