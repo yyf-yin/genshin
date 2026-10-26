@@ -226,6 +226,9 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
     if c.inferred:
         flags.append("模型推断，视频没直说")
     playstyle = g.fix_typos(c.playstyle) if c.playstyle else c.playstyle  # “新超导”“星超导”是同一种玩法
+    for k in ("description", "reason", "effect", "slot_note", "when"):  # 说明文字也纠错；证据原文不动
+        if isinstance(d.get(k), str):
+            d[k] = g.fix_typos(d[k])
     return c.model_copy(update={"subject": subject, "playstyle": playstyle, "data": d, "flags": sorted(set(flags))})
 
 
