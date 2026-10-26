@@ -49,7 +49,12 @@ class SourceConfig:
     asr: str = "off"  # 没字幕时语音识别：off / whitelist（只给白名单 UP 主）/ all
     asr_model: str = "small"
     ocr: str = "off"  # 没字幕时读硬字幕（优先于语音识别）：off / whitelist / all
-    ocr_crop: tuple[float, float] = (0.75, 0.98)
+    ocr_crop: tuple[float, ...] = ()  # 空就用 ocr.DEFAULT_CROP
+    ocr_crop_up: dict[str, tuple[float, ...]] = field(default_factory=dict)  # 每个 UP 主字幕位置不一样时单独写
+
+    def crop_for(self, up: str) -> tuple[float, ...]:
+        from .ocr import DEFAULT_CROP
+        return self.ocr_crop_up.get(up) or self.ocr_crop or DEFAULT_CROP
 
     def find(self, name: str) -> Target | None:
         for t in self.targets.values():
@@ -75,7 +80,8 @@ def load_sources(path: Path) -> SourceConfig:
                         list(d.get("exclude_words") if d.get("exclude_words") is not None else DEFAULT_EXCLUDE),
                         list(d.get("require_words") or []),
                         str(d.get("asr") or "off"), str(d.get("asr_model") or "small"),
-                        str(d.get("ocr") or "off"), tuple(d.get("ocr_crop") or (0.75, 0.98)))
+                        str(d.get("ocr") or "off"), tuple(d.get("ocr_crop") or ()),
+                        {str(k): tuple(v) for k, v in (d.get("ocr_crop_up") or {}).items()})
 
 
 @dataclass
@@ -171,7 +177,7 @@ def _maybe_asr(client: BiliClient, m: Material, target: Target, cfg: SourceConfi
             if not video.exists():
                 download_video(client, info, video, qn=32)  # 480p 只有 720p 的三分之一大，字幕照样认得清
             log(f"  {m.bvid} 没有字幕轨道，读画面里的硬字幕（可能要几分钟）：{m.title}")
-            lines = hardsub_lines(video, out_dir.parent / "video", crop=cfg.ocr_crop)
+            lines = hardsub_lines(video, out_dir.parent / "video", crop=cfg.crop_for(m.up), log=log)
         except RateLimited:
             raise
         except Exception as e:  # noqa: BLE001  OCR 失败不影响其他视频
@@ -182,7 +188,7 @@ def _maybe_asr(client: BiliClient, m: Material, target: Target, cfg: SourceConfi
         if len(lines) >= 20:
             m.subtitles, m.subtitle_lan = lines, "ocr-hardsub"
             return
-        log(f"  {m.bvid} 只读出 {len(lines)} 行硬字幕，可能字幕不在 ocr_crop 指定的区域")
+        log(f"  {m.bvid} 只读出 {len(lines)} 行硬字幕，可能字幕不在 ocr_crop 指定的区域（可在 ocr_crop_up 里给这个 UP 主单独设）")
     if not _wants(cfg.asr, m):
         return
     from .asr import download_audio, transcribe

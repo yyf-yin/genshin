@@ -304,7 +304,7 @@ def test_ocr_reads_hardsubs_before_falling_back_to_asr(tmp_path, monkeypatch):
     monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
     monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []))
     monkeypatch.setattr(frames, "download_video", lambda c, i, out, **kw: out.parent.mkdir(parents=True, exist_ok=True) or out.write_bytes(b"x") or out)
-    monkeypatch.setattr(ocr, "hardsub_lines", lambda video, work, crop: [SubtitleLine(i, i + 1, f"第{i}句") for i in range(30)])
+    monkeypatch.setattr(ocr, "hardsub_lines", lambda video, work, crop, log=None: [SubtitleLine(i, i + 1, f"第{i}句") for i in range(30)])
     cfg = hv.SourceConfig({}, ["贪欲九头蛇_"], ocr="whitelist", asr="whitelist")
     got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"]), cfg, tmp_path / "bili", log=lambda *_: None)
     assert got[0].subtitle_lan == "ocr-hardsub" and len(got[0].subtitles) == 30
@@ -336,3 +336,32 @@ def test_download_video_in_ranges_switches_line_and_resumes(tmp_path):
     frames.download_video(c, info, out, chunk=1000)
     assert out.read_bytes() == data and not (tmp_path / "v" / "BV1.mp4.part").exists()
     assert calls == [("main", "bytes=1000-1999"), ("main", "bytes=2000-2559"), ("backup", "bytes=2000-2559")]
+
+
+def test_drop_static_removes_text_on_most_frames():
+    from genshin_assistant.bili.ocr import drop_static
+    bar = ["前言", "技能解析", "装备搭配", "队伍搭配"]
+    frames = [bar + [f"第{i // 3}句"] for i in range(30)] + [bar] * 5
+    got = drop_static(frames)
+    assert got[0] == "第0句" and got[-1] == ""
+
+
+def test_hardsub_skips_unchanged_frames_and_crops_both_sides(tmp_path, monkeypatch):
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from genshin_assistant.bili import ocr
+    video = tmp_path / "v.mp4"
+    w = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"mp4v"), 10, (200, 100))
+    for i in range(60):  # 6 秒，每 3 秒换一次画面
+        w.write(np.full((100, 200, 3), 40 if i < 30 else 200, np.uint8))
+    w.release()
+    seen = []
+
+    def engine(path):
+        img = cv2.imread(path)
+        seen.append(img.shape[:2])
+        return [[None, "亮" if img.mean() > 100 else "暗", 0.9]]
+    monkeypatch.setattr(ocr, "_engine", lambda: engine)
+    got = ocr.hardsub_lines(video, tmp_path, crop=(0.5, 1.0, 0.25, 0.75))
+    assert [(s.start, s.end, s.text) for s in got] == [(0, 3, "暗"), (3, 6, "亮")]
+    assert len(seen) == 2 and seen[0] == (50, 100)  # 6 帧只识别了 2 次；左右各裁掉四分之一

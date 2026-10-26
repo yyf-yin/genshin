@@ -15,7 +15,17 @@ from .api import SubtitleLine
 from .client import BiliError
 from .frames import ffmpeg_path
 
-DEFAULT_CROP = (0.75, 0.98)  # 字幕条在画面高度的哪一段（从上往下的比例）
+DEFAULT_CROP = (0.84, 0.93, 0.15, 0.85)  # 字幕条的位置：上、下、左、右（占画面的比例，0 是顶 / 左）
+# 75%-98% 实测会框进章节进度条、等级血量和两侧按钮；字幕一般在 86%-93%，左右各留 15% 挡掉按钮和文字面板
+
+Crop = tuple[float, ...]
+
+
+def _box(crop: Crop) -> tuple[float, float, float, float]:
+    """兼容只写上下两个数的旧配置。"""
+    top, bottom, *lr = crop
+    left, right = lr if len(lr) == 2 else (0.0, 1.0)
+    return top, bottom, left, right
 
 
 def _engine():
@@ -38,16 +48,16 @@ def _texts(result, min_score: float) -> list[str]:
     return [r[1] for r in rows or [] if r[2] >= min_score]
 
 
-def extract_frames(video: Path, out_dir: Path, every: float = 1.0, crop: tuple[float, float] = DEFAULT_CROP) -> list[Path]:
+def extract_frames(video: Path, out_dir: Path, every: float = 1.0, crop: Crop = DEFAULT_CROP) -> list[Path]:
     """每 every 秒截一张字幕条。优先用 OpenCV（rapidocr 已经带上它，自带解码器，不用另装 ffmpeg）。"""
     out_dir.mkdir(parents=True, exist_ok=True)
-    top, bottom = crop
+    top, bottom, left, right = _box(crop)
     try:
         import cv2
     except ImportError:
         subprocess.run([ffmpeg_path(), "-y", "-loglevel", "error", "-i", str(video), "-vf",
-                        f"fps=1/{every},crop=iw:ih*{bottom - top:.3f}:0:ih*{top:.3f}", "-q:v", "3",
-                        str(out_dir / "%05d.jpg")], check=True)
+                        f"fps=1/{every},crop=iw*{right - left:.3f}:ih*{bottom - top:.3f}:iw*{left:.3f}:ih*{top:.3f}",
+                        "-q:v", "3", str(out_dir / "%05d.jpg")], check=True)
         return sorted(out_dir.glob("*.jpg"))
     cap = cv2.VideoCapture(str(video))
     if not cap.isOpened():
@@ -62,13 +72,45 @@ def extract_frames(video: Path, out_dir: Path, every: float = 1.0, crop: tuple[f
         if i % step == 0:
             ok, frame = cap.retrieve()
             if ok:
-                h = frame.shape[0]
+                h, w = frame.shape[:2]
                 path = out_dir / f"{len(out) + 1:05d}.jpg"
-                cv2.imwrite(str(path), frame[int(h * top):int(h * bottom)])
+                cv2.imwrite(str(path), frame[int(h * top):int(h * bottom), int(w * left):int(w * right)])
                 out.append(path)
         i += 1
     cap.release()
     return out
+
+
+def _same_frame():
+    """返回 same(a, b)：两张字幕条几乎没变（字幕一般停留 2-3 秒）就不用再识别一遍。没装 OpenCV 就每张都识别。"""
+    try:
+        import cv2
+    except ImportError:
+        return lambda a, b: False
+    cache: dict[Path, object] = {}
+
+    def gray(p: Path):
+        if p not in cache:
+            if len(cache) > 4:
+                cache.clear()
+            cache[p] = cv2.imread(str(p), cv2.IMREAD_GRAYSCALE)
+        return cache[p]
+
+    def same(a: Path, b: Path) -> bool:
+        x, y = gray(a), gray(b)
+        return x is not None and y is not None and x.shape == y.shape and float(cv2.absdiff(x, y).mean()) < 2.0
+    return same
+
+
+def drop_static(frames_texts: list[list[str]], share: float = 0.3, min_frames: int = 10) -> list[str]:
+    """去掉大多数帧里都有的固定文字（章节进度条“技能解析 装备搭配”、水印等），每帧剩下的拼成一句。"""
+    counts: dict[str, int] = {}
+    for texts in frames_texts:
+        for t in set(texts):
+            counts[t] = counts.get(t, 0) + 1
+    limit = max(min_frames, share * len(frames_texts))
+    static = {t for t, n in counts.items() if n >= limit}
+    return ["".join(t for t in texts if t not in static).strip() for texts in frames_texts]
 
 
 def merge_lines(samples: list[tuple[float, str]], every: float = 1.0, similar: float = 0.8) -> list[SubtitleLine]:
@@ -89,14 +131,25 @@ def merge_lines(samples: list[tuple[float, str]], every: float = 1.0, similar: f
     return lines
 
 
-def hardsub_lines(video: Path, work_dir: Path, every: float = 1.0, crop: tuple[float, float] = DEFAULT_CROP,
-                  min_score: float = 0.6, keep_frames: bool = False) -> list[SubtitleLine]:
+def hardsub_lines(video: Path, work_dir: Path, every: float = 1.0, crop: Crop = DEFAULT_CROP,
+                  min_score: float = 0.6, keep_frames: bool = False, log=None) -> list[SubtitleLine]:
     engine = _engine()
     frames_dir = work_dir / f".ocr-{video.stem}"
+    same = _same_frame()
     try:
         frames = extract_frames(video, frames_dir, every, crop)
-        samples = [(i * every, "".join(_texts(engine(str(f)), min_score)).strip()) for i, f in enumerate(frames)]
+        per_frame: list[list[str]] = []
+        last_read = None
+        for i, f in enumerate(frames):
+            if last_read is not None and same(last_read, f):
+                per_frame.append(per_frame[-1])  # 画面没变，沿用上一张的识别结果
+                continue
+            per_frame.append([t.strip() for t in _texts(engine(str(f)), min_score) if t.strip()])
+            last_read = f
+            if log and i and i % 200 == 0:
+                log(f"    OCR {i}/{len(frames)}")
     finally:
         if not keep_frames:
             shutil.rmtree(frames_dir, ignore_errors=True)
-    return merge_lines(samples, every)
+    texts = drop_static(per_frame)
+    return merge_lines([(i * every, t) for i, t in enumerate(texts)], every)
