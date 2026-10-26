@@ -53,6 +53,8 @@ B 站接口部分移植自 [dsh-bili-whale](https://github.com/Alterssss/dsh-bil
 6. 可选：字幕剪进画面里的（硬字幕），把 `ocr` 设成 `whitelist` 并 `pip install -e ".[ocr]"`，
    会下载 480p 视频、每秒截一帧字幕区域做 OCR（画面没变的帧跳过，每帧都有的进度条等固定文字会去掉），读完删除视频。
    硬字幕优先于语音识别。字幕位置用 `ocr_crop` 调，个别 UP 主不一样就写进 `ocr_crop_up`。
+   CPU 每张截图约 1.5 秒；有 N 卡就 `pip uninstall -y onnxruntime` 再 `pip install "onnxruntime-gpu[cuda,cudnn]"`
+   （只要装好显卡驱动，CUDA 库随 pip 一起装），会自动改用显卡。其他显卡在 Windows 上可以装 `onnxruntime-directml`。
 
 ### 用法
 

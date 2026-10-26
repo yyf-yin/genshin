@@ -376,3 +376,15 @@ def test_hardsub_drops_number_only_readouts(tmp_path, monkeypatch):
     monkeypatch.setattr(ocr, "_engine", lambda: lambda p: [[None, said[p.rsplit("/", 1)[-1]], 0.9]])
     got = ocr.hardsub_lines(tmp_path / "v.mp4", tmp_path)
     assert [s.text for s in got] == ["薇斯纳，风属性", "充能要140%"]
+
+
+def test_ocr_uses_gpu_provider_when_installed(monkeypatch):
+    import sys
+    import types
+    from genshin_assistant.bili import ocr
+    fake = types.SimpleNamespace(get_available_providers=lambda: ["CUDAExecutionProvider", "CPUExecutionProvider"],
+                                 preload_dlls=lambda: None)
+    monkeypatch.setitem(sys.modules, "onnxruntime", fake)
+    assert ocr.gpu_provider() == "CUDAExecutionProvider"
+    fake.get_available_providers = lambda: ["CPUExecutionProvider"]
+    assert ocr.gpu_provider() is None

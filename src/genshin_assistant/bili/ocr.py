@@ -30,8 +30,27 @@ def _box(crop: Crop) -> tuple[float, float, float, float]:
     return top, bottom, left, right
 
 
+def gpu_provider() -> str | None:
+    """装了 onnxruntime-gpu（CUDA）或 onnxruntime-directml（Windows 任意显卡）就用显卡跑，否则 None（CPU）。"""
+    try:
+        import onnxruntime as ort
+    except ImportError:
+        return None
+    if hasattr(ort, "preload_dlls"):  # pip 装的 CUDA / cuDNN 库要先加载，不然会悄悄退回 CPU
+        try:
+            ort.preload_dlls()
+        except Exception:  # noqa: BLE001
+            pass
+    have = ort.get_available_providers()
+    for p in ("CUDAExecutionProvider", "DmlExecutionProvider"):
+        if p in have:
+            return p
+    return None
+
+
 def _engine():
     """新版包名 rapidocr，旧版 rapidocr_onnxruntime，两种都认。"""
+    gpu = gpu_provider()
     try:
         from rapidocr import RapidOCR
     except ImportError:
@@ -39,6 +58,13 @@ def _engine():
             from rapidocr_onnxruntime import RapidOCR
         except ImportError:
             raise BiliError('读硬字幕需要 OCR：pip install -e ".[ocr]"') from None
+        if gpu == "CUDAExecutionProvider":
+            return RapidOCR(det_use_cuda=True, cls_use_cuda=True, rec_use_cuda=True)
+        return RapidOCR()
+    if gpu == "CUDAExecutionProvider":
+        return RapidOCR(params={"EngineConfig.onnxruntime.use_cuda": True})
+    if gpu == "DmlExecutionProvider":
+        return RapidOCR(params={"EngineConfig.onnxruntime.use_dml": True})
     return RapidOCR()
 
 
@@ -136,6 +162,8 @@ def merge_lines(samples: list[tuple[float, str]], every: float = 1.0, similar: f
 def hardsub_lines(video: Path, work_dir: Path, every: float = 1.0, crop: Crop = DEFAULT_CROP,
                   min_score: float = 0.6, keep_frames: bool = False, log=None) -> list[SubtitleLine]:
     engine = _engine()
+    if log:
+        log(f"    OCR 用 {gpu_provider() or 'CPU'}")
     frames_dir = work_dir / f".ocr-{video.stem}"
     same = _same_frame()
     try:
