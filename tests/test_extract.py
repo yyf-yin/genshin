@@ -378,3 +378,4 @@ def test_cores_report_gathers_teams_from_every_guide(tmp_path, kb, glossary):
     assert (f.support, n, src) == (2, 2, ["沃雅妮莎", "薇斯纳"])
     text = write_cores_report(tmp_path / "out", report, {"ayaka": "神里绫华"}).read_text(encoding="utf-8")
     assert "## 神里绫华（ayaka）" in text and "来自：沃雅妮莎、薇斯纳 的攻略" in text
+    assert "只有薇斯纳的攻略" in text  # 薇斯纳队只有一个来源

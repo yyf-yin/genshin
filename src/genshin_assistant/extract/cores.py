@@ -17,6 +17,8 @@ from .compare import annotate
 from .draft import _support, describe
 from .glossary import Glossary
 from .schema import KIND_ZH, VideoClaims
+from .extractor import ExtractContext, normalize_claim
+from .pipeline import core_id
 from .vote import aggregate
 
 TEAM_KINDS = ("teammate", "slot_function", "team_constraint", "substitution")
@@ -41,8 +43,14 @@ def by_core(kb: KnowledgeBase, glossary: Glossary, targets: list[Target], bili_d
     seen: dict[str, VideoClaims] = {}
     source: dict[str, set[str]] = {}
     for t in targets:
+        ctx = ExtractContext(kb, glossary, core_id(kb, t), t.zh)
         for vc in load_claims(bili_dir, t.id):
-            seen.setdefault(vc.bvid, vc)
+            # 缓存里是抽取当时的写法，用当前名词表重新归一（例如“新超导”→“星超导”）
+            claims = [normalize_claim(c.model_copy(update={"flags": []}), ctx) for c in vc.claims]
+            if vc.bvid in seen:  # 同一个视频被两个角色选中、各抽了一次：合并，计票时同一个视频只算一票
+                seen[vc.bvid].claims += claims
+            else:
+                seen[vc.bvid] = vc.model_copy(update={"claims": claims})
             source.setdefault(vc.bvid, set()).add(t.zh)
     cores = sorted({c.subject for vc in seen.values() for c in vc.claims if c.kind in TEAM_KINDS})
     if only:
@@ -63,7 +71,8 @@ def write_cores_report(out_dir: Path, report: dict[str, list], names: dict[str, 
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"cores-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}.md"
     lines = ["# 按主 C 汇总的队伍（待审核）", "",
-             "把所有角色攻略里讲到的队伍按主 C 收拢。新辅助的攻略常给出老主 C 当前的最优队，但也偏向推荐那个辅助本人，审的时候留意。", ""]
+             "把所有角色攻略里讲到的队伍按主 C 收拢。新辅助的攻略常给出老主 C 当前的最优队，但也偏向推荐那个辅助本人，审的时候留意。",
+             "", "“N 个视频讲到”只算讲了这个主 C 队伍的视频，分母也是它；标“只有某某的攻略”的条目来源单一，分量要打折。", ""]
     order = sorted(report, key=lambda c: -max((n for _, _, n in report[c]), default=0))
     for core in order:
         rows = report[core]
@@ -77,8 +86,8 @@ def write_cores_report(out_dir: Path, report: dict[str, list], names: dict[str, 
             for f, src in sorted(items, key=lambda x: (-x[0].support, -int(x[0].dates[1].replace('-', '') or 0))):
                 mark = "⚠️ " if f.review_flags else ""
                 when = f"（{'~'.join(dict.fromkeys(f.dates))}）" if f.dates[0] else ""
-                lines.append(f"- {mark}{describe(f)}  ·  {_support(f, n)} 个视频{when}  ·  来自：{'、'.join(src) or '?'} 的攻略"
-                             f"  ·  知识库：{f.kb_status}")
+                origin = f"只有{src[0]}的攻略" if len(src) == 1 else f"来自：{'、'.join(src) or '?'} 的攻略"
+                lines.append(f"- {mark}{describe(f)}  ·  {_support(f, n)} 个视频{when}  ·  {origin}  ·  知识库：{f.kb_status}")
                 for flag in f.review_flags:
                     lines.append(f"  - {flag}")
                 for e in f.evidence[:2]:

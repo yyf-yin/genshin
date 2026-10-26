@@ -102,6 +102,7 @@ def _add_bili_parser(sub) -> None:
         x.add_argument("--explain", action="store_true", help="列出被筛掉的视频和原因")
     c = bs.add_parser("cores", help="把所有角色攻略里讲到的队伍按主 C 汇总（离线，不请求 B 站）")
     c.add_argument("characters", nargs="*", help="只看这些主 C（id 或中文名）；不填就全部")
+    c.add_argument("--all", action="store_true", help="sources.yaml 里所有角色的攻略都算（默认只算 pilot: true 的）")
     f = bs.add_parser("frames", help="在字幕提到配装的时间点抽帧拼图（给人看配装面板）")
     f.add_argument("bvid")
     f.add_argument("--at", help="手动指定时间点，逗号分隔，如 1:20,3:05")
@@ -148,7 +149,8 @@ def _bili(args, kb) -> None:
             from .extract.cores import by_core, write_cores_report
             glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml", data_dir / "releases.yaml")
             only = [getattr(glossary.resolve(n, "character"), "id", n) for n in args.characters] or None
-            report = by_core(kb, glossary, list(cfg.targets.values()), work / "bili", only)
+            targets = [t for t in cfg.targets.values() if args.all or t.id in cfg.pilot]  # 默认只汇总当前试点
+            report = by_core(kb, glossary, targets, work / "bili", only)
             print(write_cores_report(work / "drafts", report, glossary.names()))
             return
         if args.characters:
