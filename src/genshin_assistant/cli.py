@@ -100,6 +100,8 @@ def _add_bili_parser(sub) -> None:
         x.add_argument("characters", nargs="*", help="角色名；不填就跑 sources.yaml 里 pilot: true 的角色")
         x.add_argument("--refresh", action="store_true", help="忽略本地缓存重新取材 / 重新抽取")
         x.add_argument("--explain", action="store_true", help="列出被筛掉的视频和原因")
+    c = bs.add_parser("cores", help="把所有角色攻略里讲到的队伍按主 C 汇总（离线，不请求 B 站）")
+    c.add_argument("characters", nargs="*", help="只看这些主 C（id 或中文名）；不填就全部")
     f = bs.add_parser("frames", help="在字幕提到配装的时间点抽帧拼图（给人看配装面板）")
     f.add_argument("bvid")
     f.add_argument("--at", help="手动指定时间点，逗号分隔，如 1:20,3:05")
@@ -142,6 +144,13 @@ def _bili(args, kb) -> None:
             return
 
         cfg = load_sources(sources_path)
+        if cmd == "cores":
+            from .extract.cores import by_core, write_cores_report
+            glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml", data_dir / "releases.yaml")
+            only = [getattr(glossary.resolve(n, "character"), "id", n) for n in args.characters] or None
+            report = by_core(kb, glossary, list(cfg.targets.values()), work / "bili", only)
+            print(write_cores_report(work / "drafts", report, glossary.names()))
+            return
         if args.characters:
             targets = []
             for name in args.characters:

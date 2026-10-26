@@ -358,3 +358,23 @@ def test_teams_of_other_main_dps_are_compared_with_their_own_templates(kb):
     annotate(findings, kb, "neuvillette")
     status = {f.subject: f.kb_status for f in findings}
     assert status["neuvillette"] == "一致" and status["ayaka"] == "知识库没有（没有以 ayaka 为核心的队伍模板）"
+
+
+def test_cores_report_gathers_teams_from_every_guide(tmp_path, kb, glossary):
+    from genshin_assistant.extract.cores import by_core, write_cores_report
+    bili = tmp_path / "bili"
+    for target, bvid, subject in (("woyanisha", "BV1", "ayaka"), ("vesna", "BV2", "ayaka"), ("vesna", "BV3", "vesna")):
+        d = bili / target
+        d.mkdir(parents=True, exist_ok=True)
+        vc = VideoClaims(bvid=bvid, published="2026-09-20", claims=[
+            Claim(kind="teammate", subject=subject, data={"char": "woyanisha"}, bvid=bvid, evidence=[Evidence(quote="q", bvid=bvid)]),
+            Claim(kind="build", subject="woyanisha", data={"field": "weapon", "value": "x"}, bvid=bvid,
+                  evidence=[Evidence(quote="q", bvid=bvid)])])
+        (d / f"{bvid}.claims.json").write_text(vc.model_dump_json(), encoding="utf-8")
+    targets = [Target("woyanisha", "沃雅妮莎"), Target("vesna", "薇斯纳")]
+    report = by_core(kb, glossary, targets, bili)
+    assert set(report) == {"ayaka", "vesna"}  # 养成类结论不进按主 C 汇总
+    (f, src, n), = report["ayaka"]
+    assert (f.support, n, src) == (2, 2, ["沃雅妮莎", "薇斯纳"])
+    text = write_cores_report(tmp_path / "out", report, {"ayaka": "神里绫华"}).read_text(encoding="utf-8")
+    assert "## 神里绫华（ayaka）" in text and "来自：沃雅妮莎、薇斯纳 的攻略" in text
