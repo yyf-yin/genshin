@@ -260,3 +260,20 @@ def test_guide_titles_rank_above_popular_chatter():
     hits = [VideoHit("BV1", "法尔伽的几个发现", "x", 1, 99999, 1, 600),
             VideoHit("BV2", "法尔伽配队攻略", "x", 2, 10, 1, 600)]
     assert [h.bvid for h in select_videos(hits, t, [])] == ["BV2", "BV1"]
+
+
+def test_asr_fills_subtitles_for_whitelisted_videos_only(tmp_path, monkeypatch):
+    from genshin_assistant.bili import asr, harvest as hv
+    from genshin_assistant.bili.api import VideoInfo
+    hits = [VideoHit("BV1", "薇斯纳养成攻略", "贪欲九头蛇_", 1, 9, 1, 600), VideoHit("BV2", "薇斯纳配队攻略", "路人", 2, 8, 1, 600)]
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": hits)
+    monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, {"BV1": "贪欲九头蛇_"}.get(b, "路人"), 9))
+    monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
+    monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []))
+    transcribed = []
+    monkeypatch.setattr(asr, "download_audio", lambda c, i, out: out)
+    monkeypatch.setattr(asr, "transcribe", lambda audio, hint, model: transcribed.append((audio.name, hint)) or [SubtitleLine(0, 2, "薇斯纳配队")])
+    cfg = hv.SourceConfig({}, ["贪欲九头蛇_"], asr="whitelist")
+    got = hv.harvest(None, Target("vesna", "薇斯纳", ["微丝娜"], queries=["{zh}"]), cfg, tmp_path, log=lambda *_: None)
+    assert [(m.bvid, m.subtitle_lan) for m in got] == [("BV1", "asr-whisper")]
+    assert transcribed == [("BV1.m4a", "薇斯纳、微丝娜")]

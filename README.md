@@ -48,6 +48,8 @@ B 站接口部分移植自 [dsh-bili-whale](https://github.com/Alterssss/dsh-bil
    或环境变量 `BILI_SESSDATA` / `BILI_JCT` / `BILI_BUVID3`）。没有登录拉不到 AI 字幕。
 3. `DEEPSEEK_API_KEY` 环境变量。可选 `DEEPSEEK_MODEL`（默认 `deepseek-chat`）。
 4. 抽帧才需要 ffmpeg。
+5. 可选：有些 UP 主的视频没有任何字幕。把 `sources.yaml` 的 `asr` 设成 `whitelist`（或 `all`）并 `pip install -e ".[asr]"`，
+   就会下载音轨，用本机 faster-whisper 转写（第一次会下载语音模型）。
 
 ### 用法
 

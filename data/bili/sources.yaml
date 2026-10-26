@@ -9,6 +9,10 @@ defaults:
   # 标题含这些词的跳过（多半不是配队养成攻略）
   # 标题、简介或标签里至少要有一个这些词，防止别的游戏同名角色混进来
   require_words: [原神]
+  # 视频没有字幕时，下载音轨用本机 faster-whisper 转写：off / whitelist（只给白名单 UP 主）/ all
+  # 打开前先 pip install -e ".[asr]"；asr_model 越大越准越慢（tiny/base/small/medium/large-v3）
+  asr: off
+  asr_model: small
   exclude_words: [幻化, 外观, 剧情, 抽卡, 抽取记录, 爆料, 测试服, 前瞻, 手书, MMD, cos, 鬼畜, 有趣, 小知识, 冷知识, 彩蛋]
 
 # 信任的 UP 主（名字或 mid）。白名单里的视频排在前面，草稿里也会标出来；

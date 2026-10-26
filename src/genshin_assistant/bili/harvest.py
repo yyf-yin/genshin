@@ -46,6 +46,8 @@ class SourceConfig:
     pilot: list[str] = field(default_factory=list)  # 不指定角色时默认跑的
     exclude_words: list[str] = field(default_factory=lambda: list(DEFAULT_EXCLUDE))
     require_words: list[str] = field(default_factory=list)
+    asr: str = "off"  # 没字幕时语音识别：off / whitelist（只给白名单 UP 主）/ all
+    asr_model: str = "small"
 
     def find(self, name: str) -> Target | None:
         for t in self.targets.values():
@@ -69,7 +71,8 @@ def load_sources(path: Path) -> SourceConfig:
                         int(d.get("min_duration") or 120),
                         [c["id"] for c in raw.get("characters") or [] if c.get("pilot")],
                         list(d.get("exclude_words") if d.get("exclude_words") is not None else DEFAULT_EXCLUDE),
-                        list(d.get("require_words") or []))
+                        list(d.get("require_words") or []),
+                        str(d.get("asr") or "off"), str(d.get("asr_model") or "small"))
 
 
 @dataclass
@@ -147,8 +150,27 @@ def whitelist_names(whitelist: list[str]) -> list[str]:
     return [w for w in whitelist if not w.isdigit()]
 
 
+def _maybe_asr(client: BiliClient, m: Material, target: Target, cfg: SourceConfig, out_dir: Path,
+               hint: str, log) -> None:
+    """按配置给没字幕的视频做语音识别，成功就把结果写回 m。失败只记日志。"""
+    if m.subtitles or cfg.asr == "off" or (cfg.asr == "whitelist" and not m.whitelisted):
+        return
+    from .asr import download_audio, transcribe
+    try:
+        info = video_info(client, m.bvid)
+        audio = download_audio(client, info, out_dir.parent / "audio" / f"{m.bvid}.m4a")
+        log(f"  {m.bvid} 没有字幕，语音识别中（{cfg.asr_model} 模型，可能要几分钟）：{m.title}")
+        lines = transcribe(audio, hint, cfg.asr_model)
+    except RateLimited:
+        raise
+    except Exception as e:  # noqa: BLE001  语音识别失败不影响其他视频
+        log(f"  {m.bvid} 语音识别失败：{e}")
+        return
+    m.subtitles, m.subtitle_lan = lines, "asr-whisper"
+
+
 def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path,
-            refresh: bool = False, explain: bool = False, log=print) -> list[Material]:
+            refresh: bool = False, explain: bool = False, log=print, asr_hint: str = "") -> list[Material]:
     """搜索、挑选、取材。已取过的视频直接读本地文件，不再请求。撞到风控立刻停，已取到的照样返回。
 
     每个搜索词按综合排序和最新发布各搜一页：新角色的攻略在综合排序里常被老视频挤掉。
@@ -185,6 +207,15 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         path = out_dir / target.id / f"{h.bvid}.json"
         if path.exists() and not refresh:
             m = Material.load(path)
+            m.whitelisted = m.up in wl or str(m.up_mid) in wl
+            if not m.subtitles:
+                try:
+                    _maybe_asr(client, m, target, cfg, out_dir, asr_hint or "、".join(target.names()), log)
+                except RateLimited as e:
+                    log(f"  停下：{e}")
+                    break
+                if m.subtitles:
+                    m.save(path)
             if m.subtitles:
                 results.append(m)
                 log(f"  {h.bvid} 已有，跳过：{h.title}")
@@ -205,6 +236,13 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
                      duration=info.duration, desc=info.desc, pinned=pinned, subtitle_lan=lan, subtitles=lines,
                      whitelisted=info.owner in wl or str(info.owner_mid) in wl,
                      fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
+        try:
+            _maybe_asr(client, m, target, cfg, out_dir, asr_hint or "、".join(target.names()), log)
+        except RateLimited as e:
+            log(f"  停下：{e}")
+            m.save(path)
+            break
+        lan, lines = m.subtitle_lan, m.subtitles
         m.save(path)
         if not lines:
             # 没有字幕（可能是硬字幕或 UP 关了 AI 字幕），信息太少：先换下一个候选，名额不够再用它的置顶评论兜底
