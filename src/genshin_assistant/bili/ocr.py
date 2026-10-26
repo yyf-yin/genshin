@@ -1,6 +1,6 @@
 """硬字幕（剪进画面里的字）：下载视频，每秒抽一帧只截字幕区域，OCR 后合并成带时间戳的字幕行。
 
-可选功能，默认关闭（sources.yaml 的 ocr）。需要本机有 ffmpeg，并 pip install -e ".[ocr]"。
+可选功能，默认关闭（sources.yaml 的 ocr）。需要 pip install -e ".[ocr]"；用 OpenCV 解码视频，不用另装 ffmpeg。
 比语音识别准：硬字幕是 UP 主自己校对过的文字。
 """
 
@@ -39,12 +39,36 @@ def _texts(result, min_score: float) -> list[str]:
 
 
 def extract_frames(video: Path, out_dir: Path, every: float = 1.0, crop: tuple[float, float] = DEFAULT_CROP) -> list[Path]:
+    """每 every 秒截一张字幕条。优先用 OpenCV（rapidocr 已经带上它，自带解码器，不用另装 ffmpeg）。"""
     out_dir.mkdir(parents=True, exist_ok=True)
     top, bottom = crop
-    subprocess.run([ffmpeg_path(), "-y", "-loglevel", "error", "-i", str(video), "-vf",
-                    f"fps=1/{every},crop=iw:ih*{bottom - top:.3f}:0:ih*{top:.3f}", "-q:v", "3",
-                    str(out_dir / "%05d.jpg")], check=True)
-    return sorted(out_dir.glob("*.jpg"))
+    try:
+        import cv2
+    except ImportError:
+        subprocess.run([ffmpeg_path(), "-y", "-loglevel", "error", "-i", str(video), "-vf",
+                        f"fps=1/{every},crop=iw:ih*{bottom - top:.3f}:0:ih*{top:.3f}", "-q:v", "3",
+                        str(out_dir / "%05d.jpg")], check=True)
+        return sorted(out_dir.glob("*.jpg"))
+    cap = cv2.VideoCapture(str(video))
+    if not cap.isOpened():
+        raise BiliError(f"OpenCV 打不开视频：{video}")
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    step = max(1, round(fps * every))
+    out, i = [], 0
+    while True:
+        ok = cap.grab()  # 只解码要用的帧，跳过的帧不转成图片
+        if not ok:
+            break
+        if i % step == 0:
+            ok, frame = cap.retrieve()
+            if ok:
+                h = frame.shape[0]
+                path = out_dir / f"{len(out) + 1:05d}.jpg"
+                cv2.imwrite(str(path), frame[int(h * top):int(h * bottom)])
+                out.append(path)
+        i += 1
+    cap.release()
+    return out
 
 
 def merge_lines(samples: list[tuple[float, str]], every: float = 1.0, similar: float = 0.8) -> list[SubtitleLine]:

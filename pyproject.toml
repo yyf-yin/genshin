@@ -9,7 +9,7 @@ dependencies = ["pydantic>=2.6", "pyyaml>=6.0"]
 dev = ["pytest>=8", "pypinyin>=0.50"]
 bili = ["pypinyin>=0.50"]  # AI 字幕同音错字纠正
 asr = ["faster-whisper>=1.0"]  # 没字幕的视频做语音识别（可选）
-ocr = ["rapidocr>=2.0", "onnxruntime>=1.17"]  # 读剪进画面里的硬字幕（可选，另需 ffmpeg）
+ocr = ["rapidocr>=2.0", "onnxruntime>=1.17", "opencv-python-headless>=4.8"]  # 读剪进画面里的硬字幕（可选）
 
 [project.scripts]
 genshin-assistant = "genshin_assistant.cli:main"

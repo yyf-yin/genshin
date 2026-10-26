@@ -14,7 +14,7 @@ defaults:
   asr: off
   asr_model: small
   # 硬字幕（剪进画面里的字）用 OCR 读，优先于语音识别：off / whitelist / all
-  # 打开前先装 ffmpeg 并 pip install -e ".[ocr]"；ocr_crop 是字幕条在画面高度上的范围（0 是顶，1 是底）
+  # 打开前先 pip install -e ".[ocr]"（用 OpenCV 解码，不用另装 ffmpeg）；ocr_crop 是字幕条在画面高度上的范围（0 是顶，1 是底）
   ocr: off
   ocr_crop: [0.75, 0.98]
   exclude_words: [幻化, 外观, 剧情, 抽卡, 抽取记录, 爆料, 测试服, 前瞻, 手书, MMD, cos, 鬼畜, 有趣, 小知识, 冷知识, 彩蛋]
