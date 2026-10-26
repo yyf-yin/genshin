@@ -169,7 +169,7 @@ def _maybe_asr(client: BiliClient, m: Material, target: Target, cfg: SourceConfi
         try:
             info = video_info(client, m.bvid)
             if not video.exists():
-                download_video(client, info, video)
+                download_video(client, info, video, qn=32)  # 480p 只有 720p 的三分之一大，字幕照样认得清
             log(f"  {m.bvid} 没有字幕轨道，读画面里的硬字幕（可能要几分钟）：{m.title}")
             lines = hardsub_lines(video, out_dir.parent / "video", crop=cfg.ocr_crop)
         except RateLimited:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import http.client
 import json
 import os
 import time
@@ -123,11 +124,11 @@ def _decompress(body: bytes) -> bytes:
 def _urllib_transport(url: str, headers: dict[str, str]) -> tuple[int, bytes]:
     req = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=20) as r:  # 单次读超时；卡死的连接 20 秒就放弃
             return r.status, _decompress(r.read())
     except urllib.error.HTTPError as e:
         return e.code, e.read() or b""
-    except (urllib.error.URLError, TimeoutError) as e:
+    except (OSError, http.client.HTTPException) as e:  # 连不上、读超时、读到一半断开（IncompleteRead）
         raise BiliError(f"连不上 B 站：{getattr(e, 'reason', e)}") from None
 
 
@@ -203,12 +204,14 @@ class BiliClient:
             h["cookie"] = self.creds.cookie()
         return h
 
-    def fetch(self, url: str, referer: str = "https://www.bilibili.com/", cookie: bool = True) -> bytes:
+    def fetch(self, url: str, referer: str = "https://www.bilibili.com/", cookie: bool = True,
+              extra_headers: dict[str, str] | None = None) -> bytes:
         """原始 GET（字幕 CDN、视频直链也走这里，一样计入预算和节流）。"""
         self._before_request()
         h = self.headers(referer)
         if not cookie:
             h.pop("cookie", None)
+        h.update(extra_headers or {})
         status, body = self.transport(url, h)
         if status in (412, 429):
             mins = self._ban(f"HTTP {status}")

@@ -303,9 +303,36 @@ def test_ocr_reads_hardsubs_before_falling_back_to_asr(tmp_path, monkeypatch):
     monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, "贪欲九头蛇_", 9))
     monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
     monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []))
-    monkeypatch.setattr(frames, "download_video", lambda c, i, out: out.parent.mkdir(parents=True, exist_ok=True) or out.write_bytes(b"x") or out)
+    monkeypatch.setattr(frames, "download_video", lambda c, i, out, **kw: out.parent.mkdir(parents=True, exist_ok=True) or out.write_bytes(b"x") or out)
     monkeypatch.setattr(ocr, "hardsub_lines", lambda video, work, crop: [SubtitleLine(i, i + 1, f"第{i}句") for i in range(30)])
     cfg = hv.SourceConfig({}, ["贪欲九头蛇_"], ocr="whitelist", asr="whitelist")
     got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"]), cfg, tmp_path / "bili", log=lambda *_: None)
     assert got[0].subtitle_lan == "ocr-hardsub" and len(got[0].subtitles) == 30
     assert not (tmp_path / "video" / "BV1.mp4").exists()  # 读完删掉视频
+
+
+def test_download_video_in_ranges_switches_line_and_resumes(tmp_path):
+    from genshin_assistant.bili import frames
+    from genshin_assistant.bili.api import VideoInfo
+    data = bytes(range(256)) * 10  # 2560 字节，按 1000 字节一段
+    calls = []
+
+    def cdn(url, headers):
+        calls.append((url.split("/")[2], headers.get("range")))
+        if "main" in url and len(calls) == 2:
+            raise BiliError("连不上 B 站：timed out")  # 第二段主线路卡死，换备用线路
+        a, b = map(int, headers["range"].removeprefix("bytes=").split("-"))
+        return 206, data[a:b + 1]
+
+    play = {"code": 0, "data": {"durl": [{"url": "https://main/v.mp4", "backup_url": ["https://backup/v.mp4"],
+                                          "size": len(data)}]}}
+    net = FakeNet({"/nav": NAV, "/playurl": play})
+    c = BiliClient(Credentials("s", "j", "b"), tmp_path / "st", min_gap=0,
+                   transport=lambda u, h: cdn(u, h) if u.startswith(("https://main", "https://backup")) else net(u, h))
+    info = VideoInfo("BV1", 7, 2, "t", "", 0, 600, "up", 9)
+    out = tmp_path / "v" / "BV1.mp4"
+    (tmp_path / "v").mkdir()
+    (tmp_path / "v" / "BV1.mp4.part").write_bytes(data[:1000])  # 上次下了一段
+    frames.download_video(c, info, out, chunk=1000)
+    assert out.read_bytes() == data and not (tmp_path / "v" / "BV1.mp4.part").exists()
+    assert calls == [("main", "bytes=1000-1999"), ("main", "bytes=2000-2559"), ("backup", "bytes=2000-2559")]
