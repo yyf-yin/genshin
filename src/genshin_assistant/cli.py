@@ -4,6 +4,7 @@
     python -m genshin_assistant recommend 水龙 --cons 0
     python -m genshin_assistant recommend 那维莱特 --own 芙宁娜,砂糖,白术 --json
     python -m genshin_assistant validate
+    python -m genshin_assistant bili run 那维莱特        # B 站取材 + DeepSeek 抽取 → work/drafts/
     python -m genshin_assistant game 桑多涅
 游戏数据相关的命令见 gamedata/cli.py。
 """
@@ -12,6 +13,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
+from pathlib import Path
 
 from .engine import Engine, Owned, Recommendation
 from .gamedata import cli as gamedata_cli
@@ -68,6 +71,7 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--playstyle")
     r.add_argument("--json", action="store_true")
     sub.add_parser("validate", help="校验知识库")
+    _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
     args = p.parse_args(argv)
 
@@ -75,6 +79,9 @@ def main(argv: list[str] | None = None) -> None:
         gamedata_cli.run(args)
         return
     kb = load(args.data)
+    if args.cmd == "bili":
+        _bili(args, kb)
+        return
     if args.cmd in gamedata_cli.COMMANDS:
         gamedata_cli.run(args, kb)
         return
@@ -87,3 +94,107 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(rec.to_dict(), ensure_ascii=False, indent=2))
     else:
         _print(rec)
+
+
+def _add_bili_parser(sub) -> None:
+    b = sub.add_parser("bili", help="从 B 站攻略视频提取知识库草稿")
+    b.add_argument("--work", help="工作目录（默认仓库下的 work/，已在 .gitignore 里）")
+    b.add_argument("--sources", help="角色和搜索词配置（默认 data/bili/sources.yaml）")
+    bs = b.add_subparsers(dest="bili_cmd", required=True)
+    bs.add_parser("status", help="检查登录态、今日读预算、是否在风控熔断中")
+    s = bs.add_parser("search", help="搜索视频")
+    s.add_argument("keyword")
+    s.add_argument("--order", default="totalrank", choices=["totalrank", "pubdate", "click"])
+    for name, helptext in (("harvest", "搜索并取材（简介、置顶评论、字幕）"),
+                           ("extract", "用 DeepSeek 抽取、跨视频投票、和知识库对照，输出草稿"),
+                           ("run", "harvest + extract")):
+        x = bs.add_parser(name, help=helptext)
+        x.add_argument("characters", nargs="*", help="角色名；不填就跑 sources.yaml 里 pilot: true 的角色")
+        x.add_argument("--refresh", action="store_true", help="忽略本地缓存重新取材 / 重新抽取")
+        x.add_argument("--explain", action="store_true", help="列出被筛掉的视频和原因")
+    c = bs.add_parser("cores", help="把所有角色攻略里讲到的队伍按主 C 汇总（离线，不请求 B 站）")
+    c.add_argument("characters", nargs="*", help="只看这些主 C（id 或中文名）；不填就全部")
+    c.add_argument("--all", action="store_true", help="sources.yaml 里所有角色的攻略都算（默认只算 pilot: true 的）")
+    f = bs.add_parser("frames", help="在字幕提到配装的时间点抽帧拼图（给人看配装面板）")
+    f.add_argument("bvid")
+    f.add_argument("--at", help="手动指定时间点，逗号分隔，如 1:20,3:05")
+
+
+def _bili(args, kb) -> None:
+    from .bili import BiliClient, BiliError, RateLimited
+    from .bili.api import search_videos, subtitles, video_info
+    from .bili.frames import build_moments, download_video, frame_sheet
+    from .bili.harvest import harvest, is_off_topic, load_sources
+    from .extract.glossary import load_glossary
+    from .extract.llm import DeepSeek, LLMError
+    from .extract.pipeline import extract_target
+
+    data_dir = Path(args.data)
+    work = Path(args.work) if args.work else data_dir.parent / "work"
+    sources_path = Path(args.sources) if args.sources else data_dir / "bili" / "sources.yaml"
+    client = BiliClient(state_dir=work / ".bili-state")
+    cmd = args.bili_cmd
+    try:
+        if cmd == "status":
+            st = client.status()
+            print(f"登录：{'是' if st['logged_in'] else '否（拉不到 AI 字幕）'}")
+            print(f"今日已读：{st['reads_today']}/{st['daily_budget']}")
+            if st["ban_minutes_left"]:
+                print(f"风控熔断中：还剩 {st['ban_minutes_left']} 分钟（{st['ban_why']}）")
+            return
+        if cmd == "search":
+            for h in search_videos(client, args.keyword, order=args.order):
+                print(f"{h.bvid}  {h.title}\n    UP {h.author}  播放 {h.play}  {h.duration // 60} 分钟")
+            return
+        if cmd == "frames":
+            info = video_info(client, args.bvid)
+            if args.at:
+                times = [sum(int(x) * 60 ** i for i, x in enumerate(reversed(t.split(":")))) for t in args.at.split(",")]
+            else:
+                times = build_moments(subtitles(client, info)[1])
+            video = download_video(client, info, work / "video" / f"{args.bvid}.mp4")
+            print(frame_sheet(video, times, work / "frames" / f"{args.bvid}.jpg"))
+            return
+
+        cfg = load_sources(sources_path)
+        if cmd == "cores":
+            from .extract.cores import by_core, write_cores_report
+            glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml", data_dir / "releases.yaml")
+            only = [getattr(glossary.resolve(n, "character"), "id", n) for n in args.characters] or None
+            targets = [t for t in cfg.targets.values() if args.all or t.id in cfg.pilot]  # 默认只汇总当前试点
+            report = by_core(kb, glossary, targets, work / "bili", only)
+            print(write_cores_report(work / "drafts", report, glossary.names()))
+            return
+        if args.characters:
+            targets = []
+            for name in args.characters:
+                t = cfg.find(name)
+                if t is None:
+                    sys.exit(f"{name} 不在 {sources_path} 里，先加进去（id、中文名、上线日期）")
+                targets.append(t)
+        else:
+            targets = [t for t in cfg.targets.values() if t.id in cfg.pilot]
+        glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml", data_dir / "releases.yaml")
+        model = None
+        if cmd in ("extract", "run"):
+            model = DeepSeek(cache_dir=work / "llm-cache")
+        for t in targets:
+            print(f"== {t.zh}")
+            if cmd in ("harvest", "run"):
+                chosen = harvest(client, t, cfg, work / "bili", refresh=args.refresh, explain=args.explain)
+            if cmd in ("extract", "run"):
+                out = extract_target(kb, glossary, t, model, work, refresh=args.refresh,
+                                     whitelist=cfg.whitelist)
+                for _ in range(3):  # 补进来的视频也可能不是攻略，最多补三轮
+                    if cmd != "run" or not any(is_off_topic(work / "bili", t.id, m.bvid) for m in chosen):
+                        break
+                    print("  有视频被判断不是攻略，补选后重新出草稿")
+                    chosen = harvest(client, t, cfg, work / "bili", explain=args.explain)
+                    out = extract_target(kb, glossary, t, model, work, whitelist=cfg.whitelist)
+                if out:
+                    print(f"  草稿：{out[0]}\n  报告：{out[1]}")
+        print(f"本次 B 站请求 {client.requests_made} 次")
+    except RateLimited as e:
+        sys.exit(f"停下：{e}")
+    except (BiliError, LLMError) as e:
+        sys.exit(str(e))
