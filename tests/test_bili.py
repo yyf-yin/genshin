@@ -285,3 +285,27 @@ def test_gzip_and_deflate_bodies_are_decompressed():
     assert _decompress(gzip.compress(b'{"a":1}')) == b'{"a":1}'
     assert _decompress(zlib.compress(b"<html>")) == b"<html>"
     assert _decompress(b'{"code":0}') == b'{"code":0}'
+
+
+def test_ocr_merges_jittery_frames_into_timed_lines():
+    from genshin_assistant.bili.ocr import merge_lines
+    samples = [(0, ""), (1, "薇斯纳的核心是星扩散"), (2, "薇斯纳的核心是星扩散"), (3, "薇斯纳的核心足星扩散"),
+               (4, "队友首选奥黛塔"), (5, ""), (6, "队友首选奥黛塔")]
+    got = [(s.start, s.end, s.text) for s in merge_lines(samples)]
+    assert got == [(1, 4, "薇斯纳的核心是星扩散"), (4, 7, "队友首选奥黛塔")]  # 漏识别一帧也能接上
+
+
+def test_ocr_reads_hardsubs_before_falling_back_to_asr(tmp_path, monkeypatch):
+    from genshin_assistant.bili import frames, harvest as hv, ocr
+    from genshin_assistant.bili.api import VideoInfo
+    hits = [VideoHit("BV1", "薇斯纳养成攻略", "贪欲九头蛇_", 1, 9, 1, 600)]
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": hits)
+    monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, "贪欲九头蛇_", 9))
+    monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
+    monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []))
+    monkeypatch.setattr(frames, "download_video", lambda c, i, out: out.parent.mkdir(parents=True, exist_ok=True) or out.write_bytes(b"x") or out)
+    monkeypatch.setattr(ocr, "hardsub_lines", lambda video, work, crop: [SubtitleLine(i, i + 1, f"第{i}句") for i in range(30)])
+    cfg = hv.SourceConfig({}, ["贪欲九头蛇_"], ocr="whitelist", asr="whitelist")
+    got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"]), cfg, tmp_path / "bili", log=lambda *_: None)
+    assert got[0].subtitle_lan == "ocr-hardsub" and len(got[0].subtitles) == 30
+    assert not (tmp_path / "video" / "BV1.mp4").exists()  # 读完删掉视频

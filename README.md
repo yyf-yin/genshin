@@ -50,6 +50,8 @@ B 站接口部分移植自 [dsh-bili-whale](https://github.com/Alterssss/dsh-bil
 4. 抽帧才需要 ffmpeg。
 5. 可选：有些 UP 主的视频没有任何字幕。把 `sources.yaml` 的 `asr` 设成 `whitelist`（或 `all`）并 `pip install -e ".[asr]"`，
    就会下载音轨，用本机 faster-whisper 转写（第一次会下载语音模型）。
+6. 可选：字幕剪进画面里的（硬字幕），把 `ocr` 设成 `whitelist` 并 `pip install -e ".[ocr]"`（另需 ffmpeg），
+   会下载视频、每秒截一帧字幕区域做 OCR，读完删除视频。硬字幕优先于语音识别。
 
 ### 用法
 

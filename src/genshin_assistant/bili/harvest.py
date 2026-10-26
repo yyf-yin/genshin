@@ -48,6 +48,8 @@ class SourceConfig:
     require_words: list[str] = field(default_factory=list)
     asr: str = "off"  # 没字幕时语音识别：off / whitelist（只给白名单 UP 主）/ all
     asr_model: str = "small"
+    ocr: str = "off"  # 没字幕时读硬字幕（优先于语音识别）：off / whitelist / all
+    ocr_crop: tuple[float, float] = (0.75, 0.98)
 
     def find(self, name: str) -> Target | None:
         for t in self.targets.values():
@@ -72,7 +74,8 @@ def load_sources(path: Path) -> SourceConfig:
                         [c["id"] for c in raw.get("characters") or [] if c.get("pilot")],
                         list(d.get("exclude_words") if d.get("exclude_words") is not None else DEFAULT_EXCLUDE),
                         list(d.get("require_words") or []),
-                        str(d.get("asr") or "off"), str(d.get("asr_model") or "small"))
+                        str(d.get("asr") or "off"), str(d.get("asr_model") or "small"),
+                        str(d.get("ocr") or "off"), tuple(d.get("ocr_crop") or (0.75, 0.98)))
 
 
 @dataclass
@@ -150,10 +153,37 @@ def whitelist_names(whitelist: list[str]) -> list[str]:
     return [w for w in whitelist if not w.isdigit()]
 
 
+def _wants(mode: str, m: Material) -> bool:
+    return mode == "all" or (mode == "whitelist" and m.whitelisted)
+
+
 def _maybe_asr(client: BiliClient, m: Material, target: Target, cfg: SourceConfig, out_dir: Path,
                hint: str, log) -> None:
-    """按配置给没字幕的视频做语音识别，成功就把结果写回 m。失败只记日志。"""
-    if m.subtitles or cfg.asr == "off" or (cfg.asr == "whitelist" and not m.whitelisted):
+    """没字幕的视频按配置补字幕：先读硬字幕（OCR），不行再语音识别。成功就写回 m，失败只记日志。"""
+    if m.subtitles:
+        return
+    if _wants(cfg.ocr, m):
+        from .frames import download_video
+        from .ocr import hardsub_lines
+        video = out_dir.parent / "video" / f"{m.bvid}.mp4"
+        try:
+            info = video_info(client, m.bvid)
+            if not video.exists():
+                download_video(client, info, video)
+            log(f"  {m.bvid} 没有字幕轨道，读画面里的硬字幕（可能要几分钟）：{m.title}")
+            lines = hardsub_lines(video, out_dir.parent / "video", crop=cfg.ocr_crop)
+        except RateLimited:
+            raise
+        except Exception as e:  # noqa: BLE001  OCR 失败不影响其他视频
+            log(f"  {m.bvid} 读硬字幕失败：{e}")
+            lines = []
+        else:
+            video.unlink(missing_ok=True)  # 读完就删，视频动辄几百 MB
+        if len(lines) >= 20:
+            m.subtitles, m.subtitle_lan = lines, "ocr-hardsub"
+            return
+        log(f"  {m.bvid} 只读出 {len(lines)} 行硬字幕，可能字幕不在 ocr_crop 指定的区域")
+    if not _wants(cfg.asr, m):
         return
     from .asr import download_audio, transcribe
     try:
