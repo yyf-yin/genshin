@@ -82,7 +82,11 @@ def _status(f: Finding, kb: KnowledgeBase, core: str) -> str:
             if not stats:
                 return MISSING
             if d.get("id"):
-                return AGREE if d["id"] in stats else f"{CONFLICT}（知识库：{'/'.join(sorted(stats))}）"
+                if d["id"] in stats:
+                    return AGREE
+                if d.get("rank") and int(d["rank"]) > 1:  # 视频说的是备选，不和知识库的首选冲突
+                    return f"需对照（视频给的是备选，知识库：{'/'.join(sorted(stats))}）"
+                return f"{CONFLICT}（知识库：{'/'.join(sorted(stats))}）"
             return f"需对照（知识库：{'/'.join(sorted(stats))}）"
         if field == "substat" and d.get("id"):
             subs = {s for b in builds for s in b.substats}

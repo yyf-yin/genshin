@@ -40,7 +40,7 @@ relevant：这是不是一个讲《原神》角色「{core}」的配队、养成
 5. cons_effect：命座带来的变化。subject 是拥有该命座的角色，cons 写条件。
    data = {{"effect": "变化说明", "tag": "可选，相关功能标签", "change": "provides" | "removes_need" | "adds_need" | "other"}}
 6. build：养成建议。subject 是被养成的角色（可以是队友）。data = {{"field": {fields} 之一, "value": "中文名或数值", "rank": 推荐顺位（1 最好，可省略）}}
-   一个武器/套装/词条一条 claim。energy_recharge 的 value 写成 "120-140" 这种区间
+   一个武器/套装/词条一条 claim。视频说“某些情况下可以换成”的备选，rank 写 2 或更大，不要写 1。energy_recharge 的 value 写成 "120-140" 这种区间
 7. playstyle：角色的不同玩法。data = {{"name": "玩法名", "when": "解锁条件，可选", "description": "说明"}}
 
 功能标签只能从下表选，表里没有合适的就写 "new:中文说明"：

@@ -260,3 +260,13 @@ def test_cached_claims_are_renormalized_with_current_glossary(tmp_path, kb, glos
     yml, _ = extract_target(kb, glossary, Target("neuvillette", "那维莱特"), FakeModel([]), work, log=lambda *_: None)
     f = yaml.safe_load(yml.read_text(encoding="utf-8"))["findings"][0]
     assert f["data"]["char"] == "mona" and f["flags"] == []
+
+
+def test_alternative_main_stat_is_not_a_conflict(kb):
+    videos = [VideoClaims(bvid="A", claims=[claim("A", "build", field="circlet", value="生命", id="hp%", rank=2),
+                                            claim("A", "build", field="goblet", value="生命", id="hp%")])]
+    findings = aggregate(videos)
+    annotate(findings, kb, "neuvillette")
+    status = {f.data["field"]: f.kb_status for f in findings}
+    assert status["circlet"].startswith("需对照（视频给的是备选")
+    assert status["goblet"].startswith("冲突")
