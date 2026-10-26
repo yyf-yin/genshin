@@ -21,7 +21,9 @@ relevant：这是不是一个讲《原神》角色「{core}」的配队、养成
 
 每条 claim 的字段：
 - kind：下面七种之一
-- subject：角色 id（见名词表；名词表里没有的角色直接写中文名）。队伍类结论写核心角色 id
+- subject：角色 id（见名词表；名词表里没有的角色直接写中文名）。队伍类结论（teammate、slot_function、team_constraint、
+  substitution）写这支队伍的主 C：「{core}」自己当主 C 的队伍写「{core}」；视频里讲到「{core}」去别的主 C 队里当辅助
+  （例如“绫华队里带她”），subject 写那个主 C，那支队的队友、功能需求、替代也照样抽，「{core}」本人作为 teammate 写进去
 - cons：生效条件，用 "cons >= 1"、"cons < 2" 这种写法，指 subject 的命座；不分命座就写 null
 - playstyle：玩法名（例如“月结晶”“蓄力”），视频没区分就写 null
 - stance："for"（推荐/可以）或 "against"（明确说不推荐/不行）

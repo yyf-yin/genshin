@@ -119,7 +119,16 @@ def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: di
                    published: dict[str, str]) -> None:
     """A 只有旧视频推荐；之后出的 B 能提供 A 的全部功能，B 上线后的视频推荐 B、没有一个再推荐 A（任何命座、玩法下）：
     A 可能已被 B 取代。只要求功能有交集会误判：温迪和妮可都能充能，但温迪的价值是聚怪。"""
-    mates = [f for f in findings if f.kind == "teammate" and f.value == "for"]
+    by_core: dict[str, list[Finding]] = defaultdict(list)  # 视频里可能讲了好几个主 C 的队伍，各算各的
+    for f in findings:
+        if f.kind == "teammate" and f.value == "for":
+            by_core[f.subject].append(f)
+    for mates in by_core.values():
+        _flag_superseded(mates, releases, names, published)
+
+
+def _flag_superseded(mates: list[Finding], releases: dict[str, date], names: dict[str, str],
+                     published: dict[str, str]) -> None:
     last_for: dict[str, str] = {}  # 角色 → 推荐它的最新视频日期（各命座、玩法合并）
     backers: dict[str, set[str]] = defaultdict(set)  # 角色 → 推荐它的视频（各命座、玩法合并）
     for f in mates:

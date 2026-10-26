@@ -14,10 +14,11 @@ AGREE, CONFLICT, MISSING, NO_CHAR = "一致", "冲突", "知识库没有", "知�
 
 def _status(f: Finding, kb: KnowledgeBase, core: str) -> str:
     d = f.data
-    teams = kb.teams_for(core)
+    team_core = f.subject or core  # 视频里顺带讲的别的主 C 的队伍，和那个主 C 的模板对照
+    teams = kb.teams_for(team_core)
     against = f.value == "against"
     if f.kind in ("teammate", "slot_function", "team_constraint", "substitution") and not teams:
-        return f"{MISSING}（没有以 {core} 为核心的队伍模板）"
+        return f"{MISSING}（没有以 {team_core} 为核心的队伍模板）"
     if f.kind == "teammate":
         names = {s.fixed.char for t in teams for s in t.slots if s.fixed}
         names |= {c.char for t in teams for s in t.slots for c in s.candidates}

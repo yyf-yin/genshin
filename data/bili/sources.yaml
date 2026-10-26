@@ -36,15 +36,34 @@ characters:
     zh: 那维莱特
     aliases: [水龙, 水龙王]
     since: 2023-09-21   # 4.1 版本（首池 2023-09-27，见 data/releases.yaml）
-    pilot: true         # 试点：命座规则（0 命需抗打断）
+    # 第一轮试点用过；上线多年，攻略跨版本，时效问题多，MVP 先不跑
   - id: varka
     zh: 法尔伽
     aliases: [法尔加, 大团长, 尼法]   # B 站标题写“法尔伽”；“法尔加”会误配“特拉法尔加”（碧蓝航线），靠下面的“原神”要求兜住
     since: 2026-02-19
-    pilot: true         # 试点：整队限制（双风 + 双同元素）
+    # 第一轮试点用过（整队限制：双风 + 双同元素）；妮可等队友后出，时效问题多，MVP 先不跑
   - id: vesna
     zh: 薇斯纳
     aliases: [微丝娜, 薇丝纳]
     since: 2026-09-17
     queries: ["{zh} 配队", "{zh} 奥黛塔", "{zh} 养成 攻略", "{zh} 替代 平替"]
     pilot: true         # 试点：功能分级（奥黛塔槽的挂冰是核心功能）
+  # MVP（2026-10-26 起）：只跑最近几个版本新上线的角色。她们的攻略都在上线后几周内，不用管时效；
+  # 视频里顺带讲的老角色队伍（如沃雅妮莎攻略里的绫华队、丝柯克队）往往就是那些老角色当前的最优队，
+  # 抽取时按主 C 分开记。以后每出一个版本，把新角色加在这里。上线日期见 data/releases.yaml（月之八以后是推算的）
+  - id: woyanisha
+    zh: 沃雅妮莎
+    since: 2026-09-17   # 7.1
+    pilot: true
+  - id: odette
+    zh: 奥黛塔
+    since: 2026-08-06   # 7.0
+    pilot: true
+  - id: aluoxia
+    zh: 阿罗夏
+    since: 2026-08-06   # 7.0
+    pilot: true
+  - id: sandrone
+    zh: 桑多涅
+    since: 2026-06-25   # 月之八
+    pilot: true

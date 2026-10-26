@@ -101,11 +101,18 @@ def write_draft(out_dir: Path, target_id: str, target_zh: str, materials: list[M
     lines = [f"# {target_zh} 攻略提取草稿（待审核）", "",
              f"{len(materials)} 个视频，{len(findings)} 条结论，其中 {flagged} 条需要重点审核。"
              f"和知识库对照：{'，'.join(f'{k} {n}' for k, n in kb_counts.items()) or '无'}。", ""]
-    for kind, zh in KIND_ZH.items():
-        rows = [(i, f) for i, f in enumerate(findings, 1) if f.kind == kind]
+    # 队伍类结论按主 C 分组：新角色的攻略里常顺带讲她在别的主 C 队里的用法（沃雅妮莎 → 绫华队、丝柯克队）
+    team_kinds = {"teammate", "slot_function", "team_constraint", "substitution"}
+    cores = sorted({f.subject for f in findings if f.kind in team_kinds},
+                   key=lambda c: (c != target_id, -sum(1 for f in findings if f.subject == c)))
+    sections = [(f"{zh}（{c} 队）" if c != target_id else zh, kind, c) for c in cores
+                for kind, zh in KIND_ZH.items() if kind in team_kinds]
+    sections += [(zh, kind, None) for kind, zh in KIND_ZH.items() if kind not in team_kinds]
+    for title, kind, core in sections:
+        rows = [(i, f) for i, f in enumerate(findings, 1) if f.kind == kind and (core is None or f.subject == core)]
         if not rows:
             continue
-        lines += [f"## {zh}", ""]
+        lines += [f"## {title}", ""]
         for i, f in rows:
             mark = "⚠️ " if f.review_flags else ""
             when = f"（{'~'.join(dict.fromkeys(f.dates))}）" if f.dates[0] else ""

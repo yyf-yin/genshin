@@ -348,3 +348,12 @@ def test_a_newcomer_backed_by_one_video_supersedes_nobody():
     new[0].claims.append(claim("C", char="linnea", functions=["shield"]))
     by = {f.data["char"]: f for f in aggregate(old + new, releases={"linnea": date(2026, 4, 2)})}
     assert not by["diona"].review_flags
+
+
+def test_teams_of_other_main_dps_are_compared_with_their_own_templates(kb):
+    other = Claim(kind="teammate", subject="ayaka", stance="for", data={"char": "woyanisha"}, bvid="A",
+                  evidence=[Evidence(quote="q", bvid="A")])
+    findings = aggregate([VideoClaims(bvid="A", claims=[claim("A", char="furina"), other])])
+    annotate(findings, kb, "neuvillette")
+    status = {f.subject: f.kb_status for f in findings}
+    assert status["neuvillette"] == "一致" and status["ayaka"] == "知识库没有（没有以 ayaka 为核心的队伍模板）"
