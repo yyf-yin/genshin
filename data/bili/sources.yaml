@@ -36,7 +36,7 @@ characters:
   - id: neuvillette
     zh: 那维莱特
     aliases: [水龙, 水龙王]
-    since: 2023-11-08   # 4.2 版本
+    since: 2023-09-21   # 4.1 版本（首池 2023-09-27，见 data/releases.yaml）
     pilot: true         # 试点：命座规则（0 命需抗打断）
   - id: varka
     zh: 法尔伽
@@ -45,7 +45,7 @@ characters:
     pilot: true         # 试点：整队限制（双风 + 双同元素）
   - id: vesna
     zh: 薇斯纳
-    aliases: [微丝娜]
+    aliases: [微丝娜, 薇丝纳]
     since: 2026-09-17
     queries: ["{zh} 配队", "{zh} 奥黛塔", "{zh} 养成 攻略", "{zh} 替代 平替"]
     pilot: true         # 试点：功能分级（奥黛塔槽的挂冰是核心功能）

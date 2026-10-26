@@ -1,0 +1,183 @@
+# 角色上线日期和体系加强，给 B 站取材的时效判断用（见 extract/vote.py）。
+# 来源：B 站专栏 cv50647544《原神1.0-月之七版本祈愿卡池顺序汇总》（金乌buwu），13 张卡池表逐张转录（2026-10-26）。
+# 规则：since = 首次进卡池日期 - 6 天（“前推一周”；用已知的法尔伽 2026-02-19、薇斯纳 2026-09-17 反推正好 6 天）。
+#   初始 / 常驻角色 since = 1.0 开始日期。卡池表只到月之七下半（2026-06-30），之后的版本按 6 周一版推算，标了“推算”。
+#   四星头像在表里认不清，四星的版本半期是按已知资料补的。
+versions:  # start = 该版本上半卡池开始日期
+  - {version: "1.0", start: 2020-09-28}
+  - {version: "1.1", start: 2020-11-11}
+  - {version: "1.2", start: 2020-12-23}
+  - {version: "1.3", start: 2021-02-03}
+  - {version: "1.4", start: 2021-03-17}
+  - {version: "1.5", start: 2021-04-28}
+  - {version: "1.6", start: 2021-06-09}
+  - {version: "2.0", start: 2021-07-21}
+  - {version: "2.1", start: 2021-09-01}
+  - {version: "2.2", start: 2021-10-13}
+  - {version: "2.3", start: 2021-11-24}
+  - {version: "2.4", start: 2022-01-05}
+  - {version: "2.5", start: 2022-02-16}
+  - {version: "2.6", start: 2022-03-30}
+  - {version: "2.7", start: 2022-05-31}  # 原定 5/11，延期
+  - {version: "2.8", start: 2022-07-13}
+  - {version: "3.0", start: 2022-08-24}
+  - {version: "3.1", start: 2022-09-28}
+  - {version: "3.2", start: 2022-11-02}
+  - {version: "3.3", start: 2022-12-07}
+  - {version: "3.4", start: 2023-01-18}
+  - {version: "3.5", start: 2023-03-01}
+  - {version: "3.6", start: 2023-04-12}
+  - {version: "3.7", start: 2023-05-24}
+  - {version: "3.8", start: 2023-07-05}
+  - {version: "4.0", start: 2023-08-16}
+  - {version: "4.1", start: 2023-09-27}
+  - {version: "4.2", start: 2023-11-08}
+  - {version: "4.3", start: 2023-12-20}
+  - {version: "4.4", start: 2024-01-31}
+  - {version: "4.5", start: 2024-03-13}
+  - {version: "4.6", start: 2024-04-24}
+  - {version: "4.7", start: 2024-06-05}
+  - {version: "4.8", start: 2024-07-17}
+  - {version: "5.0", start: 2024-08-28}
+  - {version: "5.1", start: 2024-10-09}
+  - {version: "5.2", start: 2024-11-20}
+  - {version: "5.3", start: 2025-01-01}
+  - {version: "5.4", start: 2025-02-12}
+  - {version: "5.5", start: 2025-03-26}
+  - {version: "5.6", start: 2025-05-07}
+  - {version: "5.7", start: 2025-06-18}
+  - {version: "5.8", start: 2025-07-30}
+  - {version: "月之一", start: 2025-09-10}  # 即 6.0
+  - {version: "月之二", start: 2025-10-22}  # 6.1
+  - {version: "月之三", start: 2025-12-02}  # 6.2
+  - {version: "月之四", start: 2026-01-14}  # 6.3
+  - {version: "月之五", start: 2026-02-25}  # 6.4
+  - {version: "月之六", start: 2026-04-08}  # 6.5
+  - {version: "月之七", start: 2026-05-20}  # 6.6
+  - {version: "月之八", start: 2026-07-01}  # 推算，待核对
+  - {version: "7.0", start: 2026-08-12}  # 推算，待核对
+  - {version: "7.1", start: 2026-09-23}  # 推算；和已知薇斯纳 2026-09-17 吻合
+
+characters:  # 全部可玩角色（旅行者除外）；first_banner = 首次 UP 的卡池开始日期
+  - {id: amber, zh: 安柏, since: 2020-09-28, version: "1.0"}  # 初始
+  - {id: kaeya, zh: 凯亚, since: 2020-09-28, version: "1.0"}  # 初始
+  - {id: lisa, zh: 丽莎, since: 2020-09-28, version: "1.0"}  # 初始
+  - {id: barbara, zh: 芭芭拉, since: 2020-09-28, version: "1.0"}
+  - {id: razor, zh: 雷泽, since: 2020-09-28, version: "1.0"}
+  - {id: xiangling, zh: 香菱, since: 2020-09-28, version: "1.0"}
+  - {id: beidou, zh: 北斗, since: 2020-09-28, version: "1.0"}
+  - {id: xingqiu, zh: 行秋, since: 2020-09-28, version: "1.0"}
+  - {id: ningguang, zh: 凝光, since: 2020-09-28, version: "1.0"}
+  - {id: fischl, zh: 菲谢尔, since: 2020-09-28, version: "1.0"}
+  - {id: bennett, zh: 班尼特, since: 2020-09-28, version: "1.0"}
+  - {id: noelle, zh: 诺艾尔, since: 2020-09-28, version: "1.0"}
+  - {id: chongyun, zh: 重云, since: 2020-09-28, version: "1.0"}
+  - {id: sucrose, zh: 砂糖, since: 2020-09-28, version: "1.0"}
+  - {id: jean, zh: 琴, since: 2020-09-28, version: "1.0"}
+  - {id: diluc, zh: 迪卢克, since: 2020-09-28, version: "1.0"}
+  - {id: mona, zh: 莫娜, since: 2020-09-28, version: "1.0"}
+  - {id: qiqi, zh: 七七, since: 2020-09-28, version: "1.0"}
+  - {id: keqing, zh: 刻晴, since: 2020-09-28, version: "1.0"}  # 常驻（1.3 有过 UP 池）
+  - {id: venti, zh: 温迪, since: 2020-09-28, version: "1.0", first_banner: 2020-09-28}
+  - {id: klee, zh: 可莉, since: 2020-10-14, version: "1.0", first_banner: 2020-10-20}
+  - {id: diona, zh: 迪奥娜, since: 2020-11-05, version: "1.1", first_banner: 2020-11-11}
+  - {id: tartaglia, zh: 达达利亚, since: 2020-11-05, version: "1.1", first_banner: 2020-11-11}
+  - {id: zhongli, zh: 钟离, since: 2020-11-25, version: "1.1", first_banner: 2020-12-01}
+  - {id: xinyan, zh: 辛焱, since: 2020-11-25, version: "1.1", first_banner: 2020-12-01}
+  - {id: albedo, zh: 阿贝多, since: 2020-12-17, version: "1.2", first_banner: 2020-12-23}
+  - {id: ganyu, zh: 甘雨, since: 2021-01-06, version: "1.2", first_banner: 2021-01-12}
+  - {id: xiao, zh: 魈, since: 2021-01-28, version: "1.3", first_banner: 2021-02-03}
+  - {id: hutao, zh: 胡桃, since: 2021-02-24, version: "1.3", first_banner: 2021-03-02}  # 表上写 02/23-03/16，和 1.3 中刻晴池重叠，按 03-02 记
+  - {id: rosaria, zh: 罗莎莉亚, since: 2021-03-11, version: "1.4", first_banner: 2021-03-17}
+  - {id: yanfei, zh: 烟绯, since: 2021-04-22, version: "1.5", first_banner: 2021-04-28}
+  - {id: eula, zh: 优菈, since: 2021-05-12, version: "1.5", first_banner: 2021-05-18}
+  - {id: kazuha, zh: 枫原万叶, since: 2021-06-23, version: "1.6", first_banner: 2021-06-29}
+  - {id: ayaka, zh: 神里绫华, since: 2021-07-15, version: "2.0", first_banner: 2021-07-21}
+  - {id: sayu, zh: 早柚, since: 2021-07-15, version: "2.0", first_banner: 2021-07-21}
+  - {id: yoimiya, zh: 宵宫, since: 2021-08-04, version: "2.0", first_banner: 2021-08-10}
+  - {id: raiden, zh: 雷电将军, since: 2021-08-26, version: "2.1", first_banner: 2021-09-01}
+  - {id: sara, zh: 九条裟罗, since: 2021-08-26, version: "2.1", first_banner: 2021-09-01}
+  - {id: aloy, zh: 埃洛伊, since: 2021-09-01, version: "2.1"}  # 联动赠送，不进卡池
+  - {id: kokomi, zh: 珊瑚宫心海, since: 2021-09-15, version: "2.1", first_banner: 2021-09-21}
+  - {id: thoma, zh: 托马, since: 2021-10-27, version: "2.2", first_banner: 2021-11-02}
+  - {id: gorou, zh: 五郎, since: 2021-11-18, version: "2.3", first_banner: 2021-11-24}  # 2.3 上半（阿贝多 / 优菈复刻池）
+  - {id: itto, zh: 荒泷一斗, since: 2021-12-08, version: "2.3", first_banner: 2021-12-14}
+  - {id: shenhe, zh: 申鹤, since: 2021-12-30, version: "2.4", first_banner: 2022-01-05}
+  - {id: yunjin, zh: 云堇, since: 2021-12-30, version: "2.4", first_banner: 2022-01-05}
+  - {id: yae_miko, zh: 八重神子, since: 2022-02-10, version: "2.5", first_banner: 2022-02-16}
+  - {id: ayato, zh: 神里绫人, since: 2022-03-24, version: "2.6", first_banner: 2022-03-30}
+  - {id: yelan, zh: 夜兰, since: 2022-05-25, version: "2.7", first_banner: 2022-05-31}
+  - {id: kuki_shinobu, zh: 久岐忍, since: 2022-05-25, version: "2.7", first_banner: 2022-05-31}
+  - {id: heizou, zh: 鹿野院平藏, since: 2022-07-07, version: "2.8", first_banner: 2022-07-13}
+  - {id: tighnari, zh: 提纳里, since: 2022-08-18, version: "3.0", first_banner: 2022-08-24}
+  - {id: collei, zh: 柯莱, since: 2022-08-18, version: "3.0", first_banner: 2022-08-24}
+  - {id: dori, zh: 多莉, since: 2022-09-03, version: "3.0", first_banner: 2022-09-09}
+  - {id: cyno, zh: 赛诺, since: 2022-09-22, version: "3.1", first_banner: 2022-09-28}
+  - {id: candace, zh: 坎蒂丝, since: 2022-09-22, version: "3.1", first_banner: 2022-09-28}
+  - {id: nilou, zh: 妮露, since: 2022-10-08, version: "3.1", first_banner: 2022-10-14}
+  - {id: nahida, zh: 纳西妲, since: 2022-10-27, version: "3.2", first_banner: 2022-11-02}
+  - {id: layla, zh: 莱依拉, since: 2022-10-27, version: "3.2", first_banner: 2022-11-02}
+  - {id: wanderer, zh: 流浪者, since: 2022-12-01, version: "3.3", first_banner: 2022-12-07}
+  - {id: faruzan, zh: 珐露珊, since: 2022-12-01, version: "3.3", first_banner: 2022-12-07}
+  - {id: alhaitham, zh: 艾尔海森, since: 2023-01-12, version: "3.4", first_banner: 2023-01-18}
+  - {id: yaoyao, zh: 瑶瑶, since: 2023-01-12, version: "3.4", first_banner: 2023-01-18}
+  - {id: dehya, zh: 迪希雅, since: 2023-02-23, version: "3.5", first_banner: 2023-03-01}
+  - {id: mika, zh: 米卡, since: 2023-02-23, version: "3.5", first_banner: 2023-03-01}
+  - {id: baizhu, zh: 白术, since: 2023-04-26, version: "3.6", first_banner: 2023-05-02}
+  - {id: kaveh, zh: 卡维, since: 2023-04-26, version: "3.6", first_banner: 2023-05-02}
+  - {id: kirara, zh: 绮良良, since: 2023-05-18, version: "3.7", first_banner: 2023-05-24}
+  - {id: lyney, zh: 林尼, since: 2023-08-10, version: "4.0", first_banner: 2023-08-16}
+  - {id: lynette, zh: 琳妮特, since: 2023-08-10, version: "4.0", first_banner: 2023-08-16}
+  - {id: freminet, zh: 菲米尼, since: 2023-08-30, version: "4.0", first_banner: 2023-09-05}
+  - {id: neuvillette, zh: 那维莱特, since: 2023-09-21, version: "4.1", first_banner: 2023-09-27}
+  - {id: wriothesley, zh: 莱欧斯利, since: 2023-10-11, version: "4.1", first_banner: 2023-10-17}
+  - {id: furina, zh: 芙宁娜, since: 2023-11-02, version: "4.2", first_banner: 2023-11-08}
+  - {id: charlotte, zh: 夏洛蒂, since: 2023-11-02, version: "4.2", first_banner: 2023-11-08}
+  - {id: navia, zh: 娜维娅, since: 2023-12-14, version: "4.3", first_banner: 2023-12-20}
+  - {id: chevreuse, zh: 夏沃蕾, since: 2023-12-14, version: "4.3", first_banner: 2023-12-20}
+  - {id: xianyun, zh: 闲云, since: 2024-01-25, version: "4.4", first_banner: 2024-01-31}
+  - {id: gaming, zh: 嘉明, since: 2024-01-25, version: "4.4", first_banner: 2024-01-31}
+  - {id: chiori, zh: 千织, since: 2024-03-07, version: "4.5", first_banner: 2024-03-13}
+  - {id: arlecchino, zh: 阿蕾奇诺, since: 2024-04-18, version: "4.6", first_banner: 2024-04-24}
+  - {id: clorinde, zh: 克洛琳德, since: 2024-05-30, version: "4.7", first_banner: 2024-06-05}
+  - {id: sethos, zh: 赛索斯, since: 2024-05-30, version: "4.7", first_banner: 2024-06-05}
+  - {id: sigewinne, zh: 希格雯, since: 2024-06-19, version: "4.7", first_banner: 2024-06-25}
+  - {id: emilie, zh: 艾梅莉埃, since: 2024-07-31, version: "4.8", first_banner: 2024-08-06}
+  - {id: mualani, zh: 玛拉妮, since: 2024-08-22, version: "5.0", first_banner: 2024-08-28}
+  - {id: kachina, zh: 卡齐娜, since: 2024-08-22, version: "5.0", first_banner: 2024-08-28}
+  - {id: kinich, zh: 基尼奇, since: 2024-09-11, version: "5.0", first_banner: 2024-09-17}
+  - {id: xilonen, zh: 希诺宁, since: 2024-10-03, version: "5.1", first_banner: 2024-10-09}
+  - {id: chasca, zh: 恰斯卡, since: 2024-11-14, version: "5.2", first_banner: 2024-11-20}
+  - {id: ororon, zh: 欧洛伦, since: 2024-11-14, version: "5.2", first_banner: 2024-11-20}
+  - {id: mavuika, zh: 玛薇卡, since: 2024-12-26, version: "5.3", first_banner: 2025-01-01}
+  - {id: citlali, zh: 茜特菈莉, since: 2024-12-26, version: "5.3", first_banner: 2025-01-01}
+  - {id: lan_yan, zh: 蓝砚, since: 2024-12-26, version: "5.3", first_banner: 2025-01-01}
+  - {id: yumemizuki_mizuki, zh: 梦见月瑞希, since: 2025-02-06, version: "5.4", first_banner: 2025-02-12}
+  - {id: varesa, zh: 瓦蕾莎, since: 2025-03-20, version: "5.5", first_banner: 2025-03-26}
+  - {id: iansan, zh: 伊安珊, since: 2025-03-20, version: "5.5", first_banner: 2025-03-26}
+  - {id: escoffier, zh: 爱可菲, since: 2025-05-01, version: "5.6", first_banner: 2025-05-07}
+  - {id: ifa, zh: 伊法, since: 2025-05-01, version: "5.6", first_banner: 2025-05-07}
+  - {id: skirk, zh: 丝柯克, since: 2025-06-12, version: "5.7", first_banner: 2025-06-18}
+  - {id: dahlia, zh: 塔利雅, since: 2025-06-12, version: "5.7", first_banner: 2025-06-18}  # 四星，名字和半期待核对
+  - {id: ineffa, zh: 伊涅芙, since: 2025-07-24, version: "5.8", first_banner: 2025-07-30}
+  - {id: lauma, zh: 拉乌玛, since: 2025-09-04, version: "月之一", first_banner: 2025-09-10}
+  - {id: aino, zh: 爱诺, since: 2025-09-04, version: "月之一", first_banner: 2025-09-10}  # 四星，待核对
+  - {id: flins, zh: 菲林斯, since: 2025-09-24, version: "月之一", first_banner: 2025-09-30}
+  - {id: nefer, zh: 奈芙尔, since: 2025-10-16, version: "月之二", first_banner: 2025-10-22}
+  - {id: durin, zh: 杜林, since: 2025-11-26, version: "月之三", first_banner: 2025-12-02}
+  - {id: columbina, zh: 哥伦比娅, since: 2026-01-08, version: "月之四", first_banner: 2026-01-14}  # id 待核对
+  - {id: zibai, zh: 兹白, since: 2026-01-28, version: "月之四", first_banner: 2026-02-03}  # id 待核对
+  - {id: varka, zh: 法尔伽, since: 2026-02-19, version: "月之五", first_banner: 2026-02-25}
+  - {id: linnea, zh: 莉奈娅, since: 2026-04-02, version: "月之六", first_banner: 2026-04-08}  # id 待核对
+  - {id: nike, zh: 妮可, aliases: [尼可], since: 2026-05-14, version: "月之七", first_banner: 2026-05-20}  # 卡池表写“尼可”
+  - {id: luoen, zh: 洛恩, since: 2026-06-03, version: "月之七", first_banner: 2026-06-09}  # id 待核对
+  - {id: sandrone, zh: 桑多涅, since: 2026-06-25, version: "月之八"}  # 推算
+  - {id: odette, zh: 奥黛塔, since: 2026-08-06, version: "7.0"}  # 推算
+  - {id: aluoxia, zh: 阿罗夏, since: 2026-08-06, version: "7.0"}  # 推算；id 待核对
+  - {id: vesna, zh: 薇斯纳, aliases: [薇丝纳], since: 2026-09-17, version: "7.1"}
+  - {id: woyanisha, zh: 沃雅妮莎, since: 2026-09-17, version: "7.1"}  # 推算
+  # 月之二到 7.1 之间新出的四星可能有漏，卡池表认不出四星
+
+reworks:  # 体系加强；date 取该版本开始日期。加强前的视频对这些角色的评价会标“可能已过时”
+  - {version: 月之三, date: 2025-12-02, note: 魔导体系加强, characters: [sucrose, mona, klee, albedo, venti, fischl, razor]}
+  - {version: 月之八, date: 2026-07-01, note: 星反应体系加强, characters: [yae_miko, cyno, wriothesley, qiqi, beidou, diona, yumemizuki_mizuki]}  # 日期推算
