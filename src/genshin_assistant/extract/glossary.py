@@ -40,6 +40,8 @@ class Glossary:
     terms: list[Term]
     typos: dict[str, str]
     reworks: dict[str, list[tuple[date, str]]] = field(default_factory=dict)  # 角色 id → [(加强日期, 版本)]
+    playstyle_aliases: dict[str, str] = field(default_factory=dict)  # 玩法别名 → 标准名（超导 → 星超导）
+    playstyle_parents: dict[str, list[str]] = field(default_factory=dict)  # 统称 → 具体玩法（星反应 → 星超导、星扩散）
     _index: dict[str, Term] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
@@ -124,6 +126,8 @@ def load_glossary(kb: KnowledgeBase, path: Path | None, releases_path: Path | No
         terms += [Term(w.id, w.zh, "weapon") for w in b.weapons]
         terms += [Term(a.set, a.zh, "artifact") for combo in b.artifact_sets for a in combo]
     typos: dict[str, str] = {}
+    ps_aliases: dict[str, str] = {}
+    ps_parents: dict[str, list[str]] = {}
     if path and path.exists():
         raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         for kind in ("character", "weapon", "artifact", "term"):
@@ -132,6 +136,9 @@ def load_glossary(kb: KnowledgeBase, path: Path | None, releases_path: Path | No
                 terms.append(Term(t["id"], t["zh"], kind, list(t.get("aliases") or []), t.get("homophone"),
                                   _date(since)))
         typos = {str(k): str(v) for k, v in (raw.get("typos") or {}).items()}
+        ps = raw.get("playstyles") or {}
+        ps_aliases = {str(k): str(v) for k, v in (ps.get("aliases") or {}).items()}
+        ps_parents = {str(k): [str(x) for x in v] for k, v in (ps.get("parents") or {}).items()}
     reworks: dict[str, list[tuple[date, str]]] = {}
     if releases_path and releases_path.exists():
         rel = yaml.safe_load(releases_path.read_text(encoding="utf-8")) or {}
@@ -151,4 +158,4 @@ def load_glossary(kb: KnowledgeBase, path: Path | None, releases_path: Path | No
             if t.since and not seen[t.id].since:
                 seen[t.id].since = t.since
             seen[t.id].aliases += [a for a in t.aliases if a not in seen[t.id].aliases]
-    return Glossary(uniq, typos, reworks)
+    return Glossary(uniq, typos, reworks, ps_aliases, ps_parents)

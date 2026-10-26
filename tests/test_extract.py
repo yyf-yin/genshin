@@ -379,3 +379,24 @@ def test_cores_report_gathers_teams_from_every_guide(tmp_path, kb, glossary):
     text = write_cores_report(tmp_path / "out", report, {"ayaka": "神里绫华"}).read_text(encoding="utf-8")
     assert "## 神里绫华（ayaka）" in text and "来自：沃雅妮莎、薇斯纳 的攻略" in text
     assert "只有薇斯纳的攻略" in text  # 薇斯纳队只有一个来源
+
+
+def test_generic_star_reaction_merges_into_the_only_specific_one():
+    def c(b, subject, style):
+        return Claim(kind="teammate", subject=subject, playstyle=style, data={"char": "odette"}, bvid=b,
+                     evidence=[Evidence(quote="q", bvid=b)])
+    videos = [VideoClaims(bvid="A", claims=[c("A", "cyno", "星反应"), c("A", "mizuki", "星反应")]),
+              VideoClaims(bvid="B", claims=[c("B", "cyno", "星超导"), c("B", "mizuki", "星超导"), c("B", "mizuki", "星扩散")])]
+    got = {(f.subject, f.playstyle): f.support for f in aggregate(videos, parents={"星反应": ["星超导", "星扩散"]})}
+    assert got[("cyno", "星超导")] == 2 and ("cyno", "星反应") not in got
+    assert got[("mizuki", "星反应")] == 1  # 瑞希两种都有，分不清，保留统称
+
+
+def test_plain_superconduct_is_read_as_star_superconduct(kb, tmp_path):
+    from genshin_assistant.extract.extractor import ExtractContext, normalize_claim
+    p = tmp_path / "g.yaml"
+    p.write_text("playstyles:\n  aliases: {超导: 星超导}\n", encoding="utf-8")
+    g = load_glossary(kb, p)
+    c = Claim(kind="teammate", subject="odette", playstyle="超导", data={"char": "sucrose"}, bvid="A",
+              evidence=[Evidence(quote="q", bvid="A")])
+    assert normalize_claim(c, ExtractContext(kb, g, "odette", "奥黛塔")).playstyle == "星超导"

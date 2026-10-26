@@ -60,7 +60,8 @@ def by_core(kb: KnowledgeBase, glossary: Glossary, targets: list[Target], bili_d
         videos = [vc.model_copy(update={"claims": [c for c in vc.claims if c.kind in TEAM_KINDS and c.subject == core]})
                   for vc in seen.values()]
         videos = [v for v in videos if v.claims]
-        findings = aggregate(videos, releases=glossary.releases(), names=glossary.names(), reworks=glossary.reworks)
+        findings = aggregate(videos, releases=glossary.releases(), names=glossary.names(), reworks=glossary.reworks,
+                             parents=glossary.playstyle_parents)
         annotate(findings, kb, core)
         out[core] = [(f, sorted({s for bs in f.votes.values() for b in bs for s in source.get(b, ())}), len(videos))
                      for f in findings]

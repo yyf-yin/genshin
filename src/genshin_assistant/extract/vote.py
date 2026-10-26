@@ -45,6 +45,24 @@ class Finding:
         return len(self.votes) > 1
 
 
+def _resolve_parent_playstyles(videos: list[VideoClaims], parents: dict[str, list[str]]) -> list[VideoClaims]:
+    """“星反应”是星超导、星扩散的统称。同一个主 C 的队伍在别处只出现过其中一种具体玩法，就归到那一种；
+    两种都出现过（分不清说的是哪个），保留统称。"""
+    seen: dict[str, set[str]] = defaultdict(set)  # 主 C → 出现过的玩法
+    for v in videos:
+        for c in v.claims:
+            if c.playstyle:
+                seen[c.subject].add(c.playstyle)
+    out = []
+    for v in videos:
+        claims = []
+        for c in v.claims:
+            kids = [k for k in parents.get(c.playstyle or "", []) if k in seen[c.subject]]
+            claims.append(c.model_copy(update={"playstyle": kids[0]}) if len(kids) == 1 else c)
+        out.append(v.model_copy(update={"claims": claims}))
+    return out
+
+
 def _newcomer(c: Claim | Finding) -> str | None:
     """这条结论里“晚上线就不可能被旧视频提到”的角色。"""
     if c.kind == "teammate":
@@ -56,10 +74,13 @@ def _newcomer(c: Claim | Finding) -> str | None:
 
 def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2,
               releases: dict[str, date] | None = None, names: dict[str, str] | None = None,
-              reworks: dict[str, list[tuple[date, str]]] | None = None) -> list[Finding]:
+              reworks: dict[str, list[tuple[date, str]]] | None = None,
+              parents: dict[str, list[str]] | None = None) -> list[Finding]:
     """releases：角色 id → 上线日期（不知道的不写）；names：id → 中文名，只用于提示文字；
-    reworks：角色 id → [(加强日期, 版本)]。"""
+    reworks：角色 id → [(加强日期, 版本)]；parents：玩法统称 → 具体玩法（星反应 → 星超导、星扩散）。"""
     releases, names, reworks = releases or {}, names or {}, reworks or {}
+    if parents:
+        videos = _resolve_parent_playstyles(videos, parents)
     published = {v.bvid: v.published for v in videos}
     groups: dict[tuple, list[Claim]] = defaultdict(list)
     for v in videos:
