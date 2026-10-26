@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from difflib import SequenceMatcher
@@ -19,6 +20,7 @@ DEFAULT_CROP = (0.84, 0.93, 0.15, 0.85)  # 字幕条的位置：上、下、左�
 # 75%-98% 实测会框进章节进度条、等级血量和两侧按钮；字幕一般在 86%-93%，左右各留 15% 挡掉按钮和文字面板
 
 Crop = tuple[float, ...]
+_WORDS = re.compile(r"[\u4e00-\u9fffA-Za-z]")
 
 
 def _box(crop: Crop) -> tuple[float, float, float, float]:
@@ -151,5 +153,5 @@ def hardsub_lines(video: Path, work_dir: Path, every: float = 1.0, crop: Crop = 
     finally:
         if not keep_frames:
             shutil.rmtree(frames_dir, ignore_errors=True)
-    texts = drop_static(per_frame)
+    texts = [t if _WORDS.search(t) else "" for t in drop_static(per_frame)]  # 只剩数字、百分比的是界面读数
     return merge_lines([(i * every, t) for i, t in enumerate(texts)], every)

@@ -365,3 +365,14 @@ def test_hardsub_skips_unchanged_frames_and_crops_both_sides(tmp_path, monkeypat
     got = ocr.hardsub_lines(video, tmp_path, crop=(0.5, 1.0, 0.25, 0.75))
     assert [(s.start, s.end, s.text) for s in got] == [(0, 3, "暗"), (3, 6, "亮")]
     assert len(seen) == 2 and seen[0] == (50, 100)  # 6 帧只识别了 2 次；左右各裁掉四分之一
+
+
+def test_hardsub_drops_number_only_readouts(tmp_path, monkeypatch):
+    from genshin_assistant.bili import ocr
+    frames = [tmp_path / f"{i}.jpg" for i in range(3)]
+    monkeypatch.setattr(ocr, "extract_frames", lambda *a: frames)
+    monkeypatch.setattr(ocr, "_same_frame", lambda: lambda a, b: False)
+    said = {"0.jpg": "薇斯纳，风属性", "1.jpg": "87%", "2.jpg": "充能要140%"}
+    monkeypatch.setattr(ocr, "_engine", lambda: lambda p: [[None, said[p.rsplit("/", 1)[-1]], 0.9]])
+    got = ocr.hardsub_lines(tmp_path / "v.mp4", tmp_path)
+    assert [s.text for s in got] == ["薇斯纳，风属性", "充能要140%"]
