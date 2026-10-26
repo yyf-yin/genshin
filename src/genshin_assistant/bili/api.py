@@ -132,8 +132,9 @@ def subtitles(client: BiliClient, info: VideoInfo, prefer: str = "ai-zh") -> tup
         return "", []
     pick = (next((s for s in subs if s.get("lan") == prefer), None)
             or next((s for s in subs if s.get("lan") == "zh-CN"), None)
-            or next((s for s in subs if str(s.get("lan", "")).startswith("zh")), None)
-            or subs[0])
+            or next((s for s in subs if str(s.get("lan", "")).startswith("zh")), None))
+    if pick is None:  # 只有英文等外语轨道：引用和名字都对不上中文名词表，当作没有字幕（白名单会再走 OCR）
+        return "", []
     url = str(pick["subtitle_url"])
     url = url if url.startswith("http") else "https:" + url
     try:

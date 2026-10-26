@@ -225,7 +225,8 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
                 d["value"] = t.zh
     if c.inferred:
         flags.append("模型推断，视频没直说")
-    return c.model_copy(update={"subject": subject, "data": d, "flags": sorted(set(flags))})
+    playstyle = g.fix_typos(c.playstyle) if c.playstyle else c.playstyle  # “新超导”“星超导”是同一种玩法
+    return c.model_copy(update={"subject": subject, "playstyle": playstyle, "data": d, "flags": sorted(set(flags))})
 
 
 def _ask(model: JSONModel, system: str, m: Material, texts, chunk, part, total) -> list[dict]:

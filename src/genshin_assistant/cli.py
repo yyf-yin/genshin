@@ -171,9 +171,11 @@ def _bili(args, kb) -> None:
             if cmd in ("extract", "run"):
                 out = extract_target(kb, glossary, t, model, work, refresh=args.refresh,
                                      whitelist=cfg.whitelist)
-                if cmd == "run" and any(is_off_topic(work / "bili", t.id, m.bvid) for m in chosen):
+                for _ in range(3):  # 补进来的视频也可能不是攻略，最多补三轮
+                    if cmd != "run" or not any(is_off_topic(work / "bili", t.id, m.bvid) for m in chosen):
+                        break
                     print("  有视频被判断不是攻略，补选后重新出草稿")
-                    harvest(client, t, cfg, work / "bili", explain=args.explain)
+                    chosen = harvest(client, t, cfg, work / "bili", explain=args.explain)
                     out = extract_target(kb, glossary, t, model, work, whitelist=cfg.whitelist)
                 if out:
                     print(f"  草稿：{out[0]}\n  报告：{out[1]}")
