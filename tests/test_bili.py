@@ -447,3 +447,14 @@ def test_harvest_takes_one_video_per_recent_version_then_by_rank(tmp_path, monke
     got = [m.bvid for m in hv.harvest(None, t, cfg, tmp_path, log=lambda *_: None)]
     # 7.1 播放量最高的 O2 没字幕，换同版本的 O1；再取月之七的 N1；剩下两个按播放量
     assert got == ["O1", "N1", "L0", "L1"]
+
+
+def test_off_topic_videos_are_skipped_on_reselection(tmp_path):
+    from genshin_assistant.bili.harvest import is_off_topic
+    d = tmp_path / "varka"
+    d.mkdir()
+    (d / "BV1.claims.json").write_text(json.dumps({"claims": [], "rejected": [
+        {"claim": None, "why": "模型判断不是该角色的原神攻略视频"}]}, ensure_ascii=False), encoding="utf-8")
+    (d / "BV2.claims.json").write_text(json.dumps({"claims": [{"kind": "build"}], "rejected": []}), encoding="utf-8")
+    assert is_off_topic(tmp_path, "varka", "BV1")
+    assert not is_off_topic(tmp_path, "varka", "BV2") and not is_off_topic(tmp_path, "varka", "BV3")

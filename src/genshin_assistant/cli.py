@@ -109,7 +109,7 @@ def _bili(args, kb) -> None:
     from .bili import BiliClient, BiliError, RateLimited
     from .bili.api import search_videos, subtitles, video_info
     from .bili.frames import build_moments, download_video, frame_sheet
-    from .bili.harvest import harvest, load_sources
+    from .bili.harvest import harvest, is_off_topic, load_sources
     from .extract.glossary import load_glossary
     from .extract.llm import DeepSeek, LLMError
     from .extract.pipeline import extract_target
@@ -158,10 +158,14 @@ def _bili(args, kb) -> None:
         for t in targets:
             print(f"== {t.zh}")
             if cmd in ("harvest", "run"):
-                harvest(client, t, cfg, work / "bili", refresh=args.refresh, explain=args.explain)
+                chosen = harvest(client, t, cfg, work / "bili", refresh=args.refresh, explain=args.explain)
             if cmd in ("extract", "run"):
                 out = extract_target(kb, glossary, t, model, work, refresh=args.refresh,
                                      whitelist=cfg.whitelist)
+                if cmd == "run" and any(is_off_topic(work / "bili", t.id, m.bvid) for m in chosen):
+                    print("  有视频被判断不是攻略，补选后重新出草稿")
+                    harvest(client, t, cfg, work / "bili", explain=args.explain)
+                    out = extract_target(kb, glossary, t, model, work, whitelist=cfg.whitelist)
                 if out:
                     print(f"  草稿：{out[0]}\n  报告：{out[1]}")
         print(f"本次 B 站请求 {client.requests_made} 次")

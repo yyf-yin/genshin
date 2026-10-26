@@ -282,6 +282,9 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         """取一个候选的材料，有字幕就收下并返回 True。撞到风控抛 RateLimited。"""
         tried.add(h.bvid)
         path = out_dir / target.id / f"{h.bvid}.json"
+        if is_off_topic(out_dir, target.id, h.bvid):
+            log(f"  {h.bvid} 上次抽取时判断不是攻略，换下一个：{h.title}")
+            return False
         if path.exists() and not refresh:
             m = Material.load(path)
             m.whitelisted = m.up in wl or str(m.up_mid) in wl
@@ -352,6 +355,18 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
     (out_dir / target.id / "selection.json").write_text(
         json.dumps([m.bvid for m in results], ensure_ascii=False), encoding="utf-8")
     return results
+
+
+def is_off_topic(out_dir: Path, target_id: str, bvid: str) -> bool:
+    """抽取时大模型判断“不是该角色的攻略”的视频（结果记在 <bvid>.claims.json），再选片时跳过，名额让给同版本的下一个。"""
+    p = out_dir / target_id / f"{bvid}.claims.json"
+    if not p.exists():
+        return False
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except ValueError:
+        return False
+    return not d.get("claims") and any(r.get("claim") is None and "不是" in r.get("why", "") for r in d.get("rejected") or [])
 
 
 def load_materials(out_dir: Path, target_id: str) -> list[Material]:

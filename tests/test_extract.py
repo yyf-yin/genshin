@@ -283,7 +283,7 @@ def test_teammates_released_later_are_counted_only_against_newer_videos():
         claim(b, char="bennett", functions=["healer", "pyro_aura"]), claim(b, char="durin", functions=["shred"]),
         claim(b, char="venti", functions=["grouping"])]) for b in ("A", "B", "C")]
     new = [VideoClaims(bvid=b, published="2026-06-01", claims=[
-        claim(b, char="nike", functions=["pyro_aura"]), claim(b, char="durin", functions=["shred"])])
+        claim(b, char="nike", functions=["healer", "pyro_aura"]), claim(b, char="durin", functions=["shred"])])
         for b in ("D", "E", "F")]
     pre = [VideoClaims(bvid="P", published="2026-04-20", claims=[claim("P", char="nike", functions=["pyro_aura"])])]
     by = {f.data["char"]: f for f in aggregate(old + pre + new, releases={"nike": date(2026, 5, 14)},
@@ -291,7 +291,7 @@ def test_teammates_released_later_are_counted_only_against_newer_videos():
     nike, bennett, durin, venti = by["nike"], by["bennett"], by["durin"], by["venti"]
     # 提前一个版本讲妮可的视频也算，分子分母同一个窗口
     assert (nike.eligible_support, nike.eligible) == (4, 4) and "妮可 2026-05-14 上线" in nike.eligible_note
-    assert bennett.review_flags[0].startswith("可能已被 妮可 取代") and "pyro_aura" in bennett.review_flags[0]
+    assert bennett.review_flags[0].startswith("可能已被 妮可 取代") and "healer、pyro_aura" in bennett.review_flags[0]
     assert not durin.review_flags and durin.dates == ("2026-02-20", "2026-06-01")  # 新视频也推荐，不算过时
     assert not venti.review_flags  # 功能不重叠，不算被取代
     few = aggregate(old + new[:2], releases={"nike": date(2026, 5, 14)})  # 新视频太少，不下结论
@@ -318,3 +318,24 @@ def test_releases_file_adds_names_dates_and_reworks(tmp_path, kb):
     assert g.resolve("妮可").id == "nike" and g.releases()["nike"] == date(2026, 5, 20)
     assert g.releases()["neuvillette"] == date(2023, 11, 8)  # 知识库已有的角色也补上日期
     assert g.reworks == {"venti": [(date(2026, 3, 1), "月之三")]}
+
+
+def test_not_superseded_when_still_recommended_in_a_playstyle_or_only_partly_covered():
+    from datetime import date
+    old = [VideoClaims(bvid=b, published="2026-02-20", claims=[
+        claim(b, char="venti", functions=["energy_battery", "grouping"]),
+        claim(b, char="fischl", functions=["energy_battery", "sub_dps"])]) for b in "ABC"]
+    new = [VideoClaims(bvid=b, published="2026-06-01", claims=[claim(b, char="nike", functions=["energy_battery"])])
+           for b in "DEF"]
+    new[0].claims.append(Claim(kind="teammate", subject="neuvillette", playstyle="水伤", data={"char": "fischl",
+                         "functions": ["sub_dps"]}, bvid="D", evidence=[Evidence(quote="q", bvid="D")]))
+    by = {(f.data["char"], f.playstyle): f for f in aggregate(old + new, releases={"nike": date(2026, 5, 14)})}
+    assert not by[("venti", None)].review_flags  # 妮可只顶得上充能，顶不上聚怪
+    assert not by[("fischl", None)].review_flags  # 新视频在别的玩法里还推荐菲谢尔
+
+
+def test_trailing_extra_brackets_from_the_model_are_tolerated():
+    from genshin_assistant.extract.llm import LLMError, _parse_json
+    assert _parse_json('{"claims": [{"q": 1}]}]}', "stop") == {"claims": [{"q": 1}]}
+    with pytest.raises(LLMError):
+        _parse_json('{"claims": []}, {"x": 1}', "stop")

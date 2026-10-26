@@ -116,20 +116,26 @@ def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2,
 
 def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: dict[str, str],
                    published: dict[str, str]) -> None:
-    """A 只有旧视频推荐；之后出了和 A 有相同功能的 B，B 上线后的视频推荐 B、没有一个再推荐 A：A 可能已被 B 取代。"""
-    mates = [f for f in findings if f.kind == "teammate" and f.value == "for" and f.cons is None and f.playstyle is None]
+    """A 只有旧视频推荐；之后出的 B 能提供 A 的全部功能，B 上线后的视频推荐 B、没有一个再推荐 A（任何命座、玩法下）：
+    A 可能已被 B 取代。只要求功能有交集会误判：温迪和妮可都能充能，但温迪的价值是聚怪。"""
+    mates = [f for f in findings if f.kind == "teammate" and f.value == "for"]
+    last_for: dict[str, str] = {}  # 角色 → 推荐它的最新视频日期（各命座、玩法合并）
+    for f in mates:
+        c = f.data.get("char")
+        last_for[c] = max(last_for.get(c, ""), f.dates[1])
     for a in mates:
-        if not a.dates[1]:
+        aid, need = a.data.get("char"), set(a.data.get("functions") or [])
+        if not need or not last_for.get(aid):
             continue
         for b in sorted(mates, key=lambda x: releases.get(x.data.get("char"), date.min), reverse=True):
             bid = b.data.get("char")
-            if b is a or bid not in releases or a.dates[1] >= releases[bid].isoformat():
+            if bid == aid or bid not in releases or last_for[aid] >= releases[bid].isoformat():
                 continue
-            shared = set(a.data.get("functions") or []) & set(b.data.get("functions") or [])
             later = {v for v, d in published.items() if d and d >= releases[bid].isoformat()}
-            if shared and len(later) >= MIN_LATER and set(b.votes["for"]) & later:
-                a.review_flags.insert(0, f"可能已被 {names.get(bid, bid)} 取代：支持它的视频都早于 {names.get(bid, bid)} 上线"
-                                         f"（{releases[bid]}），之后的 {len(later)} 个视频都没再推荐它（同为 {'、'.join(sorted(shared))}）")
+            if need <= set(b.data.get("functions") or []) and len(later) >= MIN_LATER and set(b.votes["for"]) & later:
+                a.review_flags.insert(0, f"可能已被 {names.get(bid, bid)} 取代：推荐它的视频都早于 {names.get(bid, bid)} 上线"
+                                         f"（{releases[bid]}），之后的 {len(later)} 个视频都没再推荐它，"
+                                         f"而 {names.get(bid, bid)} 也能提供 {'、'.join(sorted(need))}")
                 break
 
 

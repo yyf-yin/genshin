@@ -62,14 +62,27 @@ class DeepSeek:
         reason = choice.get("finish_reason")
         if reason == "length":
             raise LLMTruncated(f"DeepSeek 输出被截断（finish_reason=length，已输出 {len(content)} 字）")
-        try:
-            result = json.loads(content)
-        except ValueError as e:
-            raise LLMError(f"DeepSeek 返回的不是合法 JSON（finish_reason={reason}）：…{content[-200:]}") from e
+        result = _parse_json(content, reason)
         if cached:
             cached.parent.mkdir(parents=True, exist_ok=True)
             cached.write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
         return result
+
+
+def _parse_json(content: str, reason) -> dict:
+    """模型偶尔在完整的 JSON 后面多写几个 ] 或 }（实测可稳定复现）。多出来的只有括号就截掉，其他情况照样报错。"""
+    text = content.strip()
+    try:
+        return json.loads(text)
+    except ValueError as e:
+        err = e
+    try:
+        result, end = json.JSONDecoder().raw_decode(text)
+        if not text[end:].strip(" \n\r\t]}"):
+            return result
+    except ValueError:
+        pass
+    raise LLMError(f"DeepSeek 返回的不是合法 JSON（finish_reason={reason}）：…{content[-200:]}") from err
 
 
 def _post_json(url: str, body: dict, headers: dict) -> dict:
