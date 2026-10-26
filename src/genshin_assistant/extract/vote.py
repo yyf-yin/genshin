@@ -16,6 +16,7 @@ from .schema import ALWAYS_REVIEW, Claim, Evidence, VideoClaims
 
 PREVIEW = timedelta(days=42)  # 攻略提前一个版本讲新角色
 MIN_LATER = 3  # 新队友上线后至少要有这么多视频，才判断旧推荐是否被取代
+MIN_NEW_SUPPORT = 2  # 新队友至少被这么多视频推荐，才算得上取代别人（只出现在一个视频里的不算）
 KIND_ORDER = ["teammate", "slot_function", "team_constraint", "substitution", "cons_effect", "playstyle", "build"]
 LEVEL_ZH = {"core": "核心", "major": "重要", "minor": "加分"}
 
@@ -120,16 +121,19 @@ def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: di
     A 可能已被 B 取代。只要求功能有交集会误判：温迪和妮可都能充能，但温迪的价值是聚怪。"""
     mates = [f for f in findings if f.kind == "teammate" and f.value == "for"]
     last_for: dict[str, str] = {}  # 角色 → 推荐它的最新视频日期（各命座、玩法合并）
+    backers: dict[str, set[str]] = defaultdict(set)  # 角色 → 推荐它的视频（各命座、玩法合并）
     for f in mates:
         c = f.data.get("char")
         last_for[c] = max(last_for.get(c, ""), f.dates[1])
+        backers[c] |= set(f.votes["for"])
     for a in mates:
         aid, need = a.data.get("char"), set(a.data.get("functions") or [])
         if not need or not last_for.get(aid):
             continue
         for b in sorted(mates, key=lambda x: releases.get(x.data.get("char"), date.min), reverse=True):
             bid = b.data.get("char")
-            if bid == aid or bid not in releases or last_for[aid] >= releases[bid].isoformat():
+            if (bid == aid or bid not in releases or last_for[aid] >= releases[bid].isoformat()
+                    or len(backers[bid]) < MIN_NEW_SUPPORT):
                 continue
             later = {v for v, d in published.items() if d and d >= releases[bid].isoformat()}
             if need <= set(b.data.get("functions") or []) and len(later) >= MIN_LATER and set(b.votes["for"]) & later:

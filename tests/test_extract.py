@@ -339,3 +339,12 @@ def test_trailing_extra_brackets_from_the_model_are_tolerated():
     assert _parse_json('{"claims": [{"q": 1}]}]}', "stop") == {"claims": [{"q": 1}]}
     with pytest.raises(LLMError):
         _parse_json('{"claims": []}, {"x": 1}', "stop")
+
+
+def test_a_newcomer_backed_by_one_video_supersedes_nobody():
+    from datetime import date
+    old = [VideoClaims(bvid=b, published="2025-01-01", claims=[claim(b, char="diona", functions=["shield"])]) for b in "AB"]
+    new = [VideoClaims(bvid=b, published="2026-06-01", claims=[claim(b, char="furina")]) for b in "CDE"]
+    new[0].claims.append(claim("C", char="linnea", functions=["shield"]))
+    by = {f.data["char"]: f for f in aggregate(old + new, releases={"linnea": date(2026, 4, 2)})}
+    assert not by["diona"].review_flags
