@@ -1,0 +1,48 @@
+# AI 草稿，未经审核：从 B 站 8 个桑多涅攻略视频的抽取结果整理（2026-10-26，work/drafts/sandrone-20261026-1147）。
+# 视频：卡特亚 BV1MR7Y6sE1R、贪欲九头蛇_ BV1JQKU6WEsK、龙四爷攻略组 BV1S4Tr6nE8U、梦轩dada BV1YtTw67EZt、
+#       赫箩的苹果 BV1XMTc63Emn、凉夏喵 BV1DAjR62E6s、神秘的芙 BV1C6tU67ECx、大室家抚子 BV1Z9HR6gE4e。
+# 武器 rank 按“几个视频把它排在第几档”取多数，同档按提到的视频数排。
+char: sandrone
+cons: "0-6"
+zh: 重击站场星超导主C
+weapons:
+  - {id: a_teaspoon_of_transcendence, zh: 超越之匙, rank: 1, source: limited_5star, note: 专武，8 个视频都排第一}
+  - {id: a_thousand_blazing_suns, zh: 焚曜千阳, rank: 2, source: limited_5star, note: 玛薇卡专武，卡特亚、凉夏喵称最好的下位替代}
+  - {id: wolfs_gravestone, zh: 狼的末路, rank: 3, source: standard_5star}
+  - {id: the_unforged, zh: 无工之剑, rank: 3, source: standard_5star}
+  - {id: gest_of_the_mighty_wolf, zh: 狼的武功歌, rank: 4, source: limited_5star}
+  - {id: song_of_broken_pines, zh: 松籁响起之时, rank: 5, source: limited_5star, note: 龙四爷：比专武低约 21%}
+  - {id: ultimate_overlords_mega_magic_sword, zh: 「究极霸王超级魔剑」, rank: 6, source: event, note: 赫箩的苹果：目前最优的四星之一}
+  - {id: lithic_blade, zh: 千岩古剑, rank: 6, source: gacha_4star, note: 队里有两名璃月角色时（如七七、北斗）}
+  - {id: serpent_spine, zh: 螭骨剑, rank: 7, source: gacha_4star, note: 只吃白值，给圣遗物差的人用}
+  - {id: tidal_shadow, zh: 浪影阔剑, rank: 7, source: craftable}
+  - {id: mailed_flower, zh: 饰铁之花, rank: 7, source: craftable}
+artifact_sets:
+  - [{set: disenchantment_in_deep_shadow, zh: 影中沉凝的幻灭, pieces: 4}]
+  - [{set: gilded_dreams, zh: 饰金之梦, pieces: 4, note: 过渡；赫箩的苹果：只有双雷单冰才能稳定触发}]
+  - [{set: mixed, zh: 攻击力+18%, pieces: 2}, {set: mixed, zh: 元素精通+80, pieces: 2, note: 散搭过渡}]
+main_stats:
+  sands: [atk%]
+  goblet: [atk%]  # 不带冰伤杯：星烁反应伤害不吃元素伤害加成（梦轩dada：「注意杯子别带冰伤」）
+  circlet: [crit_dmg, crit_rate]
+substats: [crit_rate, crit_dmg, atk%, energy_recharge, em]
+energy_recharge: [120, 170]
+energy_recharge_notes:
+  - 双冰双雷约 120%（卡特亚）
+  - 常规双冰队约 140%（贪欲九头蛇_、卡特亚）
+  - 单冰约 170%（贪欲九头蛇_）
+  - 带两把西风的队（如七七）约 110%，单西风（迪奥娜）约 145%（赫箩的苹果）
+  - 有分歧：龙四爷「最少 130」，梦轩dada「双冰也要 150 以上」
+stat_targets: [暴击率 70%~75%（赫箩的苹果 70~74，凉夏喵 75 左右）, 攻击力 2000 以上（贪欲九头蛇_）]
+talents: [normal, burst, skill]
+notes:
+  - 天赋：普攻、大招拉满，元素战技 6~8 级即可（凉夏喵推荐 10-8-10）
+  - 抽取建议：0 命加专武优于 1 命（大室家抚子）
+evidence:
+  - 卡特亚 BV1MR7Y6sE1R 13:13「圣遗物推荐沉寂幻灭套」；13:25「杯子和沙子都选攻击力」；13:36「但能凑齐双雷充能推荐140%」
+  - 贪欲九头蛇_ BV1JQKU6WEsK 11:20「首推同期限定超越之匙」；11:35「火神专武以及无工大剑」；12:33「主词条选择：攻攻爆」；12:36「双爆>攻击力%=充能%>精通>其他」
+  - 赫箩的苹果 BV1XMTc63Emn 12:13「四件套首选幻灭四」；12:22 试金四「只有双雷单兵的配对中才能稳定触发」；12:27「只推荐爆伤头」；12:30 暴击「建议保持在70%至74%之间」
+  - 梦轩dada BV1YtTw67EZt 02:05「用圣遗物选影中沉凝的幻灭四件套」；12:27「注意杯子别带冰伤」
+  - 凉夏喵 BV1DAjR62E6s 06:02「在技能加点上推荐优先普攻拉满」；03:32 战技「只需要稍微点个6~8级左右即可」
+  - 龙四爷攻略组 BV1S4Tr6nE8U 14:07「所以我们要把他的回能整到130」；17:45「蜈蚣大剑和松籁差专武21%」
+verified: false

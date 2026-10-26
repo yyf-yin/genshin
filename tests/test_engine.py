@@ -294,3 +294,16 @@ def test_condition_rejects_unsafe_code(expr):
 
 def test_repository_data_is_valid():
     load()
+
+
+def test_build_picks_constellation_tier(tmp_path):
+    chars = [char("hero", "hydro", [{"tag": "main_dps"}])]
+    base = {"char": "hero", "artifact_sets": [], "main_stats": {}, "substats": []}
+    builds = [{**base, "cons": "0", "zh": "零命", "energy_recharge": [220, 280],
+               "weapons": [{"id": "er", "zh": "充能枪", "rank": 1}]},
+              {**base, "cons": "1-6", "zh": "一命起", "energy_recharge": [180, 200],
+               "weapons": [{"id": "sig", "zh": "专武", "rank": 1}]}]
+    eng = Engine(make_kb(tmp_path, chars, [], builds))
+    assert eng.build("hero", "default", 0)["energy_recharge"] == (220, 280)
+    c1 = eng.build("hero", "default", 1)
+    assert c1["zh"] == "一命起" and c1["recommended_weapon"]["id"] == "sig"

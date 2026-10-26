@@ -186,21 +186,27 @@ class WeaponOption(BaseModel):
 
 
 class ArtifactSet(BaseModel):
-    set: str
+    set: str  # mixed = 散搭（任意两件套），zh 写成「攻击力+18%」这样的效果
     zh: str
     pieces: int
+    note: str = ""
 
 
 class Build(BaseModel):
     char: str
     playstyle: str = "default"
     cons: str = "0-6"
+    zh: str = ""  # 方案名，例如「星超导主C」
     weapons: list[WeaponOption]
     artifact_sets: list[list[ArtifactSet]]  # 每个内层列表是一种组合，按优先级排列
-    main_stats: dict[str, list[str]]  # sands / goblet / circlet
-    substats: list[str]
-    energy_recharge: tuple[int, int] | None = None
-    talents: list[str] = []
+    main_stats: dict[str, list[str]]  # sands / goblet / circlet，按优先级排列
+    substats: list[str]  # 按优先级排列
+    energy_recharge: tuple[int, int] | None = None  # 常规队伍的充能区间（%）
+    energy_recharge_notes: list[str] = []  # 充能随队伍、武器、命座的变化
+    stat_targets: list[str] = []  # 面板目标，例如「暴击率 70%~75%」
+    talents: list[str] = []  # 天赋优先级：normal / skill / burst
+    notes: list[str] = []
+    evidence: list[str] = []  # 出处：UP 主、BV 号、时间点、原话
     verified: bool = False
 
     def cons_range(self) -> tuple[int, int]:

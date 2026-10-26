@@ -81,6 +81,23 @@ weapons:
   - {id: favonius_codex, zh: 西风秘典}
   - {id: sacrificial_sword, zh: 祭礼剑}
   - {id: freedom_sworn, zh: 苍古自由之誓, aliases: [苍古]}
+  # 星烁队常用（别名来自 2026-10 星烁角色攻略字幕里实际出现的叫法和错字）
+  - {id: a_teaspoon_of_transcendence, zh: 超越之匙, aliases: [超越之钥, 超越之使, 木偶专武, 桑多涅专武]}
+  - {id: whitelake_frostfeather, zh: 白湖冬羽, aliases: [白狐冬雨, 白湖冬雨, 奥黛塔专武]}
+  - {id: beyond_the_chrysalis, zh: 蝶变, aliases: [薇斯纳专武]}
+  - {id: hymn_of_the_maelstrom, zh: 漩流颂歌, aliases: [旋流颂歌, 沃雅妮莎专武]}
+  - {id: a_thousand_blazing_suns, zh: 焚曜千阳, aliases: [焚耀千阳, 火神专武, 玛薇卡专武]}
+  - {id: symphonist_of_scents, zh: 香韵奏者, aliases: [香晕奏者, 相印奏者, 爱可菲专武]}
+  - {id: frostbreath, zh: 寒息, aliases: [韩希, 航希]}
+  - {id: song_of_the_vigil, zh: 戍望谣歌, aliases: [数望长歌]}
+  - {id: emberwell, zh: 引火之源, aliases: [萤火之源, 引火支援]}
+  - {id: silverlight, zh: 银釭, aliases: [银钢, 银缸]}
+  - {id: new_bough, zh: 新枝}
+  - {id: azurelight, zh: 苍耀, aliases: [苍曜, 丝柯克专武]}
+  - {id: absolution, zh: 赦罪, aliases: [克洛琳德专武]}
+  - {id: primordial_jade_cutter, zh: 磐岩结绿, aliases: [绿剑]}
+  - {id: wolfs_gravestone, zh: 狼的末路, aliases: [狼末]}
+  - {id: heretics_molten_blade, zh: 熔猎异端之刃}
 
 artifacts:
   - {id: emblem_of_severed_fate, zh: 绝缘之旗印, aliases: [绝缘]}
@@ -102,9 +119,14 @@ artifacts:
   - {id: flower_of_paradise_lost, zh: 乐园遗落之花, aliases: [乐园]}
   - {id: nymphs_dream, zh: 水仙之梦, aliases: [水仙]}
   - {id: obsidian_codex, zh: 黑曜秘典, aliases: [黑曜]}
-  - {id: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, aliases: [绘卷]}
+  - {id: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, aliases: [绘卷, 勇者套]}  # “勇者套”是推断，待核对
   - {id: thundering_fury, zh: 如雷的盛怒, aliases: [如雷]}
   - {id: pale_flame, zh: 苍白之火, aliases: [苍白]}
+  - {id: disenchantment_in_deep_shadow, zh: 影中沉凝的幻灭, aliases: [幻灭, 幻灭套, 沉寂幻灭, 超导套, 星超导套]}
+  - {id: heart_of_the_furnace, zh: 炉火融炼之心, aliases: [炉火, 炉火套, 炉火熔炼之心]}
+  - {id: scarletproof, zh: 血红之证, aliases: [血红, 血红套, 星扩散套]}
+  - {id: a_day_carved_from_rising_winds, zh: 风起之日, aliases: [风起]}
+  - {id: instructor, zh: 教官}
 
 # 写死的错字纠正（AI 字幕里实际见到的再往这里加）。左边错，右边对。
 typos:

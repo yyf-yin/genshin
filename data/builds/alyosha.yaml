@@ -1,0 +1,73 @@
+# AI 草稿，未经审核：从 B 站 8 个阿罗夏攻略视频的抽取结果整理（2026-10-26，work/drafts/aluoxia-20261026-1147）。
+# 视频：卡特亚 BV1S8uW6GEYx、龙四爷攻略组 BV1nXgn69EDz、猫冬MT BV18ngG6CEgp、凉夏喵 BV14pMC69Exd、景风枫 BV1PCuW6eEm5、
+#       困狐不困 BV18nub6RE6F、薇暖芷枫 BV1EVgE6kEAu（龙四爷直播问答）、空白星兮 BV12ygF6BESp。
+# 按命座分两档：0 命充能需求很高（220%~280%），1 命降到 180% 左右，武器选择跟着变。
+char: alyosha
+cons: "0"
+zh: 后台挂雷兼治疗（0 命，堆充能）
+weapons:
+  - {id: engulfing_lightning, zh: 薙草之稻光, rank: 1, source: limited_5star, note: 自带充能}
+  - {id: skyward_spine, zh: 天空之脊, rank: 2, source: standard_5star, note: 自带充能}
+  - {id: favonius_lance, zh: 西风长枪, rank: 3, source: gacha_4star, note: 龙四爷首推；带西风要堆暴击（45%~60%）}
+  - {id: frostbreath, zh: 寒息, rank: 3, source: gacha_4star, note: 困狐不困、凉夏喵的四星首选；给队友回能。获取方式待核对}
+  - {id: symphonist_of_scents, zh: 香韵奏者, rank: 4, source: limited_5star, note: 不带充能；景风枫：只推荐 1 命以上用}
+  - {id: song_of_the_vigil, zh: 戍望谣歌, rank: 5, source: craftable, note: 平民选择（困狐不困）}
+artifact_sets:
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: 队里已经有人带炉火（通常是奥黛塔）时}]
+  - [{set: heart_of_the_furnace, zh: 炉火融炼之心, pieces: 4, note: 队里没人带炉火时阿罗夏带（景风枫）}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: 困狐不困列为备选}]
+main_stats:
+  sands: [energy_recharge]
+  goblet: [atk%]
+  circlet: [atk%, crit_rate, healing_bonus]  # 带西风改暴击头；生存压力大时治疗头（困狐不困）
+substats: [energy_recharge, atk%, crit_rate]
+energy_recharge: [220, 280]
+energy_recharge_notes:
+  - 0 命约 220%（猫冬MT、凉夏喵）；景风枫 280% 以上，龙四爷 270%~300%
+  - 吃满固有天赋至少要 200%（困狐不困）
+stat_targets: [攻击力 2000 以上（困狐不困；薇暖芷枫问答里提到 3000）, 带西风时暴击率 45%~60%（猫冬MT、困狐不困）]
+talents: [skill, burst]
+notes:
+  - 天赋有分歧：龙四爷、景风枫、猫冬MT 主点元素战技（战技影响攻击力加成数值），困狐不困、凉夏喵先点大招；普攻都不点
+evidence:
+  - 景风枫 BV1PCuW6eEm5 03:06「需要将充能堆到280%以上」；04:52「如果队伍中有人带了炉火套，比如奥黛塔带了，那阿罗夏就带宗室套」；05:16 香晕奏者「但只推荐一命以上时选用」
+  - 龙四爷攻略组 BV1nXgn69EDz 19:23「充能攻击暴击」；19:28「充能的沙漏攻击的杯子」；19:43「武器就是西风」；20:12「你充能奔着270以上」
+  - 猫冬MT BV18ngG6CEgp 06:16「我们充能在220%左右」；06:37 薙草之稻光；06:40「我们先带天空之脊也是可以的」；09:25「你直接带攻击头」
+  - 凉夏喵 BV14pMC69Exd 04:43 寒息「四星武器首选」；06:39「充能推荐在220左右」
+  - 困狐不困 BV18nub6RE6F 00:27「阿罗夏想要吃满该被动需要堆到200充能」；00:41「最好堆高攻击或使用治疗头」；01:28「平民玩家可用锻造武器摇歌副属性精通」
+  - 卡特亚 BV1S8uW6GEYx「四件套:炉火融炼之心/宗室」「沙漏:充能效率」「杯子:攻击力」「头冠:攻击力」「副词条:充能效率/攻击力」
+verified: false
+---
+char: alyosha
+cons: "1-6"
+zh: 后台挂雷兼治疗（1 命起）
+weapons:
+  - {id: symphonist_of_scents, zh: 香韵奏者, rank: 1, source: limited_5star, note: 爱可菲专武，治疗时给受治疗的角色加攻击；猫冬MT、凉夏喵、困狐不困、景风枫首推}
+  - {id: engulfing_lightning, zh: 薙草之稻光, rank: 2, source: limited_5star}
+  - {id: skyward_spine, zh: 天空之脊, rank: 2, source: standard_5star}
+  - {id: frostbreath, zh: 寒息, rank: 3, source: gacha_4star, note: 获取方式待核对}
+  - {id: favonius_lance, zh: 西风长枪, rank: 3, source: gacha_4star}
+  - {id: song_of_the_vigil, zh: 戍望谣歌, rank: 4, source: craftable}
+artifact_sets:
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: 队里已经有人带炉火时}]
+  - [{set: heart_of_the_furnace, zh: 炉火融炼之心, pieces: 4, note: 队里没人带炉火时}]
+  - [{set: instructor, zh: 教官, pieces: 4}]
+main_stats:
+  sands: [energy_recharge, atk%]
+  goblet: [atk%]
+  circlet: [atk%, crit_rate, healing_bonus]
+substats: [energy_recharge, atk%, crit_rate]
+energy_recharge: [180, 200]
+energy_recharge_notes:
+  - 1 命只需 180% 左右（凉夏喵）
+  - 凉夏喵：沙漏可选充能或攻击（推断：充能够了就换攻击沙）
+stat_targets: [攻击力 2000 以上]
+talents: [skill, burst]
+notes:
+  - 同 0 命：天赋战技、大招谁先有分歧
+  - 4 命多一份群体治疗，6 命印记叠两层、给场上角色 100 精通（命座影响写在角色标签里，不改配装）
+evidence:
+  - 凉夏喵 BV14pMC69Exd 06:41「一命只需180左右」；04:07「五星武器方面首选爱可菲的专武相印」
+  - 景风枫 BV1PCuW6eEm5 05:12「五星中只推荐香晕奏者是辅助性能绝对的上限之选」；05:16「但只推荐一命以上时选用」
+  - 猫冬MT BV18ngG6CEgp 05:18「首推相信奏者啊」
+verified: false

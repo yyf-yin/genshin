@@ -1,0 +1,48 @@
+# AI 草稿，未经审核：从 B 站 8 个奥黛塔攻略视频的抽取结果整理（2026-10-26，work/drafts/odette-20261026-1147）。
+# 视频：卡特亚 BV1S8uW6GEYx、贪欲九头蛇_ BV1eAui6JEgW、龙四爷攻略组 BV1nXgn69EDz、梦轩dada BV1oUu66PE4W、
+#       凉夏喵 BV1hfMC6cEg9、阿尘杂货铺 BV1ZHgw6wEov、瓜钦 BV1PApg6hEQt、杰尼龟爱打嗝 BV1WbpC6QE7Q。
+char: odette
+cons: "0-6"
+zh: 后台星烁副C兼辅助
+weapons:
+  - {id: whitelake_frostfeather, zh: 白湖冬羽, rank: 1, source: limited_5star, note: 专武；带专武充能需求大降}
+  - {id: azurelight, zh: 苍耀, rank: 2, source: limited_5star, note: 丝柯克专武，卡特亚：表现最好的下位替代}
+  - {id: primordial_jade_cutter, zh: 磐岩结绿, rank: 2, source: standard_5star}
+  - {id: absolution, zh: 赦罪, rank: 3, source: limited_5star, note: 卡特亚：约为专武的 73%}
+  - {id: mistsplitter_reforged, zh: 雾切之回光, rank: 4, source: limited_5star}
+  - {id: freedom_sworn, zh: 苍古自由之誓, rank: 4, source: limited_5star}
+  - {id: light_of_foliar_incision, zh: 裁叶萃光, rank: 4, source: limited_5star}
+  - {id: silverlight, zh: 银釭, rank: 5, source: event, note: 龙四爷：直接带银釭就可以}
+  - {id: emberwell, zh: 引火之源, rank: 5, source: craftable, note: 至冬锻造；梦轩dada 推荐，龙四爷认为可以不用}
+  - {id: new_bough, zh: 新枝, rank: 5, source: gacha_4star, note: 龙四爷：精一新枝在四星里最好}
+  - {id: finale_of_the_deep, zh: 海渊终曲, rank: 6, source: craftable, note: 凉夏喵：配平后是最佳四星之一}
+  - {id: harbinger_of_dawn, zh: 黎明神剑, rank: 6, source: 3star, note: 白值低，但暴击高}
+artifact_sets:
+  - [{set: heart_of_the_furnace, zh: 炉火融炼之心, pieces: 4, note: 全队星烁增伤 50%，同名不叠加，全队一套就够（阿尘杂货铺：全队需要有一套炉火）}]
+  - [{set: disenchantment_in_deep_shadow, zh: 影中沉凝的幻灭, pieces: 4, note: 星超导队里炉火已经有人带时（卡特亚、梦轩dada、瓜钦）}]
+  - [{set: scarletproof, zh: 血红之证, pieces: 4, note: 星扩散队里炉火已经有人带时（贪欲九头蛇_）}]
+  - [{set: mixed, zh: 攻击力+18%, pieces: 2}, {set: mixed, zh: 攻击力+18%, pieces: 2, note: 散搭过渡}]
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: 梦轩dada、阿尘杂货铺列为第三选择}]
+main_stats:
+  sands: [atk%]
+  goblet: [atk%]  # 星烁反应伤害不吃冰伤杯
+  circlet: [crit_rate, crit_dmg]
+substats: [crit_rate, crit_dmg, atk%, em, energy_recharge]
+energy_recharge: [110, 165]
+energy_recharge_notes:
+  - 有专武：双冰双雷约 110%，双冰单雷约 130%（卡特亚）
+  - 没有专武约 165%（卡特亚）
+  - 低命不推荐堆充能，大招收益不高（梦轩dada、贪欲九头蛇_：「充能随缘即可」）
+stat_targets: [攻击力 2000 以上（阿尘杂货铺：及格线）, 暴击率 75%~85%（龙四爷，带专武）, 理想面板 80 暴击 / 210 爆伤 / 2300 攻击（凉夏喵）]
+talents: [skill, burst]
+notes:
+  - 天赋：元素战技拉满（输出来源），大招其次，普攻不点；贪欲九头蛇_：带专武每轮开大时大招也给皇冠
+  - 炉火只要队里一人带：和阿罗夏同队时通常奥黛塔带炉火、阿罗夏带宗室（景风枫）
+evidence:
+  - 卡特亚 BV1S8uW6GEYx 06:55「表现最好的下位替代是丝柯克的五武器」；13:49「可以选择炉火熔炼之心」；14:20「杯子和沙漏推荐攻击力」；14:58「只需要110%左右的充能效率」；06:32「但如果没有专武就需要165%的充能效率」
+  - 贪欲九头蛇_ BV1eAui6JEgW 09:51「首推同期限定白湖冬羽674白值，22.1%暴击」；11:25「最适配的当属新圣遗物炉火套」；11:54「奥黛塔可以带星扩散套-血红之证」；12:38「副词条选择：双爆>攻击力%>精通>其他」
+  - 龙四爷攻略组 BV1nXgn69EDz 08:34「我们大招可以不点点把E点满就行了」；11:38「攻击沙暴击爆伤头」；13:31「首先专武之下是绿剑和苍曜」
+  - 梦轩dada BV1oUu66PE4W 07:37「那么奥黛塔那就可以带换面套」（幻灭套）；08:12「然后就是主词条选择攻攻爆」；05:50「不推荐堆充能」
+  - 阿尘杂货铺 BV1ZHgw6wEov 05:43「一是奥黛塔及格线至少是2000攻」；05:45「二是全队是需要有一套炉火」
+  - 凉夏喵 BV1hfMC6cEg9 06:15「战技是核心输出来源优先拉满其次大招」；15:10「80暴击爆伤210」
+verified: false
