@@ -6,10 +6,12 @@
 
 from __future__ import annotations
 
+import base64
 import re
 import shutil
 import subprocess
 from difflib import SequenceMatcher
+from functools import lru_cache
 from pathlib import Path
 
 from .api import SubtitleLine
@@ -30,9 +32,20 @@ def _box(crop: Crop) -> tuple[float, float, float, float]:
     return top, bottom, left, right
 
 
+# 一个只做 Identity 的最小 ONNX 模型，用来试探显卡能不能真的跑起来
+_PROBE = base64.b64decode("CAc6NwoQCgF4EgF5IghJZGVudGl0eRIBcFoPCgF4EgoKCAgBEgQKAggBYg8KAXkSCgoICAESBAoCCAFCBAoAEA0=")
+gpu_note = ""  # 显卡用不上时的原因，给日志看
+
+
+@lru_cache(maxsize=1)
 def gpu_provider() -> str | None:
-    """装了 onnxruntime-gpu（CUDA）或 onnxruntime-directml（Windows 任意显卡）就用显卡跑，否则 None（CPU）。"""
+    """装了 onnxruntime-gpu（CUDA）或 onnxruntime-directml（Windows 任意显卡）就用显卡跑，否则 None（CPU）。
+
+    只看可用列表不够：驱动太旧时 CUDA 照样列出来，建会话时才失败并悄悄退回 CPU，所以实际建一次会话确认。
+    """
+    global gpu_note
     try:
+        import numpy as np
         import onnxruntime as ort
     except ImportError:
         return None
@@ -43,8 +56,18 @@ def gpu_provider() -> str | None:
             pass
     have = ort.get_available_providers()
     for p in ("CUDAExecutionProvider", "DmlExecutionProvider"):
-        if p in have:
-            return p
+        if p not in have:
+            continue
+        try:
+            sess = ort.InferenceSession(_PROBE, providers=[p, "CPUExecutionProvider"])
+            sess.run(None, {"x": np.ones(1, np.float32)})
+            if sess.get_providers()[0] == p:
+                return p
+            gpu_note = f"{p} 初始化失败，退回了 CPU"
+        except Exception as e:  # noqa: BLE001
+            gpu_note = f"{p} 初始化失败：{e}"
+    if gpu_note.startswith("CUDA"):
+        gpu_note += "（多半是显卡驱动比 onnxruntime-gpu 要的 CUDA 旧：升级驱动，或改装 onnxruntime-directml）"
     return None
 
 
@@ -163,7 +186,7 @@ def hardsub_lines(video: Path, work_dir: Path, every: float = 1.0, crop: Crop = 
                   min_score: float = 0.6, keep_frames: bool = False, log=None) -> list[SubtitleLine]:
     engine = _engine()
     if log:
-        log(f"    OCR 用 {gpu_provider() or 'CPU'}")
+        log(f"    OCR 用 {gpu_provider() or 'CPU'}{'；' + gpu_note if gpu_note else ''}")
     frames_dir = work_dir / f".ocr-{video.stem}"
     same = _same_frame()
     try:

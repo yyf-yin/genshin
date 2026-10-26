@@ -379,13 +379,51 @@ def test_hardsub_drops_number_only_readouts(tmp_path, monkeypatch):
     assert [s.text for s in got] == ["薇斯纳，风属性", "充能要140%"]
 
 
-def test_ocr_uses_gpu_provider_when_installed(monkeypatch):
+def test_ocr_uses_gpu_provider_only_if_a_session_really_runs_on_it(monkeypatch):
     import sys
     import types
     from genshin_assistant.bili import ocr
+    works = {"CUDAExecutionProvider": True}
+
+    class Sess:
+        def __init__(self, model, providers):
+            self.p = providers[0] if works.get(providers[0]) else "CPUExecutionProvider"
+
+        def run(self, *a):
+            return []
+
+        def get_providers(self):
+            return [self.p]
+
     fake = types.SimpleNamespace(get_available_providers=lambda: ["CUDAExecutionProvider", "CPUExecutionProvider"],
-                                 preload_dlls=lambda: None)
+                                 preload_dlls=lambda: None, InferenceSession=Sess)
     monkeypatch.setitem(sys.modules, "onnxruntime", fake)
+    ocr.gpu_provider.cache_clear()
     assert ocr.gpu_provider() == "CUDAExecutionProvider"
-    fake.get_available_providers = lambda: ["CPUExecutionProvider"]
-    assert ocr.gpu_provider() is None
+    works["CUDAExecutionProvider"] = False  # 驱动太旧：列表里有 CUDA，但会话退回 CPU
+    ocr.gpu_provider.cache_clear()
+    assert ocr.gpu_provider() is None and "驱动" in ocr.gpu_note
+    ocr.gpu_provider.cache_clear()
+    monkeypatch.setattr(ocr, "gpu_note", "")
+
+
+def test_slow_trickle_hits_total_timeout(monkeypatch):
+    from genshin_assistant.bili import client as cl
+
+    class Resp:
+        status = 206
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self, n):
+            return b"x"  # 一直有数据，但很慢
+
+    t = iter(range(0, 1000, 10))
+    monkeypatch.setattr(cl.urllib.request, "urlopen", lambda req, timeout: Resp())
+    monkeypatch.setattr(cl.time, "monotonic", lambda: next(t))
+    with pytest.raises(BiliError, match="线路太慢"):
+        cl._urllib_transport("https://cdn/v.mp4", {})

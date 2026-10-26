@@ -121,11 +121,19 @@ def _decompress(body: bytes) -> bytes:
     return body
 
 
+TOTAL_TIMEOUT = 90  # 一次请求最多等多久。CDN 偶尔会一点一点地往回挤数据，单次读超时永远触发不了
+
+
 def _urllib_transport(url: str, headers: dict[str, str]) -> tuple[int, bytes]:
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=20) as r:  # 单次读超时；卡死的连接 20 秒就放弃
-            return r.status, _decompress(r.read())
+            deadline, parts = time.monotonic() + TOTAL_TIMEOUT, []
+            while block := r.read(256 * 1024):
+                parts.append(block)
+                if time.monotonic() > deadline:
+                    raise TimeoutError(f"{TOTAL_TIMEOUT} 秒还没读完（{sum(map(len, parts)) // 1024} KB），线路太慢")
+            return r.status, _decompress(b"".join(parts))
     except urllib.error.HTTPError as e:
         return e.code, e.read() or b""
     except (OSError, http.client.HTTPException) as e:  # 连不上、读超时、读到一半断开（IncompleteRead）

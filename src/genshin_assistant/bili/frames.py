@@ -38,7 +38,7 @@ def build_moments(lines: list[SubtitleLine], n: int = 9, min_gap: float = 8.0) -
     return out
 
 
-CHUNK = 8 * 1024 * 1024
+CHUNK = 4 * 1024 * 1024  # 慢线路实测 0.12 MB/s，4 MB 一段也能在请求总超时内读完
 
 
 def download_video(client: BiliClient, info: VideoInfo, out: Path, qn: int = 80, chunk: int = CHUNK,
