@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: traveleranemo
+zh: 旅行者(风元素)
+aliases:
+- Traveler (Anemo)
+element: anemo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 固有天赋「复苏之风」：用风涡剑打败敌人后的5秒内，每秒恢复2%生命值。
+    source: hints
+  - tag: grouping
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「回转的怒风」：风涡剑可将周围5米内的敌人与物体缓慢牵引到角色面前。
+    source: hints
+verified: false

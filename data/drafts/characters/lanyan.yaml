@@ -1,0 +1,26 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: lanyan
+zh: 蓝砚
+aliases:
+- Lan Yan
+element: anemo
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「凤缕随翦舞」：凤缕护盾的伤害吸收量受益于蓝砚的攻击力，对风元素伤害有250%的吸收效果。
+    source: hints
+  - tag: grouping
+    score: 0.4
+    evidence: 元素爆发「鹍弦踏月出」：蓝砚踏出银燕翦月阵，牵引附近的敌人与物体，并造成数次风元素范围伤害。
+    source: hints
+  - tag: buff:em
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「「揽龙鹰兮结血珠」」：施放元素爆发鹍弦踏月出之后的12秒内，队伍中附近所有角色的元素精通提升60点。
+    source: hints
+verified: false

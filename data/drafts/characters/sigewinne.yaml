@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: sigewinne
+zh: 希格雯
+aliases:
+- Sigewinne
+element: hydro
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「弹跳水疗法」：希格雯的生命值上限，造成水元素伤害；弹跳时，为队伍中附近除希格雯自己外的所有角色恢复生命值，回复量受益于希格雯自己的生命值上限。
+    source: hints
+  - tag: shred:hydro
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「「最仁慈的精灵，可否化解仇敌」」：此外，弹跳水疗法抛出的激愈水球或过饱和心意注射命中敌人后，该敌人的水元素抗性降低35%，持续8秒。
+    source: hints
+verified: false

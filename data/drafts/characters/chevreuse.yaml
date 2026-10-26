@@ -1,0 +1,30 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: chevreuse
+zh: 夏沃蕾
+aliases:
+- Chevreuse
+element: pyro
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「近迫式急促拦射」：夏沃蕾进行射击后的一段时间内，将持续为当前场上自己的角色恢复生命值，回复量受益于夏沃蕾的生命值上限。
+    source: hints
+  - tag: shred:electro
+    score: 0.4
+    evidence: 固有天赋「尖兵协同战法」：中附近的角色施加「协同战法」：角色触发超载反应后，受本次反应影响的敌人的火元素与雷元素抗性降低40%，持续6秒。
+    source: hints
+  - tag: buff:atk_pct
+    score: 0.4
+    evidence: 固有天赋「纵阵武力统筹」：促拦射的「超量装药弹头」后，基于夏沃蕾的生命值上限，每1000点生命值上限都将使队伍中附近的所有火元素与雷元素角色的攻击力提升1%，持续30秒，至多通过这种方式提升40%攻击力。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「终结罪恶的追缉」：队伍中的角色受到「近迫式急促拦射」的治疗后，获得20%火元素伤害加成与雷元素伤害加成，持续8秒，此效果至多叠加3层，每层独立计算持续时间。
+    source: hints
+verified: false

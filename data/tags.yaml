@@ -1,18 +1,39 @@
-# 功能标签词表。角色的 provides / needs 和槽位的 functions 只能用这里的 id。
+# 功能标签词表（第二版，2026-10-26 与 Cliff 确定，见文档《角色标签体系》）。
+# 标签只回答「这个角色能给队伍提供什么」。只给自己的能力写在玩法的 traits 里。
+# 角色的 provides / needs / avoids / traits、槽位的 functions、装备增益表只能用这里的 id。
+# 带 param 的标签写成「id:参数」：
+#   param: element  参数是元素 id（pyro hydro electro cryo anemo geo dendro），例如 shred:cryo
+#   param: reaction 参数是 mechanics/reactions.yaml 里的反应 id，例如 reaction_buff:stellar_swirl
+# score 表示强弱：1.0 该功能的标杆角色，0.7 常见替代，0.4 顺便能提供；低于 0.4 不打标。
+# 增益类可以另写 value（大致数值，例如 0.2 表示 20%，固定值写点数），引擎按乘区汇总算边际收益。
 tags:
-  - {id: main_dps, zh: 主C输出}
-  - {id: sub_dps, zh: 副C输出}
-  - {id: team_dmg_buff, zh: 全队增伤}
-  - {id: elemental_shred, zh: 元素减抗}
+  # 输出
+  - {id: main_dps, zh: 主C, desc: 队伍伤害的主要来源，配队围绕它展开}
+  - {id: sub_dps, zh: 副C, desc: 后台召唤物、协同攻击等持续贡献可观伤害}
+  # 增益，按伤害公式的乘区拆分（damage.yaml）
+  - {id: buff, zh: 增益, param: zone, desc: "乘区：atk_flat 固定攻击 / atk_pct 百分比攻击 / hp_pct 百分比生命 / flat_dmg 倍率附加 / dmg_bonus 百分比增伤 / crit_rate 暴击率 / crit_dmg 暴击伤害 / elevate 擢升 / em 元素精通"}
+  - {id: element_dmg_buff, zh: 特定元素增伤, param: element, desc: 属于增伤区，只对一个元素生效}
+  - {id: reaction_buff, zh: 特定反应增伤, param: reaction}
+  # 削弱敌人
+  - {id: shred, zh: 元素减抗, param: element}
   - {id: universal_shred, zh: 全元素减抗}
-  - {id: grouping, zh: 聚怪}
-  - {id: shield, zh: 护盾}
-  - {id: healer, zh: 治疗}
-  - {id: interruption_res, zh: 抗打断}
+  - {id: def_shred, zh: 减防, desc: 剧变、月曜反应不吃防御区，对它们无效}
+  # 辅助
   - {id: energy_battery, zh: 充能}
-  - {id: hydro_application, zh: 后台挂水}
-  - {id: cryo_application, zh: 后台挂冰}
-  - {id: pyro_application, zh: 后台挂火}
-  - {id: electro_application, zh: 后台挂雷}
-  - {id: dendro_application, zh: 后台挂草}
-  - {id: em_share, zh: 精通分享}
+  - {id: grouping, zh: 聚怪}
+  # 生存
+  - {id: shield, zh: 护盾}
+  - {id: healer, zh: 治疗, desc: 能单独承担队伍回血}
+  - {id: interruption_res, zh: 抗打断, desc: 写在 provides 里表示给队友；写在 traits 里表示只给自己}
+  - {id: hp_drain, zh: 扣队友生命, desc: 持续扣队友生命值；有人需要它（气氛值、低血线），有人需要治疗抵消}
+  - {id: self_heal, zh: 自愈, desc: 只用在 traits}
+  - {id: self_shield, zh: 自带护盾, desc: 只用在 traits}
+  # 挂元素
+  - {id: application, zh: 后台挂元素, param: element, desc: 后台稳定附着该元素，分数代表频率；风元素表示后台扩散}
+  # 体系
+  - {id: enables, zh: 开启特殊反应, param: reaction, desc: 由游戏数据的 enables 字段自动提供，不用手写}
+  - {id: moonsign, zh: 月兆角色, desc: 队里 2 名以上为月兆·满辉}
+  - {id: witch_arcana, zh: 魔导角色, desc: 由游戏数据的 witch_quest 字段自动提供}
+  - {id: nightsoul, zh: 夜魂角色}
+  # 引擎自动给每个角色加上，不需要手写
+  - {id: element, zh: 元素, param: element}

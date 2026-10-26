@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: candace
+zh: 坎蒂丝
+aliases:
+- Candace
+element: hydro
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「圣仪·苍鹭庇卫」：长按 举起盾牌抵挡周围敌人的攻击，形成护盾，伤害吸收量受益于坎蒂丝的生命值上限，并且对水元素伤害有250%的吸收效果。
+    source: hints
+verified: false

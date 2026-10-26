@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: illuga
+zh: 叶洛亚
+aliases:
+- Illuga
+element: geo
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:crit_rate
+    score: 0.4
+    evidence: 固有天赋「铸灯者的盟约」：施放元素战技衔莺破晓或元素爆发鉴照无影后，队伍中附近的其他角色将获得持续20秒的「执灯之誓」效果：对敌人造成的岩元素伤害，暴击率提升5%，暴击伤害提升10%。
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    evidence: 固有天赋「铸灯者的盟约」：施放元素战技衔莺破晓或元素爆发鉴照无影后，队伍中附近的其他角色将获得持续20秒的「执灯之誓」效果：对敌人造成的岩元素伤害，暴击率提升5%，暴击伤害提升10%。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「铸灯者的盟约」：施放元素战技衔莺破晓或元素爆发鉴照无影后，队伍中附近的其他角色将获得持续20秒的「执灯之誓」效果：对敌人造成的岩元素伤害，暴击率提升5%，暴击伤害提升10%。
+    source: hints
+verified: false

@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: shenhe
+zh: 申鹤
+aliases:
+- Shenhe
+element: cryo
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: universal_shred
+    score: 0.4
+    evidence: 元素爆发「神女遣灵真诀」：「箓灵」将结成领域，使其中敌人的冰元素抗性与物理抗性降低，并持续对其中的敌人造成冰元素伤害。
+    source: hints
+verified: false

@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yanfei
+zh: 烟绯
+aliases:
+- Yanfei
+element: pyro
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「占理不饶人」：烟绯进行重击时，每持有一枚丹火印，都会提高烟绯在咏唱期间的抗打断能力，并额外降低本次重击10%的体力消耗。
+    source: hints
+verified: false

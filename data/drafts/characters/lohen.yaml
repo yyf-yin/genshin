@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: lohen
+zh: 洛恩
+aliases:
+- Lohen
+element: cryo
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: main_dps
+    score: 0.7
+    evidence: 官方定位：洛恩是一位通过队友的输出进一步提升自身输出的高频冰元素输出型角色。
+    source: hints
+  - tag: buff:em
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「凡飞翔者，皆为靶标」：时，将会额外追加进行一次攻击，造成相当于洛恩攻击力500%的冰元素范围伤害，并使队伍中附近的其他角色的元素精通提升200点，持续8秒，每4秒至多获得一次「破邪之刃」效果。
+    source: hints
+verified: false

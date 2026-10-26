@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: xianyun
+zh: 闲云
+aliases:
+- Xianyun
+element: anemo
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「暮集竹星」：轻唤仙风，造成风元素范围伤害，为队伍中附近的所有角色恢复生命值，回复量受益于闲云的攻击力，并召唤机关「竹星」。
+    source: hints
+  - tag: buff:crit_rate
+    score: 0.4
+    evidence: 固有天赋「霜翎高逐祥风势」：朝起鹤云的闲云冲击波每命中一个敌人，都将为队伍中附近的所有角色产生一层持续20秒，至多叠加4层的「风翎」效果，使角色的下落攻击的暴击率提升4%/6%/8%/10%。
+    source: hints
+verified: false

@@ -1,0 +1,13 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: keqing
+zh: 刻晴
+aliases:
+- Keqing
+element: electro
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides: []
+verified: false

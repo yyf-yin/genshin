@@ -1,0 +1,13 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: tartaglia
+zh: 达达利亚
+aliases:
+- Tartaglia
+element: hydro
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides: []
+verified: false

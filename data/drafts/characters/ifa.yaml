@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: ifa
+zh: 伊法
+aliases:
+- Ifa
+element: anemo
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「空天疾护」：据点按、长按，转为以不同的方式进行「援护射击」，发射能够为队伍中所有角色恢复生命值的秘药弹。
+    source: hints
+  - tag: grouping
+    score: 0.4
+    evidence: 元素爆发「复合镇静域」：疗域镇静剂将在命中时炸裂，产生固缚风场，牵引附近的物品与敌人，并造成具有夜魂性质的风元素范围伤害。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「场中医者视野」：救援要义可以提升队伍中附近的角色触发的扩散、星扩散、感电、月感电反应造成的伤害。
+    source: hints
+verified: false

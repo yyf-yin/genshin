@@ -1,0 +1,47 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: lauma
+zh: 菈乌玛
+aliases:
+- Lauma
+element: dendro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 普通攻击「林麓旅踏」：在该状态下，提高菈乌玛的抗打断能力，并可以额外消耗体力，进行至多两段的连续跳跃。
+    source: hints
+  - tag: shred:dendro
+    score: 0.4
+    evidence: 元素战技「圣言述咏·终宵永眠」：此外，菈乌玛的元素战技或霜林圣域的攻击命中敌人时，将使该敌人的草元素抗性与水元素抗性降低，持续10秒。
+    source: hints
+  - tag: shred:hydro
+    score: 0.4
+    evidence: 元素战技「圣言述咏·终宵永眠」：此外，菈乌玛的元素战技或霜林圣域的攻击命中敌人时，将使该敌人的草元素抗性与水元素抗性降低，持续10秒。
+    source: hints
+  - tag: buff:crit_rate
+    score: 0.4
+    evidence: 固有天赋「奉向霜夜的明光」：月兆·满辉 队伍中附近的所有角色造成的月绽放反应伤害，暴击率提升10%，暴击伤害提升20%。
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    evidence: 固有天赋「奉向霜夜的明光」：月兆·满辉 队伍中附近的所有角色造成的月绽放反应伤害，暴击率提升10%，暴击伤害提升20%。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「奉向霜夜的明光」：月兆·满辉 队伍中附近的所有角色造成的月绽放反应伤害，暴击率提升10%，暴击伤害提升20%。
+    source: hints
+  - tag: healer
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「「唇啊，为我纺出歌与吟哦」」：持续期间，队伍中附近的角色触发月绽放反应时，为附近的当前场上角色恢复生命值，回复量相当于菈乌玛元素精通的500%，该效果每1.9秒至多触发一次。
+    source: hints
+  - tag: buff:elevate
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「「我愿将这血与泪奉予月明」」：月兆·满辉：队伍中附近的所有角色造成的月绽放反应伤害擢升25%。
+    source: hints
+verified: false

@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: freminet
+zh: 菲米尼
+aliases:
+- Freminet
+element: cryo
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「猎影潜袭」：处于潜猎模式状态下时，菲米尼的抗打断能力提升，元素战技「浮冰增压」获得如下强化： ·冷却时间缩短70%； ·进行普通
+    source: hints
+verified: false

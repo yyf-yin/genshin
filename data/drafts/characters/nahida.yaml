@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: nahida
+zh: 纳西妲
+aliases:
+- Nahida
+element: dendro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「所闻遍计」：长按 进入瞄准状态，以选定一定范围内一定数量的敌人，并在该状态下提高纳西妲的抗打断能力。
+    source: hints
+  - tag: def_shred
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「正等善见之根」：击的同类效果提供的暴击率叠加； ·受到原激化、超激化、蔓激化反应影响后的8秒内，防御力降低30%； ·受到月绽放反应伤害的暴击率提升10%，暴击伤害提升20%。
+    source: hints
+verified: false

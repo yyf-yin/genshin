@@ -1,0 +1,23 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: xiangling
+zh: 香菱
+aliases:
+- Xiangling
+element: pyro
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shred:pyro
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「外酥里嫩」：受到锅巴攻击的敌人，火元素抗性降低15%，持续6秒。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「大龙卷旋火轮」：旋火轮持续期间，队伍中所有角色获得15%火元素伤害加成。
+    source: hints
+verified: false

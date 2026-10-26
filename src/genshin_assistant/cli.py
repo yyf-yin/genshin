@@ -4,6 +4,8 @@
     python -m genshin_assistant recommend 水龙 --cons 0
     python -m genshin_assistant recommend 那维莱特 --own 芙宁娜,砂糖,白术 --json
     python -m genshin_assistant validate
+    python -m genshin_assistant game 桑多涅
+游戏数据相关的命令见 gamedata/cli.py。
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ import argparse
 import json
 
 from .engine import Engine, Owned, Recommendation
+from .gamedata import cli as gamedata_cli
 from .kb import DEFAULT_DATA_DIR, load
 
 
@@ -37,6 +40,8 @@ def _print(rec: Recommendation) -> None:
         for n in t.needs:
             state = f"由{'、'.join(n.met_by)}满足" if n.met_by else f"未满足，扣 {n.penalty}"
             print(f"   需求：{n.owner}需要{n.tag_zh}（{n.reason}）→ {state}")
+        for c in t.conflicts:
+            print(f"   扣分：{c.owner}，{c.reason}（{'、'.join(c.involved)}），扣 {c.penalty}")
         for d in t.substitutions:
             why = d.override_reason or f"保留：{'、'.join(d.kept) or '无'}；失去：{'、'.join(d.lost) or '无'}；新增：{'、'.join(d.gained) or '无'}"
             print(f"   替补：{d.chosen} 替 {d.preferred}（{why}）")
@@ -63,9 +68,16 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--playstyle")
     r.add_argument("--json", action="store_true")
     sub.add_parser("validate", help="校验知识库")
+    gamedata_cli.add_subcommands(sub)
     args = p.parse_args(argv)
 
+    if args.cmd == "import-gamedata":
+        gamedata_cli.run(args)
+        return
     kb = load(args.data)
+    if args.cmd in gamedata_cli.COMMANDS:
+        gamedata_cli.run(args, kb)
+        return
     if args.cmd == "validate":
         print(f"知识库校验通过：{len(kb.characters)} 个角色，{len(kb.teams)} 个队伍模板，{len(kb.builds)} 套配装")
         return

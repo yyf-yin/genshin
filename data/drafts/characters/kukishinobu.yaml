@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: kukishinobu
+zh: 久岐忍
+aliases:
+- Kuki Shinobu
+element: electro
+weapon: sword
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「越祓雷草之轮」：每1.5秒，对周围的敌人造成雷元素伤害，并为范围内的当前场上角色恢复生命值，回复量受益于久岐忍的生命值上限。
+    source: hints
+verified: false

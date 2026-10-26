@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: kamisatoayaka
+zh: 神里绫华
+aliases:
+- Kamisato Ayaka
+element: cryo
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: def_shred
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「盈缺流返」：敌人受到神里流·霜灭的霜见雪关扉造成的伤害后，防御力降低30%，持续6秒。
+    source: hints
+verified: false

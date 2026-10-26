@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: sangonomiyakokomi
+zh: 珊瑚宫心海
+aliases:
+- Sangonomiya Kokomi
+element: hydro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「海月之誓」：化海月 每隔一段时间，对周围的敌人造成水元素伤害，并为周围的当前场上角色恢复生命值，回复量受益于珊瑚宫心海的生命值上限。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「海人化羽」：近的所有角色恢复生命值，回复量受益于珊瑚宫心海的生命值上限； ·提升珊瑚宫心海的抗打断能力，并使她能在水面上移动。
+    source: hints
+verified: false

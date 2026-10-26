@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: shikanoinheizou
+zh: 鹿野院平藏
+aliases:
+- Shikanoin Heizou
+element: anemo
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素爆发「聚风蹴」：不动流·真空弹将在命中时炸裂，产生缉拿风穴，牵引附近的物体与敌人，造成风元素范围伤害。
+    source: hints
+verified: false

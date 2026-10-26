@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: chongyun
+zh: 重云
+aliases:
+- Chongyun
+element: cryo
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shred:cryo
+    score: 0.4
+    evidence: 固有天赋「追冰剑诀」：被击中的敌人冰元素抗性降低10%，持续8秒。
+    source: hints
+verified: false
