@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: razor
+zh: 雷泽
+aliases:
+- Razor
+element: electro
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「雷牙」：速度、雷元素抗性； ·使雷泽免疫感电反应的伤害； ·无法施放重击； ·提高雷泽的抗打断能力。
+    source: hints
+  - tag: def_shred
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「撕咬」：利爪与苍雷点按时，会使命中的敌人防御力降低15%，持续7秒。
+    source: hints
+verified: false

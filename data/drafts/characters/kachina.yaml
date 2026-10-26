@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: kachina
+zh: 卡齐娜
+aliases:
+- Kachina
+element: geo
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: energy_battery
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「晶片，也是一种宝石」：此外，队伍中的角色获取晶片或触发月结晶反应时，将为卡齐娜恢复3点元素能量，每5秒至多通过这种方式恢复一次元素能量。
+    source: hints
+verified: false

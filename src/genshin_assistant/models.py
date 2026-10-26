@@ -32,7 +32,7 @@ class Tag(BaseModel):
     id: str
     zh: str
     desc: str = ""
-    param: Literal["reaction", "element"] | None = None
+    param: Literal["reaction", "element", "zone"] | None = None
 
 
 class TagGrant(BaseModel):
@@ -41,7 +41,9 @@ class TagGrant(BaseModel):
     tag: str
     score: float = Field(1.0, ge=0, le=1)
     when: str | None = None
+    value: float | None = None  # 增益的大致数值：百分比写小数（0.2 = 20%），固定值写点数
     evidence: str = ""  # 天赋原文片段
+    source: str = ""
 
 
 class Need(BaseModel):
@@ -86,6 +88,7 @@ class Playstyle(BaseModel):
     when: str | None = None
     field: Literal["on_field", "off_field", "flex"] | None = None  # 站场 / 后台 / 都可以（不用 on/off：YAML 会读成布尔值）
     provides: list[TagGrant] = []
+    traits: list[TagGrant] = []  # 只给自己的能力，例如自带抗打断；满足自己的同名需求
     needs: list[Need] = []
     avoids: list[Avoid] = []
     team_rules: list[TeamRule] = []
@@ -106,6 +109,17 @@ class Character(BaseModel):
             if p.id == pid:
                 return p
         raise KeyError(f"{self.id} 没有玩法 {pid}")
+
+
+class EquipmentBuff(BaseModel):
+    """会给队友加成的圣遗物套装或武器。角色的配装选了它，引擎就把这些功能加到角色身上。"""
+
+    kind: Literal["artifact_set", "weapon"]
+    zh: str
+    pieces: int = 4  # 套装件数，武器忽略
+    provides: list[TagGrant]
+    note: str = ""
+    verified: bool = False
 
 
 class CharRef(BaseModel):

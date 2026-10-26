@@ -9,7 +9,7 @@ slots:
   - id: buffer
     zh: 增伤副C
     functions:
-      - {tag: team_dmg_buff, level: core}
+      - {tag: buff:*, level: core}
       - {tag: sub_dps, level: minor, weight: 0.2}
     candidates:
       - {char: furina, score: 1.0}
@@ -17,7 +17,7 @@ slots:
     zh: 聚怪减抗
     functions:
       - {tag: grouping, level: core}
-      - {tag: elemental_shred, level: major, weight: 0.3}
+      - {tag: shred:hydro, level: major, weight: 0.3}
     candidates:
       - {char: kazuha, score: 1.0}
       - {char: sucrose, score: 0.75}

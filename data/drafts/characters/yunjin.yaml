@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yunjin
+zh: 云堇
+aliases:
+- Yun Jin
+element: geo
+weapon: polearm
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「旋云开相」：长按 摆出旋云开相之架势蓄力，形成护盾，伤害吸收量受益于云堇的生命值上限，对所有元素伤害与物理伤害有150%的吸收效果
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「诸般切末」：施放破嶂见旌仪后，附近队伍中所有角色普通攻击造成的伤害提升15%，持续12秒。
+    source: hints
+verified: false

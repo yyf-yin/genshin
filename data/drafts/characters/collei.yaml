@@ -1,0 +1,13 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: collei
+zh: 柯莱
+aliases:
+- Collei
+element: dendro
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides: []
+verified: false

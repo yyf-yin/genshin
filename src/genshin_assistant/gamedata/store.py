@@ -49,6 +49,22 @@ class GameData:
     def has_character_zh(self, zh: str) -> bool:
         return any(c["zh"] == zh for c in self.characters.values())
 
+    def identity_tags(self, zh: str) -> list[tuple[str, str]]:
+        """从游戏数据直接读出的身份标签，返回 [(标签, 依据)]：能开启的特殊反应、魔导、月兆、夜魂。"""
+        row = next((c for c in self.characters.values() if c["zh"] == zh), None)
+        if row is None:
+            return []
+        out = [(f"enables:{r}", "游戏数据：能开启该反应") for r in row.get("enables") or []]
+        if row.get("witch_quest"):
+            out.append(("witch_arcana", "游戏数据：有魔女的课业（魔导·秘仪）"))
+        passives = row.get("passives") or []
+        if any(p["name"].startswith("月兆祝赐") for p in passives):
+            out.append(("moonsign", "游戏数据：有「月兆祝赐」天赋"))
+        talents = (row.get("talents") or {}).values()
+        if any("夜魂" in t["description"] for t in talents):
+            out.append(("nightsoul", "游戏数据：技能有夜魂加持"))
+        return out
+
 
 def _read(path: Path):
     with path.open(encoding="utf-8") as f:

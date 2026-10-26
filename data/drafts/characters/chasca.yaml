@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: chasca
+zh: 恰斯卡
+aliases:
+- Chasca
+element: anemo
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「灵缰追影」：夜魂加持状态具有如下特性： ·搭乘「灵枪·仪式杖」，提升恰斯卡的移动速度与抗打断能力，在这种状态下，恰斯卡将持续消耗夜魂值，维持悬浮状态，进行冲刺或抬升高度时，
+    source: hints
+verified: false

@@ -1,0 +1,55 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: columbina
+zh: 哥伦比娅
+aliases:
+- Columbina
+element: hydro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: main_dps
+    score: 0.7
+    evidence: 官方定位：哥伦比娅是一位可以使队伍中的角色能触发月感电、月绽放、月结晶反应，并造成各类月曜反应伤害的后台输出型角色。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「月兆祝赐·借汝月光」：素结晶反应时，将转为触发月感电/月绽放/月结晶反应，且基于哥伦比娅的生命值上限，提升队伍中角色造成的月曜反应的基础伤害：每1000点生命值上限都将提升0.2%月曜反应的基础伤害，至多通过这种方式提升
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 固有天赋「月的守望」：处于挪德卡莱或霜月区域时，队伍中自己的角色倒下时，哥伦比娅将复苏该角色，并为其恢复生命值，恢复值基于哥伦比娅的好感等级，该效果每100秒至多触发一次。
+    source: hints
+  - tag: buff:elevate
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「遍照花海，隐入群山」：队伍中附近的所有角色造成的月曜反应伤害擢升1.5%。
+    source: hints
+  - tag: energy_battery
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「遍照花海，隐入群山」：触发引力干涉时，若为哥伦比娅积攒最多引力值的月曜反应类型为： ·月感电反应：为队伍中自己的当前场上角色恢复6点元素能量； ·月绽放反应：提升队伍中自己的当前场上角色的抗打断能力，持续8秒； ·月结晶
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「遍照花海，隐入群山」：己的当前场上角色恢复6点元素能量； ·月绽放反应：提升队伍中自己的当前场上角色的抗打断能力，持续8秒； ·月结晶反应：唤出雨海护盾，伤害吸收量受益于哥伦比娅生命值上限
+    source: hints
+  - tag: buff:em
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「为夜增辉，与君遥伴」：的当前场上角色攻击力提升，提升值相当于哥伦比娅生命值上限的1%； ·月绽放反应：队伍中自己的当前场上角色元素精通提升，提升值相当于哥伦比娅生命值上限的0.35%； ·月结晶反应：队伍中自己的当前场
+    source: hints
+  - tag: buff:atk_pct
+    score: 0.4
+    when: cons >= 2
+    evidence: 2 命「为夜增辉，与君遥伴」：若本次触发引力干涉时，为哥伦比娅积攒最多引力值的月曜反应类型为： ·月感电反应：队伍中自己的当前场上角色攻击力提升，提升值相当于哥伦比娅生命值上限的1%； ·月绽放反应：队伍中自己的当前场上角色
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「夜昏且暗，且随月光」：于月之领域中的所有角色触发月曜反应后的8秒内，依据参与反应的元素类型，使队伍中的所有角色造成的对应元素类型伤害的暴击伤害提升80%。
+    source: hints
+verified: false

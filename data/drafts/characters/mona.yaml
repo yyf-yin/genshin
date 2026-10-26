@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: mona
+zh: 莫娜
+aliases:
+- Mona
+element: hydro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素战技「水中幻愿」：聚集水花汇成命运的虚影。
+    source: hints
+  - tag: buff:crit_rate
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「灭绝的预言」：队伍中所有角色攻击处于星异状态下的敌人时，暴击率提升15%。
+    source: hints
+verified: false

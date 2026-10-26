@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: amber
+zh: 安柏
+aliases:
+- Amber
+element: pyro
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:atk_pct
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「疾如野火」：使用箭雨后的10秒内，队伍中所有角色的移动速度提升15%，攻击力提升15%。
+    source: hints
+verified: false

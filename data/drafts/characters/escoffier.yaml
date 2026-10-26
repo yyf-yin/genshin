@@ -1,0 +1,35 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: escoffier
+zh: 爱可菲
+aliases:
+- Escoffier
+element: cryo
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「花刀技法」：展现极致的刀工，造成冰元素范围伤害，并为队伍中附近的所有角色恢复生命值，回复量受益于爱可菲的攻击力。
+    source: hints
+  - tag: shred:hydro
+    score: 0.4
+    evidence: 固有天赋「灵感浸入调味」：可菲的元素战技低温烹饪或元素爆发花刀技法命中敌人时，将使该敌人的水元素抗性与冰元素抗性降低5%/10%/15%/55%，持续12秒。
+    source: hints
+  - tag: shred:cryo
+    score: 0.4
+    evidence: 固有天赋「灵感浸入调味」：可菲的元素战技低温烹饪或元素爆发花刀技法命中敌人时，将使该敌人的水元素抗性与冰元素抗性降低5%/10%/15%/55%，持续12秒。
+    source: hints
+  - tag: buff:crit_dmg
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「味蕾绽放的餐前旋舞」：素时，爱可菲施放元素战技低温烹饪或元素爆发花刀技法后的15秒内，队伍中附近的所有角色造成冰元素伤害时的暴击伤害提升60%。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「味蕾绽放的餐前旋舞」：素时，爱可菲施放元素战技低温烹饪或元素爆发花刀技法后的15秒内，队伍中附近的所有角色造成冰元素伤害时的暴击伤害提升60%。
+    source: hints
+verified: false

@@ -84,7 +84,7 @@ def test_hints_find_tags_with_constellation_condition():
     gdb, agd = fake_sources()
     hints = {h.tag: h for h in suggest(Importer(gdb, agd, "test").character("tester"))}
     assert hints["shield"].when is None
-    assert hints["team_dmg_buff"].when == "cons >= 1"
+    assert hints["buff:atk_pct"].when == "cons >= 1"
 
 
 # ---------- 仓库里已生成的数据 ----------
@@ -106,10 +106,11 @@ def test_generated_data_covers_newest_characters():
 @needs_data
 def test_mechanics_roles_use_known_tags():
     gd = load_gamedata()
-    tags = {t["id"] for t in yaml.safe_load((DEFAULT_DATA_DIR / "tags.yaml").read_text(encoding="utf-8"))["tags"]}
+    kb = load()
     tutorials = gd.mechanics["official_tutorials"]["tutorials"]
     for r in gd.mechanics["reactions"]["reactions"]:
-        assert set(r.get("roles", [])) <= tags, r["id"]
+        for role in r.get("roles", []):
+            assert kb.tag_error(role) is None, (r["id"], role)
         if "tutorial" in r:
             assert r["tutorial"] in tutorials, r["id"]
 
@@ -123,3 +124,26 @@ def test_validate_rejects_unofficial_names(tmp_path: Path):
     path.write_text(path.read_text(encoding="utf-8").replace("zh: 枫原万叶", "zh: 万叶"), encoding="utf-8")
     with pytest.raises(KnowledgeBaseError, match="万叶"):
         load(tmp_path / "data")
+
+
+@needs_data
+def test_identity_tags_come_from_game_data():
+    gd = load_gamedata()
+    assert {t for t, _ in gd.identity_tags("桑多涅")} == {"enables:stellar_superconduct", "enables:stellar_swirl"}
+    assert ("witch_arcana" in {t for t, _ in gd.identity_tags("砂糖")})
+    assert ("moonsign" in {t for t, _ in gd.identity_tags("爱诺")})
+    assert ("nightsoul" in {t for t, _ in gd.identity_tags("玛薇卡")})
+    kb = load()
+    tags = {g.tag for g in kb.characters["sandrone"].playstyles[0].provides}
+    assert "enables:stellar_swirl" in tags
+
+
+def test_drafts_use_valid_tags():
+    from genshin_assistant.models import Character
+
+    kb = load()
+    for path in sorted((DEFAULT_DATA_DIR / "drafts" / "characters").glob("*.yaml")):
+        c = Character(**yaml.safe_load(path.read_text(encoding="utf-8")))
+        assert c.zh not in {k.zh for k in kb.characters.values()}, f"{path.name} 已在知识库里，删掉草稿"
+        for g in c.playstyles[0].provides:
+            assert kb.tag_error(g.tag) is None, (path.name, g.tag)

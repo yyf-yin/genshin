@@ -8,17 +8,29 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-# (标签, 正则)。标签必须在 data/tags.yaml 里。
+ELEMENTS = {"火": "pyro", "水": "hydro", "雷": "electro", "冰": "cryo", "风": "anemo", "岩": "geo", "草": "dendro"}
+_TEAM = r"队伍中[^。]{0,24}角色[^。]{0,40}"
+# (标签, 正则)。标签必须能通过 data/tags.yaml 的校验；带 {el} 的从匹配到的元素名换成元素 id。
 RULES: list[tuple[str, re.Pattern]] = [
-    ("shield", re.compile(r"(创造|生成|提供|获得)[^。]{0,12}护盾")),
+    ("shield", re.compile(r"(创造|生成|提供|获得|形成|召唤)[^。]{0,12}护盾|\S{2,6}护盾的(伤害)?吸收量")),
     ("healer", re.compile(r"(恢复|治疗)[^。]{0,20}生命值|生命值[^。]{0,6}(恢复|治疗)")),
-    ("elemental_shred", re.compile(r"元素抗性降低|抗性降低")),
-    ("team_dmg_buff", re.compile(r"提升队伍中[^。]{0,30}(伤害|攻击力)|队伍中[^。]{0,24}角色[^。]{0,40}(伤害提升|伤害加成|攻击力提升|攻击力提高|擢升)")),
-    ("em_share", re.compile(r"队伍中[^。]{0,24}角色[^。]{0,24}元素精通提升")),
+    ("universal_shred", re.compile(r"所有元素抗性[^。]{0,12}降低|元素抗性与物理抗性降低")),
+    ("shred:{el}", re.compile(r"((?:[火水雷冰风岩草]元素抗性[与和、]?)+)降低")),
+    ("def_shred", re.compile(r"防御力降低")),
+    ("buff:crit_rate", re.compile(_TEAM + r"暴击率提升")),
+    ("buff:crit_dmg", re.compile(_TEAM + r"暴击伤害提升")),
+    ("buff:em", re.compile(_TEAM + r"元素精通提升")),
+    ("buff:atk_flat", re.compile(r"攻击力提升[^。]{0,16}相当于[^。]{0,12}基础攻击力|基于[^。]{0,8}基础攻击力[^。]{0,16}攻击力加成")),
+    ("buff:atk_pct", re.compile(r"提升队伍中[^。]{0,30}攻击力|" + _TEAM + r"攻击力(提升|提高)")),
+    ("buff:elevate", re.compile(_TEAM + r"擢升")),
+    ("buff:dmg_bonus", re.compile(r"提升队伍中[^。]{0,30}伤害|" + _TEAM + r"(伤害提升|伤害加成)")),
     ("energy_battery", re.compile(r"(为|使)?队伍中[^。]{0,30}恢复[^。]{0,8}元素能量")),
     ("grouping", re.compile(r"牵引|聚集")),
     ("interruption_res", re.compile(r"抗打断")),
+    ("hp_drain", re.compile(r"(消耗|扣除)[^。]{0,16}(队伍中|附近)[^。]{0,16}生命值")),
 ]
+# 只给自己加的不算全队增益：「队伍中每有一位冰元素角色，薇斯纳的攻击力提升」
+_SELF_BUFF = {"buff:atk_flat", "buff:crit_rate", "buff:crit_dmg", "buff:em", "buff:atk_pct", "buff:elevate", "buff:dmg_bonus"}
 OFF_FIELD = re.compile(r"(处于|位于)队伍后台时[^。]{0,8}(依然|也能|也会|仍)")
 CONS_LEVEL = re.compile(r"^c(\d)$")
 
@@ -62,10 +74,13 @@ def suggest(char: dict) -> list[Hint]:
             if tag in found:
                 continue
             for m in pattern.finditer(text):
-                # 「队伍中每有一位冰元素角色，薇斯纳的攻击力提升」是给自己加，不算全队增益
-                if tag == "team_dmg_buff" and char["zh"] in m.group(0):
+                # 「基于班尼特的基础攻击力」说的是数值来源，不算给自己加
+                if tag in _SELF_BUFF and char["zh"] in re.sub(f"(基于|相当于){char['zh']}", "", m.group(0)):
                     continue
-                found[tag] = Hint(tag, source, when, _snippet(text, m))
+                names = [tag.format(el=ELEMENTS[e]) for e in re.findall(r"([火水雷冰风岩草])元素", m.group(1))] if "{el}" in tag else [tag]
+                for name in names:
+                    if name not in found:
+                        found[name] = Hint(name, source, when, _snippet(text, m))
                 break
         if off_field is None and when is None and (m := OFF_FIELD.search(text)):
             off_field = Hint("off_field", source, None, _snippet(text, m))
@@ -73,3 +88,34 @@ def suggest(char: dict) -> list[Hint]:
     if off_field:
         hints.append(off_field)
     return hints
+
+
+def draft(char: dict) -> dict:
+    """把线索整理成 data/characters/ 的格式，给人审核后挪进知识库。分数一律 0.4，审核时再调。"""
+    hints = suggest(char)
+    provides = []
+    if "输出型" in (char.get("intro") or "").split("\n")[0]:
+        provides.append({"tag": "main_dps", "score": 0.7, "evidence": "官方定位：" + char["intro"].split("\n")[0], "source": "hints"})
+    for h in hints:
+        if h.tag == "off_field":
+            continue
+        grant = {"tag": h.tag, "score": 0.4}
+        if h.when:
+            grant["when"] = h.when
+        grant["evidence"] = f"{h.source}：{h.evidence}"
+        grant["source"] = "hints"
+        provides.append(grant)
+    playstyle: dict = {"id": "default", "zh": "待定"}
+    if any(h.tag == "off_field" for h in hints):
+        playstyle["field"] = "off_field"
+    playstyle["provides"] = provides
+    return {
+        "id": char["id"],
+        "zh": char["zh"],
+        "aliases": [char["en"]] if char.get("en") else [],
+        "element": char["element"],
+        "weapon": char["weapon"],
+        "rarity": char["rarity"],
+        "playstyles": [playstyle],
+        "verified": False,
+    }

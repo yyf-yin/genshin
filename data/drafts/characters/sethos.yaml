@@ -1,0 +1,18 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: sethos
+zh: 赛索斯
+aliases:
+- Sethos
+element: electro
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:em
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「真念鸵羽集」：贯影箭或瞑弦矢命中2名及以上的敌人时，队伍中附近的所有角色的元素精通提升80点，持续10秒。
+    source: hints
+verified: false

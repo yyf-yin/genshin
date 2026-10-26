@@ -5,6 +5,7 @@
     python -m genshin_assistant game 桑多涅 --section cons  # 只看命座
     python -m genshin_assistant enablers 星超导             # 哪些角色能开启这个反应
     python -m genshin_assistant hints 沃雅妮莎              # 从天赋原文找定位线索
+    python -m genshin_assistant draft-tags                 # 给知识库里还没有的角色起草标签
 """
 
 from __future__ import annotations
@@ -16,11 +17,12 @@ from pathlib import Path
 import yaml
 
 from . import importer
-from .hints import suggest
+from .hints import draft, suggest
 from .store import load_gamedata
 
 SECTIONS = {"talents": "talents", "passives": "passives", "cons": "constellations", "terms": "terms"}
-COMMANDS = {"import-gamedata", "game", "enablers", "hints"}
+COMMANDS = {"import-gamedata", "game", "enablers", "hints", "draft-tags"}
+DRAFT_HEADER = "# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。\n"
 
 
 def add_subcommands(sub: argparse._SubParsersAction) -> None:
@@ -35,6 +37,8 @@ def add_subcommands(sub: argparse._SubParsersAction) -> None:
     e.add_argument("reaction", help="例：月感电、星超导，或 lunar_charged")
     h = sub.add_parser("hints", help="从天赋、命座原文里找定位线索（关键词匹配，仅供参考）")
     h.add_argument("character")
+    d = sub.add_parser("draft-tags", help="给知识库里还没有的角色自动起草标签，写到 data/drafts/characters/")
+    d.add_argument("--force", action="store_true", help="覆盖已有的草稿")
 
 
 def _game_name(name: str, kb) -> str:
@@ -85,3 +89,18 @@ def run(args: argparse.Namespace, kb=None) -> None:
             cond = f"（{hint.when}）" if hint.when else ""
             label = "后台生效" if hint.tag == "off_field" else hint.tag
             print(f"- {label}{cond} ← {hint.source}：{hint.evidence}")
+    elif args.cmd == "draft-tags":
+        have = {c.zh for c in kb.characters.values()} if kb else set()
+        out = data_dir / "drafts" / "characters"
+        out.mkdir(parents=True, exist_ok=True)
+        written = 0
+        for char in gd.characters.values():
+            if char["zh"] in have or not char.get("element") or not char.get("talents"):
+                continue
+            path = out / f"{char['id']}.yaml"
+            if path.exists() and not args.force:
+                continue
+            text = yaml.dump(draft(char), Dumper=importer._Dumper, allow_unicode=True, sort_keys=False, width=10_000)
+            path.write_text(DRAFT_HEADER + text, encoding="utf-8")
+            written += 1
+        print(f"已起草 {written} 个角色，见 {out}")

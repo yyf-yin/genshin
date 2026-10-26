@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: charlotte
+zh: 夏洛蒂
+aliases:
+- Charlotte
+element: cryo
+weapon: catalyst
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「定格·全方位确证」：《蒸汽鸟报》的招牌，建立「临事场域」，造成冰元素范围伤害，为队伍中附近的所有角色恢复生命值，回复量受益于夏洛蒂的攻击力。
+    source: hints
+verified: false

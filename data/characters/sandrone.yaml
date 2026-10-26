@@ -1,0 +1,38 @@
+# 按游戏内天赋原文手写（verified: false，待对照攻略复核）。
+id: sandrone
+zh: 桑多涅
+aliases: [Sandrone]
+element: cryo
+weapon: claymore
+rarity: 5
+playstyles:
+  - id: default
+    zh: 重击站场星烁C
+    field: on_field
+    provides:
+      - {tag: main_dps, score: 1.0, evidence: 官方定位：可以通过技能直接造成星超导反应伤害的冰元素输出型角色}
+      - tag: reaction_buff:stellar_superconduct
+        score: 0.4
+        value: 0.14
+        evidence: 固有天赋「星耀祝礼·唯理为光」：基于桑多涅的攻击力，提升队伍中角色造成的上述反应的基础伤害……至多 14%
+      - tag: reaction_buff:stellar_swirl
+        score: 0.4
+        value: 0.14
+        evidence: 同上，星扩散也吃这条
+      - tag: reaction_buff:stellar_superconduct
+        score: 0.7
+        value: 0.3
+        when: "cons >= 1"
+        evidence: 1 命：处于解算模式下时……队伍中的所有角色造成的星烁反应伤害提升30%
+      - tag: reaction_buff:stellar_swirl
+        score: 0.7
+        value: 0.3
+        when: "cons >= 1"
+        evidence: 同上
+    team_rules:
+      - id: sandrone_needs_stellar_trigger
+        weight: 0.5
+        rule: "count_any(['electro', 'anemo']) >= 1"
+        reason: 辉映·星烁要靠星超导（冰+雷）或星扩散（风扩散冰）进入；没有雷、风队友时冷凝射线、棱晶弹、光束都不转星烁伤害
+        evidence: 固有天赋「星耀祝礼·唯理为光」：处于极星辉域中时/队伍中的角色在附近触发星扩散反应后的8秒内，桑多涅将分别进入辉映·星超导/辉映·星扩散状态
+verified: false

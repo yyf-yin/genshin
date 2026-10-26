@@ -1,0 +1,42 @@
+# 按游戏内天赋原文手写（verified: false，待对照攻略复核）。
+# 领唱/重唱是按次数的固定伤害加成（倍率附加区），只对水、冰伤害生效；有流荡风旋时改为只对星扩散生效。
+id: vodyanitsa
+zh: 沃雅妮莎
+aliases: [Vodyanitsa]
+element: hydro
+weapon: catalyst
+rarity: 5
+playstyles:
+  - id: default
+    zh: 后台减抗治疗辅助
+    field: off_field
+    provides:
+      - {tag: shred:hydro, score: 1.0, evidence: 元素战技：上述两种攻击命中时将会使敌人的水元素抗性与冰元素抗性降低}
+      - {tag: shred:cryo, score: 1.0, evidence: 同上}
+      - tag: shred:anemo
+        score: 0.7
+        value: 0.35
+        evidence: 固有天赋「最后的塑诗者」：创造或引爆流荡风旋时，还会使附近敌人的风元素抗性降低35%（需要队伍触发星扩散）
+      - {tag: healer, score: 0.7, evidence: 遥久之歌：间歇性为当前场上角色恢复生命值，恢复量受益于沃雅妮莎的生命值上限}
+      - {tag: interruption_res, score: 1.0, evidence: 遥久之歌：提升队伍中自己的当前场上角色的抗打断能力}
+      - {tag: application:hydro, score: 0.4, evidence: 唤春角笛间歇性攻击敌人，造成水元素伤害}
+      - tag: buff:flat_dmg
+        score: 0.7
+        value: 3500
+        evidence: 领唱/重唱：基于生命值上限超过40000的部分……水元素伤害与冰元素伤害提升，至多3500点（只对水、冰伤害）
+      - tag: reaction_buff:stellar_swirl
+        score: 1.0
+        value: 6500
+        evidence: 领唱：若当前场上存在流荡风旋……改为角色造成星扩散反应伤害时才会触发；星扩散反应伤害至多提升6500点（固定值）
+      - {tag: buff:atk_flat, score: 0.7, when: "cons >= 1", evidence: 1 命：触发遥久之歌治疗时，使队伍中附近的所有角色攻击力提升，提升值相当于沃雅妮莎生命值上限的0.8%}
+      - {tag: buff:crit_dmg, score: 0.7, value: 0.5, when: "cons >= 2", evidence: 2 命：使当前场上角色造成的水元素伤害与冰元素伤害的暴击伤害提升50%（有流荡风旋时改为星扩散暴伤 +60%）}
+      - {tag: buff:elevate, score: 1.0, value: 0.25, when: "cons >= 6", evidence: 6 命：遥久之歌持续期间，队伍中附近的角色造成的星扩散反应伤害擢升25%}
+      - {tag: element_dmg_buff:hydro, score: 1.0, value: 0.6, when: "cons >= 6", evidence: 6 命：造成的水元素伤害与冰元素伤害提升60%}
+      - {tag: element_dmg_buff:cryo, score: 1.0, value: 0.6, when: "cons >= 6", evidence: 同上}
+    team_rules:
+      - id: vodyanitsa_hydro_cryo
+        weight: 0.3
+        rule: "count_any(['hydro', 'cryo']) >= 2 or has_tag('enables:stellar_swirl')"
+        reason: 减抗和领唱只对水、冰伤害（或星扩散）生效，队里没有别的水冰输出或星扩散时用处不大
+        evidence: 领唱：造成水元素伤害或冰元素伤害时，将消耗一层「领唱」，提升造成的伤害
+verified: false

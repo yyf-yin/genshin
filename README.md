@@ -23,6 +23,8 @@ pytest
 | `characters/` | 角色：元素、武器、玩法，每个玩法的 `provides`（提供的功能）和 `needs`（对队友的需求），都可以带 `when` 条件（如 `cons < 1`） |
 | `teams/` | 队伍模板：槽位、槽位功能分级（`core` / `major` / `minor`）、候选人、整队限制、攻略给出的替补结论 |
 | `builds/` | 养成方案：按角色 × 玩法 × 命座区间，武器、圣遗物、主副词条、充能区间、天赋优先级 |
+| `equipment_buffs.yaml` | 会给队友加成的圣遗物套装和武器（翠绿之影、讨龙英杰谭、终末嗟叹之诗等）。角色配装首选了这些装备时，加成算到这个角色头上 |
+| `drafts/characters/` | `draft-tags` **自动起草**的角色标签（关键词匹配天赋原文，分数一律 0.4），不参与配队；审核后挪到 `characters/` |
 | `mvp_characters.yaml` | 第一版要覆盖的主C名单和录入进度 |
 | `game/` | **自动生成**的游戏本体数据：每个角色一个文件（天赋原文与 10/13 级倍率、固有天赋、命座、90 级属性、官方一句话定位、技能里的名词解释、能开启的月曜/星烁反应、魔女的课业），`weapons.yaml`（90 级数值、R1/R5 效果），`artifacts.yaml`（2/4 件套效果），`glossary.yaml`（游戏内名词解释） |
 | `mechanics/` | 机制知识。`official_*.yaml` 是自动导入的游戏内教程和元素共鸣原文；`damage.yaml`（伤害公式）、`reactions.yaml`（元素反应，含月曜、星烁）、`team_systems.yaml`（月兆、魔导·秘仪、辉映·星烁、元素附着、ICD 等）是手写的，不确定的地方标了 `verified: false` |
@@ -41,6 +43,7 @@ python -m genshin_assistant game 桑多涅                   # 也可以查武�
 python -m genshin_assistant game 水龙 --section cons      # 知识库里的别名也能用
 python -m genshin_assistant enablers 星超导               # 哪些角色能为队伍开启这个反应
 python -m genshin_assistant hints 沃雅妮莎                # 从天赋原文里找定位线索，录入 characters/ 时参考
+python -m genshin_assistant draft-tags                   # 给知识库里还没有的角色起草标签，写到 drafts/characters/
 ```
 
 已知缺口：genshin-db 不含「魔女的课业」解锁的额外天赋和技能变化，角色数据里只有从文本表找到的「魔导·秘仪」说明（`witch_quest` 字段）。官方一句话定位（`intro`）只有较新的角色有。
@@ -56,5 +59,8 @@ python -m genshin_assistant hints 沃雅妮莎                # 从天赋原文�
   - `team_rules`：整队规则，写法同 `constraints`。`hard: true` 不满足时队伍不成立，否则按 `weight` 扣分，例如法尔伽的「双风双X」、丝柯克的水冰队友。
   - `field: on_field / off_field / flex`：站场、后台、都可以。一队里有多名 `on_field` 角色时扣分。
   - 以上都可以带 `when`（命座条件）、`reason`（给人看的理由）、`evidence`（天赋原文）、`source`（攻略出处）。
-- **带参数的标签**：`element_dmg_buff:cryo`（冰元素增伤）、`reaction_buff:stellar_swirl`（星扩散增伤）、`enables:lunar_charged`（开启月感电）。参数会对照元素列表和 `mechanics/reactions.yaml` 校验。
+- **带参数的标签**：`buff:crit_dmg`（按伤害乘区分的增益：固定攻击、百分比攻击、百分比生命、倍率附加、增伤、暴击率、暴击伤害、擢升、精通）、`shred:hydro`（降水抗）、`application:cryo`（后台挂冰）、`element_dmg_buff:cryo`、`reaction_buff:stellar_swirl`、`enables:lunar_charged`。参数会对照元素、乘区列表和 `mechanics/reactions.yaml` 校验。槽位功能可以写 `buff:*`，表示任意一种增益。
+- **分数**：1.0 是标杆，0.7 是常见替代，0.4 是顺带有；`value` 写大致数值（百分比写小数）。
+- **自身能力**：`traits` 写只给自己的能力（例如薇斯纳巡风列装自带抗打断），能满足自己的同名 `needs`。
+- **自动标签**：`element:元素`、`enables:反应`、`witch_arcana`（魔导）、`moonsign`（月兆）、`nightsoul`（夜魂）由游戏数据决定，不用手写。
 - **替补**：候选名单之外、满足全部核心功能的角色也会被自动考虑（基础分 0.5）；`substitutions` 里写的攻略结论会作为替补理由优先展示。

@@ -1,0 +1,17 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: citlali
+zh: 茜特菈莉
+aliases:
+- Citlali
+element: cryo
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「霜昼黑星」：白曜护盾的伤害吸收量受益于茜特菈莉的元素精通，对冰元素伤害有250%的吸收效果，并在展开护盾时，为茜
+    source: hints
+verified: false

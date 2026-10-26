@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: sayu
+zh: 早柚
+aliases:
+- Sayu
+element: anemo
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「呜呼流·风隐急进」：长按 以风风轮之姿持续滚动，并在该状态下提高早柚的抗打断能力。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「呜呼流·影貉缭乱」：！能创造出替早柚干活的帮手！ 对身边的敌人造成风元素伤害，为队伍中附近的所有角色恢复生命值，回复量受益于早柚的攻击力，并召唤出「不倒貉貉」。
+    source: hints
+verified: false

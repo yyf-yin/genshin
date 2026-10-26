@@ -42,7 +42,16 @@ class Kit:
     needs: list[Need]
     avoids: list[Avoid] = field(default_factory=list)
     rules: list[TeamRule] = field(default_factory=list)
-    field: str | None = None
+    position: str | None = None  # 玩法的 field：on_field / off_field / flex
+    traits: dict[str, float] = field(default_factory=dict)
+    gear: list[str] = field(default_factory=list)  # 配装里会给队友加成的装备，见 equipment_buffs.yaml
+
+    def has(self, tag: str) -> float:
+        """功能强度。「buff:*」这种通配写法取同类标签里最高的，槽位可以写「任何增益」。"""
+        if tag.endswith(":*"):
+            prefix = tag[:-1]
+            return max((v for t, v in self.provides.items() if t.startswith(prefix)), default=0.0)
+        return self.provides.get(tag, 0.0)
 
 
 @dataclass
@@ -150,7 +159,22 @@ class Engine:
         needs = [n for n in p.needs if check(n.when, ctx)]
         avoids = [a for a in p.avoids if check(a.when, ctx)]
         rules = [r for r in p.team_rules if check(r.when, ctx)]
-        return Kit(c.id, c.zh, c.element.value, p.id, cons, provides, needs, avoids, rules, p.field)
+        traits = {t.tag: t.score for t in p.traits if check(t.when, ctx)}
+        gear: list[str] = []
+        b = self._find_build(c.id, p.id, cons)
+        if b is not None:
+            # 只看首选配装：首选武器、首选圣遗物组合
+            picks = [("weapon", w.zh, 1) for w in sorted(b.weapons, key=lambda w: w.rank)[:1]]
+            picks += [("artifact_set", a.zh, a.pieces) for a in (b.artifact_sets[0] if b.artifact_sets else [])]
+            for kind, zh, pieces in picks:
+                e = self.kb.equipment_buff(kind, zh, pieces)
+                if e is None:
+                    continue
+                gear.append(e.zh)
+                for g in e.provides:
+                    if check(g.when, ctx):
+                        provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
+        return Kit(c.id, c.zh, c.element.value, p.id, cons, provides, needs, avoids, rules, p.field, traits, gear)
 
     def available_playstyles(self, char_id: str, cons: int) -> list[str]:
         c = self.kb.characters[char_id]
@@ -224,7 +248,7 @@ class Engine:
             k = self.kit(char_id, pid, self._cons(char_id, roster))
             if k is None:
                 return
-            missing = [t for t in core_tags if k.provides.get(t, 0) <= 0]
+            missing = [t for t in core_tags if k.has(t) <= 0]
             if missing:
                 if is_listed:
                     excl.append(Exclusion(slot.id, char_id, "缺少核心功能：" + "、".join(self._tag_zh(t) for t in missing)))
@@ -288,7 +312,7 @@ class Engine:
             "count": lambda e: elements.get(e, 0),
             "count_any": lambda es: sum(elements.get(e, 0) for e in es),
             "max_count": lambda es: max((elements.get(e, 0) for e in es), default=0),
-            "has_tag": lambda tag: any(k.provides.get(tag, 0) > 0 for k in kits),
+            "has_tag": lambda tag: any(k.has(tag) > 0 for k in kits),
             "has_char": lambda c: any(k.char == c for k in kits),
         }
 
@@ -307,7 +331,7 @@ class Engine:
         for s, (k, base) in zip(t.slots, combo):
             extra = [f for f in s.functions if f.level != Level.core]
             total = sum(f.weight for f in extra)
-            covered = sum(f.weight * k.provides.get(f.tag, 0) for f in extra)
+            covered = sum(f.weight * k.has(f.tag) for f in extra)
             score = base * (1 + covered) / (1 + total)
             slot_scores.append(score)
             members.append(Member(s.id, k.char, k.zh, k.playstyle, k.cons, round(score, 3)))
@@ -318,8 +342,10 @@ class Engine:
         for owner in kits:
             mates = [k for k in kits if k is not owner]
             for n in owner.needs:
-                providers = [k for k in mates if k.provides.get(n.tag, 0) > 0]
-                top = sorted((k.provides[n.tag] for k in providers), reverse=True)[: n.count]
+                if owner.traits.get(n.tag, 0) > 0:
+                    continue  # 自己就有，例如自带抗打断
+                providers = [k for k in mates if k.has(n.tag) > 0]
+                top = sorted((k.has(n.tag) for k in providers), reverse=True)[: n.count]
                 penalty = n.weight * (1 - sum(top) / n.count)
                 penalty_total += penalty
                 needs.append(NeedStatus(owner.zh, n.tag, self._tag_zh(n.tag), n.reason, [k.zh for k in providers], round(penalty, 3)))
@@ -327,9 +353,9 @@ class Engine:
         conflicts: list[Conflict] = []
         for owner in kits:
             for a in owner.avoids:
-                offenders = [k for k in kits if k is not owner and k.provides.get(a.tag, 0) > 0]
+                offenders = [k for k in kits if k is not owner and k.has(a.tag) > 0]
                 if offenders:
-                    penalty = a.weight * max(k.provides[a.tag] for k in offenders)
+                    penalty = a.weight * max(k.has(a.tag) for k in offenders)
                     conflicts.append(Conflict("avoid", owner.zh, f"排斥{self._tag_zh(a.tag)}：{a.reason}",
                                               [k.zh for k in offenders], round(penalty, 3)))
         failed = set(map(id, self._failed_rules(kits)))
@@ -337,7 +363,7 @@ class Engine:
             for r in owner.rules:
                 if not r.hard and id(r) in failed:
                     conflicts.append(Conflict("rule", owner.zh, r.reason, [owner.zh], r.weight))
-        on_field = [k.zh for k in kits if k.field == "on_field"]
+        on_field = [k.zh for k in kits if k.position == "on_field"]
         if len(on_field) > 1:
             conflicts.append(Conflict("field", "、".join(on_field), "多名角色都需要站场，会互相抢场上时间", on_field,
                                       round(FIELD_CONFLICT_PENALTY * (len(on_field) - 1), 3)))
@@ -359,8 +385,8 @@ class Engine:
             pref_kit = self.kit(pref.char, pref.playstyle, self._cons(pref.char, roster))
             # 元素差异另有整队规则把关，这里只比功能
             pref_tags = {x for x in (pref_kit.provides if pref_kit else (f.tag for f in s.functions)) if not x.startswith("element:")}
-            kept = sorted(tag for tag in pref_tags if k.provides.get(tag, 0) > 0)
-            lost = sorted(tag for tag in pref_tags if k.provides.get(tag, 0) <= 0)
+            kept = sorted(tag for tag in pref_tags if k.has(tag) > 0)
+            lost = sorted(tag for tag in pref_tags if k.has(tag) <= 0)
             gained = sorted(tag for tag in k.provides if tag not in pref_tags and not tag.startswith("element:"))
             o = overrides.get((pref.char, k.char))
             diffs.append(SubstitutionDiff(

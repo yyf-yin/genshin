@@ -1,0 +1,21 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: eula
+zh: 优菈
+aliases:
+- Eula
+element: cryo
+weapon: claymore
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shred:cryo
+    score: 0.4
+    evidence: 元素战技「冰潮的涡旋」：若消耗了冷酷之心效果，会使身边的敌人的物理抗性与冰元素抗性降低。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「冰潮的涡旋」：冷酷之心 提高优菈的抗打断能力和防御力。
+    source: hints
+verified: false
