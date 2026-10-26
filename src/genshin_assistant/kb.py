@@ -8,9 +8,13 @@ from pathlib import Path
 
 import yaml
 
-from .models import Build, Character, Tag, TeamTemplate
+from .models import Build, Character, Element, Tag, TeamTemplate
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+
+
+ELEMENT_ZH = {"pyro": "火", "hydro": "水", "electro": "雷", "cryo": "冰", "anemo": "风", "geo": "岩", "dendro": "草"}
+assert set(ELEMENT_ZH) == {e.value for e in Element}
 
 
 class KnowledgeBaseError(ValueError):
@@ -23,6 +27,30 @@ class KnowledgeBase:
     characters: dict[str, Character] = field(default_factory=dict)
     teams: dict[str, TeamTemplate] = field(default_factory=dict)
     builds: list[Build] = field(default_factory=list)
+    reactions: dict[str, str] = field(default_factory=dict)  # id → 中文名，来自 mechanics/reactions.yaml
+
+    def tag_zh(self, tag: str) -> str:
+        """element:cryo → 元素：冰 这类带参数的标签也能显示。"""
+        base, _, param = tag.partition(":")
+        t = self.tags.get(base)
+        if t is None:
+            return tag
+        if not param:
+            return t.zh
+        return f"{t.zh}：{self.reactions.get(param) or ELEMENT_ZH.get(param, param)}"
+
+    def tag_error(self, tag: str) -> str | None:
+        base, sep, param = tag.partition(":")
+        t = self.tags.get(base)
+        if t is None:
+            return f"未定义的标签 {tag}"
+        if bool(sep) != bool(t.param):
+            return f"标签 {base} {'需要' if t.param else '不带'}参数：{tag}"
+        if t.param == "element" and param not in ELEMENT_ZH:
+            return f"未知元素 {param}：{tag}"
+        if t.param == "reaction" and self.reactions and param not in self.reactions:
+            return f"未知反应 {param}（见 mechanics/reactions.yaml）：{tag}"
+        return None
 
     def resolve(self, name: str) -> Character:
         """按 id、中文名或别名找角色。"""
@@ -39,8 +67,8 @@ class KnowledgeBase:
         errors: list[str] = []
 
         def tag_ok(tag: str, where: str) -> None:
-            if tag not in self.tags:
-                errors.append(f"{where}：未定义的标签 {tag}")
+            if err := self.tag_error(tag):
+                errors.append(f"{where}：{err}")
 
         def when_ok(expr: str | None, where: str) -> None:
             if expr:
@@ -63,9 +91,12 @@ class KnowledgeBase:
                 for g in p.provides:
                     tag_ok(g.tag, where)
                     when_ok(g.when, where)
-                for n in p.needs:
+                for n in [*p.needs, *p.avoids]:
                     tag_ok(n.tag, where)
                     when_ok(n.when, where)
+                for r in p.team_rules:
+                    when_ok(r.rule, f"{where} 规则 {r.id}")
+                    when_ok(r.when, f"{where} 规则 {r.id}")
 
         for t in self.teams.values():
             ref_ok(t.core.char, t.core.playstyle, f"队伍 {t.id} 核心")
@@ -124,6 +155,9 @@ def load(data_dir: Path | str = DEFAULT_DATA_DIR, validate: bool = True) -> Know
     for raw in _load_yaml_docs(data_dir / "tags.yaml")[0]["tags"]:
         tag = Tag(**raw)
         kb.tags[tag.id] = tag
+    reactions = data_dir / "mechanics" / "reactions.yaml"
+    if reactions.exists():
+        kb.reactions = {r["id"]: r["zh"] for r in _load_yaml_docs(reactions)[0]["reactions"]}
     for path in sorted((data_dir / "characters").glob("*.yaml")):
         for raw in _load_yaml_docs(path):
             c = Character(**raw)

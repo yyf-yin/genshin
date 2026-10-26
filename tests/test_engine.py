@@ -20,11 +20,11 @@ def char(cid, element, provides, needs=(), playstyles=None):
     }
 
 
-def make_kb(tmp_path: Path, characters, teams, builds=()):
+def make_kb(tmp_path: Path, characters, teams, builds=(), extra_tags=()):
     (tmp_path / "characters").mkdir()
     (tmp_path / "teams").mkdir()
     (tmp_path / "builds").mkdir()
-    (tmp_path / "tags.yaml").write_text(yaml.safe_dump({"tags": [{"id": t, "zh": t} for t in TAGS]}), encoding="utf-8")
+    (tmp_path / "tags.yaml").write_text(yaml.safe_dump({"tags": [{"id": t, "zh": t} for t in TAGS] + list(extra_tags)}), encoding="utf-8")
     (tmp_path / "characters" / "c.yaml").write_text(yaml.safe_dump_all(characters, allow_unicode=True), encoding="utf-8")
     (tmp_path / "teams" / "t.yaml").write_text(yaml.safe_dump_all(teams, allow_unicode=True), encoding="utf-8")
     if builds:
@@ -195,6 +195,88 @@ def test_build_prefers_owned_or_craftable_weapon(tmp_path):
     eng = Engine(kb)
     assert eng.build("hero", "default", 0, owned_weapons=set())["recommended_weapon"]["id"] == "craft"
     assert eng.build("hero", "default", 0, owned_weapons={"sig"})["recommended_weapon"]["id"] == "sig"
+
+
+# ---------- 角色自带的配队偏好：avoids、team_rules、元素需求、站场冲突 ----------
+
+def pref_team(core, flex):
+    return {
+        "id": f"{core}_team", "zh": "测试队", "core": {"char": core},
+        "slots": [{"id": "dps", "fixed": {"char": core}},
+                  {"id": "a", "candidates": [{"char": c} for c in flex]},
+                  {"id": "b", "candidates": [{"char": c} for c in flex]}],
+    }
+
+
+def test_avoid_penalises_teammate_with_tag(tmp_path):
+    chars = [
+        char("duke", "cryo", [{"tag": "main_dps"}],
+             playstyles=[{"id": "default", "provides": [{"tag": "main_dps"}],
+                          "avoids": [{"tag": "healer", "weight": 0.4, "reason": "要低血线"}]}]),
+        char("nurse", "hydro", [{"tag": "healer"}]),
+        char("bard", "anemo", [{"tag": "team_dmg_buff"}]),
+        char("rock", "geo", [{"tag": "shield"}]),
+    ]
+    kb = make_kb(tmp_path, chars, [pref_team("duke", ["nurse", "bard", "rock"])])
+    rec = Engine(kb).recommend("duke")
+    assert {m.char for m in rec.teams[0].members} == {"duke", "bard", "rock"}
+    with_nurse = next(t for t in rec.teams if "nurse" in {m.char for m in t.members})
+    assert with_nurse.conflicts[0].kind == "avoid" and with_nurse.conflicts[0].penalty == 0.4
+
+
+def test_hard_rule_invalidates_and_soft_rule_penalises(tmp_path):
+    rules = [
+        {"id": "need_x", "hard": True, "rule": "count_any(['pyro', 'hydro']) >= 1", "reason": "没有火水队友"},
+        {"id": "two_anemo", "weight": 0.3, "rule": "count('anemo') >= 2", "reason": "双风加成"},
+    ]
+    chars = [
+        char("knight", "anemo", [], playstyles=[{"id": "default", "provides": [{"tag": "main_dps"}], "team_rules": rules}]),
+        char("bard", "anemo", [{"tag": "team_dmg_buff"}]),
+        char("rock", "geo", [{"tag": "shield"}]),
+        char("flame", "pyro", [{"tag": "sub_dps"}]),
+    ]
+    kb = make_kb(tmp_path, chars, [pref_team("knight", ["bard", "rock", "flame"])])
+    rec = Engine(kb).recommend("knight")
+    teams = {frozenset(m.char for m in t.members): t for t in rec.teams}
+    assert frozenset({"knight", "bard", "rock"}) not in teams  # 违反硬规则
+    assert teams[frozenset({"knight", "bard", "flame"})].conflicts == []
+    soft = teams[frozenset({"knight", "rock", "flame"})].conflicts
+    assert [(c.kind, c.penalty) for c in soft] == [("rule", 0.3)]
+
+
+def test_element_need_with_count_excludes_self(tmp_path):
+    chars = [
+        char("frost", "cryo", [], playstyles=[{"id": "default", "provides": [{"tag": "main_dps"}],
+                                               "needs": [{"tag": "element:cryo", "weight": 0.4, "count": 2}]}]),
+        char("ice", "cryo", [{"tag": "cryo_application"}]),
+        char("rock", "geo", [{"tag": "shield"}]),
+    ]
+    kb = make_kb(tmp_path, chars, [pref_team("frost", ["ice", "rock"])],
+                 extra_tags=[{"id": "element", "zh": "元素", "param": "element"}])
+    need = Engine(kb).recommend("frost").teams[0].needs[0]
+    assert need.met_by == ["ice"] and need.penalty == 0.2 and need.tag_zh == "元素：冰"
+
+
+def test_two_on_field_characters_conflict(tmp_path):
+    on = lambda cid, el: char(cid, el, [], playstyles=[{"id": "default", "field": "on_field", "provides": [{"tag": "main_dps"}]}])
+    chars = [on("a1", "pyro"), on("a2", "hydro"), char("bard", "anemo", [{"tag": "team_dmg_buff"}]),
+             char("rock", "geo", [{"tag": "shield"}])]
+    rec = Engine(make_kb(tmp_path, chars, [pref_team("a1", ["a2", "bard", "rock"])])).recommend("a1")
+    assert "a2" not in {m.char for m in rec.teams[0].members}
+    clash = next(t for t in rec.teams if "a2" in {m.char for m in t.members})
+    assert [c.kind for c in clash.conflicts] == ["field"]
+
+
+def test_param_tags_are_validated(tmp_path):
+    tags = [{"id": "element_dmg_buff", "zh": "元素增伤", "param": "element"}]
+    with pytest.raises(KnowledgeBaseError, match="未知元素"):
+        make_kb(tmp_path, [char("x", "geo", [{"tag": "element_dmg_buff:wood"}])], [], extra_tags=tags)
+
+
+def test_param_tag_requires_param(tmp_path):
+    tags = [{"id": "element_dmg_buff", "zh": "元素增伤", "param": "element"}]
+    with pytest.raises(KnowledgeBaseError, match="需要参数"):
+        make_kb(tmp_path, [char("x", "geo", [{"tag": "element_dmg_buff"}])], [], extra_tags=tags)
 
 
 # ---------- 知识库与条件求值 ----------

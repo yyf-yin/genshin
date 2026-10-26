@@ -49,5 +49,12 @@ python -m genshin_assistant hints 沃雅妮莎                # 从天赋原文�
 
 - **命座**：`when: "cons >= 1"` 这类条件决定某个功能、需求或玩法是否生效。
 - **核心功能**：候选人缺少槽位的 `core` 功能就不能入槽；槽位没人能填时整套模板判为不成立。
-- **整队限制**：写在模板的 `constraints` 里，可用函数有 `count(元素)`、`max_count([元素...])`、`has_tag(标签)`、`has_char(角色)`，例如 `count('anemo') == 2 and max_count(['pyro', 'cryo', 'electro', 'hydro']) == 2`。
+- **整队限制**：写在模板的 `constraints` 里，可用函数有 `count(元素)`、`count_any([元素...])`、`max_count([元素...])`、`has_tag(标签)`、`has_char(角色)`，例如 `count('anemo') == 2 and max_count(['pyro', 'cryo', 'electro', 'hydro']) == 2`。
+- **角色自带的配队偏好**（写在角色玩法下，模板不用重复写）：
+  - `needs`：需要队友提供的功能，`count` 表示需要几名队友（不算自己）。每个角色自动带 `element:元素` 标签，所以「需要水元素队友」写成 `element:hydro`。
+  - `avoids`：排斥的队友功能，例如莱欧斯利排斥 `healer`，队里有人提供时按 `weight` 扣分。
+  - `team_rules`：整队规则，写法同 `constraints`。`hard: true` 不满足时队伍不成立，否则按 `weight` 扣分，例如法尔伽的「双风双X」、丝柯克的水冰队友。
+  - `field: on_field / off_field / flex`：站场、后台、都可以。一队里有多名 `on_field` 角色时扣分。
+  - 以上都可以带 `when`（命座条件）、`reason`（给人看的理由）、`evidence`（天赋原文）、`source`（攻略出处）。
+- **带参数的标签**：`element_dmg_buff:cryo`（冰元素增伤）、`reaction_buff:stellar_swirl`（星扩散增伤）、`enables:lunar_charged`（开启月感电）。参数会对照元素列表和 `mechanics/reactions.yaml` 校验。
 - **替补**：候选名单之外、满足全部核心功能的角色也会被自动考虑（基础分 0.5）；`substitutions` 里写的攻略结论会作为替补理由优先展示。

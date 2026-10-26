@@ -1,0 +1,20 @@
+# 草稿（verified: false）：配队偏好的样板，排斥治疗用 avoids 表达。
+id: wriothesley
+zh: 莱欧斯利
+aliases: [公爵, 莱欧]
+element: cryo
+weapon: catalyst
+rarity: 5
+playstyles:
+  - id: default
+    zh: 站场冰C
+    field: on_field
+    provides:
+      - {tag: main_dps, score: 1.0}
+    avoids:
+      - tag: healer
+        weight: 0.4
+        reason: 强化重击「惩戒·凌跃拳」要求生命值低于 60%，队友持续治疗会让他难以进入低血线；4 命后溢出治疗能加攻速，排斥程度会降低，但仍需控血
+        evidence: 固有天赋「公理终有辩诉之日」：莱欧斯利的生命值低于60%时，将获得「恩典之诫」，使下次普通攻击·迅烈倾霜拳的重击强化为惩戒·凌跃拳……造成的伤害提升50%
+        source: 天赋原文；排斥程度（weight）待攻略核对
+verified: false

@@ -1,0 +1,25 @@
+# 草稿（verified: false）：配队偏好的样板，对队友元素的要求用 team_rules 表达。
+id: skirk
+zh: 丝柯克
+aliases: [Skirk]
+element: cryo
+weapon: sword
+rarity: 5
+playstyles:
+  - id: default
+    zh: 七相一闪站场C
+    field: on_field
+    provides:
+      - {tag: main_dps, score: 1.0}
+    team_rules:
+      - id: skirk_two_stacks
+        weight: 0.25
+        rule: "count_any(['hydro', 'cryo']) >= 3"
+        reason: 每名水元素角色或其他冰元素角色给一层「死河渡断」，队友里少于 2 名水/冰角色时增伤明显不足
+        evidence: 固有天赋「万流归寂」：队伍中附近的元素类型为水元素的角色的水元素攻击命中敌人时，或是队伍中附近的元素类型为冰元素的其他角色的冰元素攻击命中敌人时，丝柯克将获得一层……死河渡断效果，至多叠加3层
+      - id: skirk_three_stacks
+        weight: 0.2
+        rule: "count_any(['hydro', 'cryo']) >= 4 and count('hydro') >= 1"
+        reason: 三名队友都是水/冰元素时叠满 3 层（普攻 170%、元素爆发 160%）；全队水冰且至少一名水元素时，还会触发「诸武相授」，全队元素战技等级 +1
+        evidence: 固有天赋「诸武相授」：队伍中所有角色的元素类型均为水元素或冰元素，并且至少有一名水元素角色、一名冰元素角色时，队伍中自己的角色的元素战技等级提高1级
+verified: false

@@ -40,6 +40,8 @@ def _print(rec: Recommendation) -> None:
         for n in t.needs:
             state = f"由{'、'.join(n.met_by)}满足" if n.met_by else f"未满足，扣 {n.penalty}"
             print(f"   需求：{n.owner}需要{n.tag_zh}（{n.reason}）→ {state}")
+        for c in t.conflicts:
+            print(f"   扣分：{c.owner}，{c.reason}（{'、'.join(c.involved)}），扣 {c.penalty}")
         for d in t.substitutions:
             why = d.override_reason or f"保留：{'、'.join(d.kept) or '无'}；失去：{'、'.join(d.lost) or '无'}；新增：{'、'.join(d.gained) or '无'}"
             print(f"   替补：{d.chosen} 替 {d.preferred}（{why}）")

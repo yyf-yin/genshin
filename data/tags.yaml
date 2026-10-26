@@ -1,19 +1,36 @@
-# 功能标签词表。角色的 provides / needs 和槽位的 functions 只能用这里的 id。
+# 功能标签词表。角色的 provides / needs / avoids 和槽位的 functions 只能用这里的 id。
+# 带 param 的标签写成「id:参数」：
+#   param: element  参数是元素 id（pyro hydro electro cryo anemo geo dendro），例如 element_dmg_buff:cryo
+#   param: reaction 参数是 mechanics/reactions.yaml 里的反应 id，例如 reaction_buff:stellar_swirl
 tags:
-  - {id: main_dps, zh: 主C输出}
-  - {id: sub_dps, zh: 副C输出}
-  - {id: team_dmg_buff, zh: 全队增伤}
+  # 输出定位
+  - {id: main_dps, zh: 主C输出, desc: 长时间站场打主要伤害}
+  - {id: sub_dps, zh: 副C输出, desc: 后台召唤物、协同攻击等持续打伤害}
+  # 增益
+  - {id: team_dmg_buff, zh: 全队增伤, desc: 给队友加攻击力、伤害加成、擢升等通用增益}
+  - {id: element_dmg_buff, zh: 特定元素增伤, param: element}
+  - {id: reaction_buff, zh: 特定反应增伤, param: reaction}
+  - {id: em_share, zh: 精通分享}
+  - {id: energy_battery, zh: 充能}
+  # 削弱敌人
   - {id: elemental_shred, zh: 元素减抗}
   - {id: universal_shred, zh: 全元素减抗}
+  - {id: def_shred, zh: 减防}
   - {id: grouping, zh: 聚怪}
+  # 生存
   - {id: shield, zh: 护盾}
   - {id: healer, zh: 治疗}
   - {id: interruption_res, zh: 抗打断}
-  - {id: energy_battery, zh: 充能}
+  # 挂元素
   - {id: hydro_application, zh: 后台挂水}
   - {id: cryo_application, zh: 后台挂冰}
   - {id: pyro_application, zh: 后台挂火}
   - {id: electro_application, zh: 后台挂雷}
   - {id: dendro_application, zh: 后台挂草}
-  - {id: em_share, zh: 精通分享}
   - {id: geo_application, zh: 后台挂岩}
+  # 反应与体系
+  - {id: enables, zh: 开启特殊反应, param: reaction, desc: 能让队伍触发月曜/星烁反应，见游戏数据的 enables 字段}
+  - {id: moonsign, zh: 月兆角色, desc: 队里 2 名以上时为月兆·满辉}
+  - {id: witch_arcana, zh: 魔导角色, desc: 完成魔女的课业后成为魔导角色，队里 2 名以上触发魔导·秘仪}
+  # 引擎自动给每个角色加上，不需要手写
+  - {id: element, zh: 元素, param: element}

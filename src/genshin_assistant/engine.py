@@ -11,10 +11,12 @@ from dataclasses import asdict, dataclass, field
 
 from .conditions import check, evaluate
 from .kb import KnowledgeBase
-from .models import Build, Level, Need, Slot, TeamTemplate
+from .models import Avoid, Build, Level, Need, Slot, TeamRule, TeamTemplate
 
 # 候选名单之外、由引擎自动找到的角色的基础分
 AUTO_CANDIDATE_SCORE = 0.5
+# 每多一名必须站场（field: on_field）的角色扣的分：两个站场角色会互相抢场上时间
+FIELD_CONFLICT_PENALTY = 0.3
 
 
 @dataclass
@@ -38,6 +40,9 @@ class Kit:
     cons: int
     provides: dict[str, float]
     needs: list[Need]
+    avoids: list[Avoid] = field(default_factory=list)
+    rules: list[TeamRule] = field(default_factory=list)
+    field: str | None = None
 
 
 @dataclass
@@ -58,6 +63,17 @@ class NeedStatus:
     tag_zh: str
     reason: str
     met_by: list[str]
+    penalty: float
+
+
+@dataclass
+class Conflict:
+    """扣分项：角色排斥的队友功能、没满足的角色软规则、站场冲突。"""
+
+    kind: str  # avoid / rule / field
+    owner: str
+    reason: str
+    involved: list[str]
     penalty: float
 
 
@@ -90,6 +106,7 @@ class TeamResult:
     needs: list[NeedStatus]
     substitutions: list[SubstitutionDiff]
     verified: bool
+    conflicts: list[Conflict] = field(default_factory=list)
 
 
 @dataclass
@@ -125,12 +142,15 @@ class Engine:
         ctx = {"cons": cons}
         if not check(p.when, ctx):
             return None
-        provides: dict[str, float] = {}
+        # 元素是每个角色都有的「功能」，让 needs 可以写 element:hydro
+        provides: dict[str, float] = {f"element:{c.element.value}": 1.0}
         for g in p.provides:
             if check(g.when, ctx):
                 provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
         needs = [n for n in p.needs if check(n.when, ctx)]
-        return Kit(c.id, c.zh, c.element.value, p.id, cons, provides, needs)
+        avoids = [a for a in p.avoids if check(a.when, ctx)]
+        rules = [r for r in p.team_rules if check(r.when, ctx)]
+        return Kit(c.id, c.zh, c.element.value, p.id, cons, provides, needs, avoids, rules, p.field)
 
     def available_playstyles(self, char_id: str, cons: int) -> list[str]:
         c = self.kb.characters[char_id]
@@ -243,6 +263,7 @@ class Engine:
             if len(set(chars)) != len(chars):
                 continue
             failed = self._failed_constraints(t, [k for k, _ in combo])
+            failed += [r for r in self._failed_rules([k for k, _ in combo]) if r.hard]
             pairs = [(s.id, k.char) for s, (k, _) in zip(t.slots, combo) if not s.fixed]
             if failed:
                 for p in pairs:
@@ -252,6 +273,7 @@ class Engine:
             teams.append(self._score(t, combo, roster))
 
         reasons = {k.id: k.reason for k in t.constraints}
+        reasons.update({r.id: r.reason for s in per_slot for k, _ in s for r in k.rules})
         for pair, hits in constraint_hits.items():
             if pair not in in_valid_team:
                 exclusions.append(Exclusion(pair[0], pair[1], "违反整队限制：" + reasons[hits.most_common(1)[0][0]]))
@@ -259,15 +281,25 @@ class Engine:
             return [], "没有满足整队限制的组合", exclusions
         return teams, None, exclusions
 
-    def _failed_constraints(self, t: TeamTemplate, kits: list[Kit]):
+    @staticmethod
+    def _team_funcs(kits: list[Kit]) -> dict:
         elements = Counter(k.element for k in kits)
-        funcs = {
+        return {
             "count": lambda e: elements.get(e, 0),
+            "count_any": lambda es: sum(elements.get(e, 0) for e in es),
             "max_count": lambda es: max((elements.get(e, 0) for e in es), default=0),
             "has_tag": lambda tag: any(k.provides.get(tag, 0) > 0 for k in kits),
             "has_char": lambda c: any(k.char == c for k in kits),
         }
+
+    def _failed_constraints(self, t: TeamTemplate, kits: list[Kit]):
+        funcs = self._team_funcs(kits)
         return [k for k in t.constraints if not evaluate(k.rule, {}, funcs)]
+
+    def _failed_rules(self, kits: list[Kit]) -> list[TeamRule]:
+        """队员自带的整队规则里没满足的那些。"""
+        funcs = self._team_funcs(kits)
+        return [r for k in kits for r in k.rules if not evaluate(r.rule, {}, funcs)]
 
     def _score(self, t: TeamTemplate, combo, roster: Roster) -> TeamResult:
         members: list[Member] = []
@@ -284,16 +316,36 @@ class Engine:
         needs: list[NeedStatus] = []
         penalty_total = 0.0
         for owner in kits:
+            mates = [k for k in kits if k is not owner]
             for n in owner.needs:
-                providers = [k for k in kits if k.provides.get(n.tag, 0) > 0]
-                best = max((k.provides[n.tag] for k in providers), default=0.0)
-                penalty = n.weight * (1 - best)
+                providers = [k for k in mates if k.provides.get(n.tag, 0) > 0]
+                top = sorted((k.provides[n.tag] for k in providers), reverse=True)[: n.count]
+                penalty = n.weight * (1 - sum(top) / n.count)
                 penalty_total += penalty
                 needs.append(NeedStatus(owner.zh, n.tag, self._tag_zh(n.tag), n.reason, [k.zh for k in providers], round(penalty, 3)))
 
+        conflicts: list[Conflict] = []
+        for owner in kits:
+            for a in owner.avoids:
+                offenders = [k for k in kits if k is not owner and k.provides.get(a.tag, 0) > 0]
+                if offenders:
+                    penalty = a.weight * max(k.provides[a.tag] for k in offenders)
+                    conflicts.append(Conflict("avoid", owner.zh, f"排斥{self._tag_zh(a.tag)}：{a.reason}",
+                                              [k.zh for k in offenders], round(penalty, 3)))
+        failed = set(map(id, self._failed_rules(kits)))
+        for owner in kits:
+            for r in owner.rules:
+                if not r.hard and id(r) in failed:
+                    conflicts.append(Conflict("rule", owner.zh, r.reason, [owner.zh], r.weight))
+        on_field = [k.zh for k in kits if k.field == "on_field"]
+        if len(on_field) > 1:
+            conflicts.append(Conflict("field", "、".join(on_field), "多名角色都需要站场，会互相抢场上时间", on_field,
+                                      round(FIELD_CONFLICT_PENALTY * (len(on_field) - 1), 3)))
+        penalty_total += sum(c.penalty for c in conflicts)
+
         score = sum(slot_scores) / len(slot_scores) - penalty_total
         subs = self._diffs(t, combo, roster)
-        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified)
+        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified, conflicts)
 
     def _diffs(self, t: TeamTemplate, combo, roster: Roster) -> list[SubstitutionDiff]:
         diffs: list[SubstitutionDiff] = []
@@ -305,10 +357,11 @@ class Engine:
             if pref.char == k.char:
                 continue
             pref_kit = self.kit(pref.char, pref.playstyle, self._cons(pref.char, roster))
-            pref_tags = set(pref_kit.provides) if pref_kit else {f.tag for f in s.functions}
+            # 元素差异另有整队规则把关，这里只比功能
+            pref_tags = {x for x in (pref_kit.provides if pref_kit else (f.tag for f in s.functions)) if not x.startswith("element:")}
             kept = sorted(tag for tag in pref_tags if k.provides.get(tag, 0) > 0)
             lost = sorted(tag for tag in pref_tags if k.provides.get(tag, 0) <= 0)
-            gained = sorted(tag for tag in k.provides if tag not in pref_tags)
+            gained = sorted(tag for tag in k.provides if tag not in pref_tags and not tag.startswith("element:"))
             o = overrides.get((pref.char, k.char))
             diffs.append(SubstitutionDiff(
                 slot=s.id,
@@ -356,5 +409,4 @@ class Engine:
         return None
 
     def _tag_zh(self, tag: str) -> str:
-        t = self.kb.tags.get(tag)
-        return t.zh if t else tag
+        return self.kb.tag_zh(tag)
