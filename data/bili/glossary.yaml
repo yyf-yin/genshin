@@ -66,6 +66,8 @@ characters:
   - {id: odette, zh: 奥黛塔}
   - {id: woyanisha, zh: 沃雅妮莎}
   - {id: nike, zh: 妮可}
+  - {id: kuki_shinobu, zh: 久岐忍, aliases: [阿忍]}
+  - {id: tartaglia, zh: 达达利亚, aliases: [公子]}
   - {id: durin, zh: 杜林}
   - {id: lauma, zh: 拉乌玛}
   - {id: flins, zh: 菲林斯}

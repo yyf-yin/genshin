@@ -110,6 +110,13 @@ class Material:
     def published(self) -> str:
         return datetime.fromtimestamp(self.pubdate, timezone.utc).date().isoformat() if self.pubdate else ""
 
+    def content_hash(self) -> str:
+        """字幕、简介、置顶评论的指纹：换了字幕来源（比如 OCR 重读）后，旧的抽取结果要作废。"""
+        import hashlib
+        raw = json.dumps([self.desc, [asdict(c) for c in self.pinned], [s.text for s in self.subtitles]],
+                         ensure_ascii=False)
+        return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
+
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(asdict(self), ensure_ascii=False, indent=1), encoding="utf-8")

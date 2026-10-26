@@ -45,13 +45,19 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
             log(f"  {m.bvid} 没有字幕、简介和置顶评论，跳过")
             continue
         cache = bili_dir / target.id / f"{m.bvid}.claims.json"
+        vc = None
         if cache.exists() and not refresh:
             vc = VideoClaims(**json.loads(cache.read_text(encoding="utf-8")))
+            if vc.source_hash != m.content_hash():
+                log(f"  {m.bvid} 字幕或简介变了，重新抽取")
+                vc = None
+        if vc is not None:
             # 名词表、词表改了以后不用重新调用模型：用当前名词表重新归一、重算标记
             vc.claims = [normalize_claim(c.model_copy(update={"flags": []}), ctx) for c in vc.claims]
         else:
             try:
                 vc = extract_video(m, ctx, model)
+                vc.source_hash = m.content_hash()
             except LLMError as e:
                 log(f"  {m.bvid} 抽取失败，跳过（下次重跑会再试）：{e}")
                 continue

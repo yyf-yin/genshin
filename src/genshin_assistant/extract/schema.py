@@ -80,6 +80,7 @@ class VideoClaims(BaseModel):
     up: str = ""
     published: str = ""
     model: str = ""
+    source_hash: str = ""  # 抽取时素材的指纹（Material.content_hash），对不上就重新抽
     claims: list[Claim] = Field(default_factory=list)
     rejected: list[dict] = Field(default_factory=list)  # 丢掉的结论和原因，方便排查
     corrections: dict[str, int] = Field(default_factory=dict)  # 字幕纠错 “错→对”: 次数

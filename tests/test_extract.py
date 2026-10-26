@@ -169,6 +169,11 @@ def test_pipeline_writes_draft_and_never_touches_kb(tmp_path, kb, glossary):
     assert (work / "bili" / "neuvillette" / "BV1.claims.json").exists()  # 抽取结果缓存，重跑不再调用模型
     extract_target(kb, glossary, Target("neuvillette", "那维莱特"), model, work, log=lambda *_: None)
     assert len(model.prompts) == 2
+    m = material("BV1")
+    m.subtitles[0].text += "（OCR 重读）"  # 字幕换了，旧的抽取结果作废
+    m.save(work / "bili" / "neuvillette" / "BV1.json")
+    extract_target(kb, glossary, Target("neuvillette", "那维莱特"), model, work, log=lambda *_: None)
+    assert len(model.prompts) == 3
     assert before == {p: p.read_bytes() for p in DATA.rglob("*.yaml")}
 
 
@@ -253,7 +258,7 @@ def test_cached_claims_are_renormalized_with_current_glossary(tmp_path, kb, glos
     work = tmp_path / "work"
     d = work / "bili" / "neuvillette"
     material("BV1").save(d / "BV1.json")
-    stale = VideoClaims(bvid="BV1", claims=[Claim(kind="teammate", subject="neuvillette", bvid="BV1",
+    stale = VideoClaims(bvid="BV1", source_hash=material("BV1").content_hash(), claims=[Claim(kind="teammate", subject="neuvillette", bvid="BV1",
                                                    data={"char": "new:莫娜"}, flags=["未知角色：new:莫娜"],
                                                    evidence=[Evidence(quote="队友首选芙宁娜", bvid="BV1", t=20)])])
     (d / "BV1.claims.json").write_text(stale.model_dump_json(), encoding="utf-8")

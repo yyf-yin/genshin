@@ -73,6 +73,8 @@ def gpu_provider() -> str | None:
 
 def _engine():
     """新版包名 rapidocr，旧版 rapidocr_onnxruntime，两种都认。"""
+    import logging
+    logging.getLogger("RapidOCR").setLevel(logging.ERROR)  # 没字幕的帧每张都报一条“检测结果为空”，会刷屏
     gpu = gpu_provider()
     try:
         from rapidocr import RapidOCR
