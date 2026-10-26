@@ -50,9 +50,11 @@ def _newcomer(c: Claim | Finding) -> str | None:
 
 
 def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2,
-              releases: dict[str, date] | None = None, names: dict[str, str] | None = None) -> list[Finding]:
-    """releases：角色 id → 上线日期（不知道的不写）；names：id → 中文名，只用于提示文字。"""
-    releases, names = releases or {}, names or {}
+              releases: dict[str, date] | None = None, names: dict[str, str] | None = None,
+              reworks: dict[str, list[tuple[date, str]]] | None = None) -> list[Finding]:
+    """releases：角色 id → 上线日期（不知道的不写）；names：id → 中文名，只用于提示文字；
+    reworks：角色 id → [(加强日期, 版本)]。"""
+    releases, names, reworks = releases or {}, names or {}, reworks or {}
     published = {v.bvid: v.published for v in videos}
     groups: dict[tuple, list[Claim]] = defaultdict(list)
     for v in videos:
@@ -101,6 +103,7 @@ def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2,
         f.review_flags = flags
         findings.append(f)
     _flag_outdated(findings, releases, names)
+    _flag_before_rework(findings, names, reworks)
     findings.sort(key=lambda f: (KIND_ORDER.index(f.kind), f.subject, -f.support, str(f.data)))
     return findings
 
@@ -120,3 +123,15 @@ def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: di
             d, c = hit
             f.review_flags.insert(0, f"可能已过时：支持它的视频都发布于 {names.get(c, c)} 上线（{d}）之前，"
                                      f"而之后的视频推荐了 {names.get(c, c)}")
+
+
+def _flag_before_rework(findings: list[Finding], names: dict[str, str], reworks: dict[str, list[tuple[date, str]]]) -> None:
+    """主角色或被推荐的队友后来加强过，而支持这条的视频都在加强之前：当时的评价可能不准了。"""
+    for f in findings:
+        if not f.dates[1]:
+            continue
+        for who in dict.fromkeys(x for x in (f.subject, _newcomer(f)) if x):
+            later = [(d, v) for d, v in reworks.get(who, []) if f.dates[1] < d.isoformat()]
+            if later:
+                d, v = max(later)
+                f.review_flags.insert(0, f"可能已过时：支持它的视频都早于 {names.get(who, who)} 的加强（{v}，{d}）")

@@ -68,7 +68,7 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
     releases = glossary.releases()
     if target.since:
         releases.setdefault(cid, target.since)
-    findings = aggregate(videos, releases=releases, names=glossary.names())
+    findings = aggregate(videos, releases=releases, names=glossary.names(), reworks=glossary.reworks)
     annotate(findings, kb, cid)
     return write_draft(work / "drafts", target.id, target.zh, usable, videos, findings,
                        kb_not_mentioned(findings, kb, cid))

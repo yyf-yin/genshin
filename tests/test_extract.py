@@ -289,3 +289,24 @@ def test_teammates_released_later_are_counted_only_against_newer_videos():
     assert (nike.support, nike.eligible) == (2, 2) and "妮可 上线" in nike.eligible_note
     assert bennett.review_flags[0].startswith("可能已过时") and "妮可" in bennett.review_flags[0]
     assert not durin.review_flags and durin.dates == ("2026-02-20", "2026-06-01")  # 新视频也推荐，不算过时
+
+
+def test_findings_older_than_a_rework_are_flagged():
+    from datetime import date
+    videos = [VideoClaims(bvid="A", published="2025-01-01", claims=[claim("A", char="venti")]),
+              VideoClaims(bvid="B", published="2026-06-01", claims=[claim("B", char="furina")])]
+    by = {f.data["char"]: f for f in aggregate(videos, names={"venti": "温迪"},
+                                               reworks={"venti": [(date(2026, 3, 1), "月之三")]})}
+    assert by["venti"].review_flags[0] == "可能已过时：支持它的视频都早于 温迪 的加强（月之三，2026-03-01）"
+    assert by["furina"].review_flags == []
+
+
+def test_releases_file_adds_names_dates_and_reworks(tmp_path, kb):
+    from datetime import date
+    p = tmp_path / "releases.yaml"
+    p.write_text("characters:\n  - {id: nike, zh: 妮可, since: 2026-05-20}\n  - {id: neuvillette, zh: 那维莱特, since: 2023-11-08}\n"
+                 "reworks:\n  - {version: 月之三, date: 2026-03-01, characters: [venti]}\n", encoding="utf-8")
+    g = load_glossary(kb, None, p)
+    assert g.resolve("妮可").id == "nike" and g.releases()["nike"] == date(2026, 5, 20)
+    assert g.releases()["neuvillette"] == date(2023, 11, 8)  # 知识库已有的角色也补上日期
+    assert g.reworks == {"venti": [(date(2026, 3, 1), "月之三")]}

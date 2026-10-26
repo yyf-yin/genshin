@@ -151,7 +151,7 @@ def _bili(args, kb) -> None:
                 targets.append(t)
         else:
             targets = [t for t in cfg.targets.values() if t.id in cfg.pilot]
-        glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml")
+        glossary = load_glossary(kb, data_dir / "bili" / "glossary.yaml", data_dir / "releases.yaml")
         model = None
         if cmd in ("extract", "run"):
             model = DeepSeek(cache_dir=work / "llm-cache")

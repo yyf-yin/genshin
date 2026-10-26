@@ -39,6 +39,7 @@ class Term:
 class Glossary:
     terms: list[Term]
     typos: dict[str, str]
+    reworks: dict[str, list[tuple[date, str]]] = field(default_factory=dict)  # 角色 id → [(加强日期, 版本)]
     _index: dict[str, Term] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
@@ -112,7 +113,12 @@ class Glossary:
         return self.fix_homophones(text, counter) if asr else text
 
 
-def load_glossary(kb: KnowledgeBase, path: Path | None) -> Glossary:
+def _date(v) -> date | None:
+    return v if isinstance(v, date) or v is None else date.fromisoformat(str(v))
+
+
+def load_glossary(kb: KnowledgeBase, path: Path | None, releases_path: Path | None = None) -> Glossary:
+    """releases_path（data/releases.yaml）：全部角色的上线日期和加强版本，补进名词表。"""
     terms: list[Term] = [Term(c.id, c.zh, "character", list(c.aliases)) for c in kb.characters.values()]
     for b in kb.builds:
         terms += [Term(w.id, w.zh, "weapon") for w in b.weapons]
@@ -124,8 +130,16 @@ def load_glossary(kb: KnowledgeBase, path: Path | None) -> Glossary:
             for t in raw.get(kind + "s") or []:
                 since = t.get("since")
                 terms.append(Term(t["id"], t["zh"], kind, list(t.get("aliases") or []), t.get("homophone"),
-                                  since if isinstance(since, date) or since is None else date.fromisoformat(str(since))))
+                                  _date(since)))
         typos = {str(k): str(v) for k, v in (raw.get("typos") or {}).items()}
+    reworks: dict[str, list[tuple[date, str]]] = {}
+    if releases_path and releases_path.exists():
+        rel = yaml.safe_load(releases_path.read_text(encoding="utf-8")) or {}
+        for c in rel.get("characters") or []:
+            terms.append(Term(c["id"], c["zh"], "character", list(c.get("aliases") or []), since=_date(c.get("since"))))
+        for r in rel.get("reworks") or []:
+            for cid in r.get("characters") or []:
+                reworks.setdefault(cid, []).append((_date(r["date"]), str(r.get("version", ""))))
     # 知识库优先：同一个 id 只留第一次出现的（上线日期只写在 glossary.yaml 里，合并过来）
     seen: dict[str, Term] = {}
     uniq = []
@@ -133,6 +147,8 @@ def load_glossary(kb: KnowledgeBase, path: Path | None) -> Glossary:
         if t.id not in seen:
             seen[t.id] = t
             uniq.append(t)
-        elif t.since and not seen[t.id].since:
-            seen[t.id].since = t.since
-    return Glossary(uniq, typos)
+        else:
+            if t.since and not seen[t.id].since:
+                seen[t.id].since = t.since
+            seen[t.id].aliases += [a for a in t.aliases if a not in seen[t.id].aliases]
+    return Glossary(uniq, typos, reworks)
