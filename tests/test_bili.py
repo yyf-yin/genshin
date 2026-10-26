@@ -277,3 +277,11 @@ def test_asr_fills_subtitles_for_whitelisted_videos_only(tmp_path, monkeypatch):
     got = hv.harvest(None, Target("vesna", "薇斯纳", ["微丝娜"], queries=["{zh}"]), cfg, tmp_path, log=lambda *_: None)
     assert [(m.bvid, m.subtitle_lan) for m in got] == [("BV1", "asr-whisper")]
     assert transcribed == [("BV1.m4a", "薇斯纳、微丝娜")]
+
+
+def test_gzip_and_deflate_bodies_are_decompressed():
+    import gzip, zlib
+    from genshin_assistant.bili.client import _decompress
+    assert _decompress(gzip.compress(b'{"a":1}')) == b'{"a":1}'
+    assert _decompress(zlib.compress(b"<html>")) == b"<html>"
+    assert _decompress(b'{"code":0}') == b'{"code":0}'

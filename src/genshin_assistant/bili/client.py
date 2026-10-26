@@ -7,6 +7,7 @@ tools/lib/cred.mjs 和各命令里重复的 WBI 签名，见 THIRD_PARTY_NOTICES
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import os
@@ -14,6 +15,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import zlib
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -106,11 +108,23 @@ def sign_wbi(params: dict, img_url: str, sub_url: str, now: float | None = None)
     return f"{query}&w_rid={hashlib.md5((query + mixin).encode()).hexdigest()}"
 
 
+def _decompress(body: bytes) -> bytes:
+    """B 站网页有时不管请求头直接回 gzip / deflate。"""
+    if body[:2] == b"\x1f\x8b":
+        return gzip.decompress(body)
+    if body[:1] == b"\x78":
+        try:
+            return zlib.decompress(body)
+        except zlib.error:
+            return body
+    return body
+
+
 def _urllib_transport(url: str, headers: dict[str, str]) -> tuple[int, bytes]:
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            return r.status, r.read()
+            return r.status, _decompress(r.read())
     except urllib.error.HTTPError as e:
         return e.code, e.read() or b""
     except (urllib.error.URLError, TimeoutError) as e:
