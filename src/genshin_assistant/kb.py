@@ -34,7 +34,8 @@ class KnowledgeBase:
     def teams_for(self, char_id: str) -> list[TeamTemplate]:
         return [t for t in self.teams.values() if t.core.char == char_id]
 
-    def validate(self) -> None:
+    def validate(self, game=None) -> None:
+        """game 是 gamedata.GameData；给了就顺便核对角色、武器、圣遗物的中文名是否和游戏一致。"""
         errors: list[str] = []
 
         def tag_ok(tag: str, where: str) -> None:
@@ -86,8 +87,30 @@ class KnowledgeBase:
         for b in self.builds:
             ref_ok(b.char, b.playstyle, f"配装 {b.char}/{b.playstyle}")
 
+        if game is not None and game.characters:
+            errors += _check_game_names(self, game)
+
         if errors:
             raise KnowledgeBaseError("知识库校验失败：\n" + "\n".join(errors))
+
+
+def _check_game_names(kb: KnowledgeBase, game) -> list[str]:
+    errors = []
+    char_names = {c["zh"] for c in game.characters.values()}
+    weapon_names = {w["zh"] for w in game.weapons.values()}
+    set_names = {a["zh"] for a in game.artifact_sets.values()}
+    for c in kb.characters.values():
+        if c.zh not in char_names:
+            errors.append(f"角色 {c.id}：中文名「{c.zh}」不是游戏里的正式名")
+    for b in kb.builds:
+        for w in b.weapons:
+            if w.zh not in weapon_names:
+                errors.append(f"配装 {b.char}：武器「{w.zh}」不是游戏里的正式名")
+        for combo in b.artifact_sets:
+            for a in combo:
+                if a.zh not in set_names:
+                    errors.append(f"配装 {b.char}：圣遗物「{a.zh}」不是游戏里的正式名")
+    return errors
 
 
 def _load_yaml_docs(path: Path) -> list[dict]:
@@ -112,5 +135,7 @@ def load(data_dir: Path | str = DEFAULT_DATA_DIR, validate: bool = True) -> Know
     for path in sorted((data_dir / "builds").glob("*.yaml")):
         kb.builds.extend(Build(**raw) for raw in _load_yaml_docs(path))
     if validate:
-        kb.validate()
+        from .gamedata import load_gamedata
+
+        kb.validate(load_gamedata(data_dir))
     return kb

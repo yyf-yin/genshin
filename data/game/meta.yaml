@@ -1,0 +1,5 @@
+# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-26。
+# 重新生成：python -m genshin_assistant import-gamedata
+source_version: 5.2.14
+generated: '2026-10-26'
+latest_game_version: '7.1'

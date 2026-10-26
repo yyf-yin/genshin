@@ -1,0 +1,17 @@
+# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-26。
+# 重新生成：python -m genshin_assistant import-gamedata
+# stats_lv90 是 90 级突破后的白值，暴击率/暴击伤害已含基础 5%/50%。
+# scaling 写成「10级 / 13级」，两个等级相同时只写一个。
+id: aether
+game_id: 10000005
+zh: 空
+en: Aether
+weapon: sword
+rarity: 5
+version: '1.0'
+stats_lv90:
+  hp: 10875
+  atk: 212
+  def: 683
+  ascension_stat: 攻击力
+  ascension_value: 24.0%
