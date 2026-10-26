@@ -427,3 +427,13 @@ def test_slow_trickle_hits_total_timeout(monkeypatch):
     monkeypatch.setattr(cl.time, "monotonic", lambda: next(t))
     with pytest.raises(BiliError, match="线路太慢"):
         cl._urllib_transport("https://cdn/v.mp4", {})
+
+
+def test_select_videos_reserves_slots_for_recent_videos():
+    t = Target("varka", "法尔伽", since=date(2026, 2, 19), max_videos=3)
+    launch, now = 1771500000, 1771500000 + 200 * 86400  # 上线期，以及 200 天后
+    hits = [VideoHit(f"OLD{i}", f"法尔伽配队攻略{i}", "x", i, 100000 - i, launch, 600) for i in range(5)]
+    hits += [VideoHit("NEW1", "法尔伽 妮可 配队", "y", 9, 300, now - 10 * 86400, 600)]
+    got = [h.bvid for h in select_videos(hits, t, [], fresh_slots=2, now=now)]
+    assert got == ["NEW1", "OLD0", "OLD1"]  # 新视频播放量低也能排进来
+    assert [h.bvid for h in select_videos(hits, t, [], now=now)] == ["OLD0", "OLD1", "OLD2"]

@@ -20,6 +20,12 @@ def _fmt_t(t: float | None) -> str:
     return "" if t is None else f"{int(t // 60):02d}:{int(t % 60):02d}"
 
 
+def _support(f: Finding, total: int) -> str:
+    if f.eligible_note:
+        return f"{f.support}/{f.eligible}（{f.eligible_note}，共 {total} 个）"
+    return f"{f.support}/{total}"
+
+
 def describe(f: Finding) -> str:
     d = f.data
     cons = f"［{f.cons}］" if f.cons else ""
@@ -78,7 +84,8 @@ def write_draft(out_dir: Path, target_id: str, target_zh: str, materials: list[M
             "playstyle": f.playstyle,
             "data": f.data,
             "majority": f.value,
-            "support": f"{f.support}/{len(materials)}",
+            "support": _support(f, len(materials)),
+            "published": "~".join(dict.fromkeys(f.dates)) if f.dates[0] else "",
             "votes": f.votes,
             "kb": f.kb_status,
             "flags": f.review_flags,
@@ -101,7 +108,8 @@ def write_draft(out_dir: Path, target_id: str, target_zh: str, materials: list[M
         lines += [f"## {zh}", ""]
         for i, f in rows:
             mark = "⚠️ " if f.review_flags else ""
-            lines.append(f"- **f{i:03d}** {mark}{describe(f)}  ·  {f.support}/{len(materials)} 个视频  ·  知识库：{f.kb_status}")
+            when = f"（{'~'.join(dict.fromkeys(f.dates))}）" if f.dates[0] else ""
+            lines.append(f"- **f{i:03d}** {mark}{describe(f)}  ·  {_support(f, len(materials))} 个视频{when}  ·  知识库：{f.kb_status}")
             for flag in f.review_flags:
                 lines.append(f"  - {flag}")
             for e in f.evidence:

@@ -270,3 +270,17 @@ def test_alternative_main_stat_is_not_a_conflict(kb):
     status = {f.data["field"]: f.kb_status for f in findings}
     assert status["circlet"].startswith("需对照（视频给的是备选")
     assert status["goblet"].startswith("冲突")
+
+
+def test_teammates_released_later_are_counted_only_against_newer_videos():
+    from datetime import date
+    old = [VideoClaims(bvid=b, published="2026-02-20", claims=[claim(b, char="bennett"), claim(b, char="durin")])
+           for b in ("A", "B", "C")]
+    new = [VideoClaims(bvid=b, published="2026-06-01", claims=[claim(b, char="nike"), claim(b, char="durin")])
+           for b in ("D", "E")]
+    by = {f.data["char"]: f for f in aggregate(old + new, releases={"nike": date(2026, 5, 20)},
+                                               names={"nike": "妮可", "bennett": "班尼特"})}
+    nike, bennett, durin = by["nike"], by["bennett"], by["durin"]
+    assert (nike.support, nike.eligible) == (2, 2) and "妮可 上线" in nike.eligible_note
+    assert bennett.review_flags[0].startswith("可能已过时") and "妮可" in bennett.review_flags[0]
+    assert not durin.review_flags and durin.dates == ("2026-02-20", "2026-06-01")  # 新视频也推荐，不算过时

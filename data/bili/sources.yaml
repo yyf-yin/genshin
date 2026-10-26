@@ -3,8 +3,12 @@
 # pilot: true 的角色是试点，`python -m genshin_assistant bili run` 不带角色名时只跑它们。
 
 defaults:
-  queries: ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替"]
+  queries: ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替", "{zh} 深渊"]
   max_videos: 8        # 每个角色最多取几个视频（方案定的是 5 到 10 个）
+  # 前 fresh_slots 个名额留给最近 fresh_days 天内的视频：主 C 先出、最佳队友后几个版本才补齐（法尔伽之后的妮可），
+  # 只按播放量选会全是上线期的旧攻略
+  fresh_slots: 3
+  fresh_days: 120
   min_duration: 120    # 秒，短于这个的不要
   # 标题含这些词的跳过（多半不是配队养成攻略）
   # 标题、简介或标签里至少要有一个这些词，防止别的游戏同名角色混进来
@@ -36,7 +40,7 @@ characters:
     pilot: true         # 试点：命座规则（0 命需抗打断）
   - id: varka
     zh: 法尔伽
-    aliases: [法尔加, 大团长]   # B 站标题写“法尔伽”；“法尔加”会误配“特拉法尔加”（碧蓝航线），靠下面的“原神”要求兜住
+    aliases: [法尔加, 大团长, 尼法]   # B 站标题写“法尔伽”；“法尔加”会误配“特拉法尔加”（碧蓝航线），靠下面的“原神”要求兜住
     since: 2026-02-19
     pilot: true         # 试点：整队限制（双风 + 双同元素）
   - id: vesna

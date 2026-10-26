@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 import yaml
@@ -31,6 +32,7 @@ class Term:
     aliases: list[str] = field(default_factory=list)
     # 两个字的词默认不做同音纠错（“甘雨”和“干预”同音），要纠就在 glossary.yaml 里写 homophone: true
     homophone: bool | None = None
+    since: date | None = None  # 上线日期：投票时判断旧视频能不能提到这个角色
 
 
 @dataclass
@@ -43,6 +45,12 @@ class Glossary:
         for t in self.terms:
             for name in (t.id, t.zh, *t.aliases):
                 self._index.setdefault(name, t)
+
+    def releases(self) -> dict[str, date]:
+        return {t.id: t.since for t in self.terms if t.kind == "character" and t.since}
+
+    def names(self) -> dict[str, str]:
+        return {t.id: t.zh for t in self.terms}
 
     def resolve(self, name: str, kind: str | None = None) -> Term | None:
         t = self._index.get(str(name).strip())
@@ -114,12 +122,17 @@ def load_glossary(kb: KnowledgeBase, path: Path | None) -> Glossary:
         raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         for kind in ("character", "weapon", "artifact", "term"):
             for t in raw.get(kind + "s") or []:
-                terms.append(Term(t["id"], t["zh"], kind, list(t.get("aliases") or []), t.get("homophone")))
+                since = t.get("since")
+                terms.append(Term(t["id"], t["zh"], kind, list(t.get("aliases") or []), t.get("homophone"),
+                                  since if isinstance(since, date) or since is None else date.fromisoformat(str(since))))
         typos = {str(k): str(v) for k, v in (raw.get("typos") or {}).items()}
-    # 知识库优先：同一个 id 只留第一次出现的
-    seen, uniq = set(), []
+    # 知识库优先：同一个 id 只留第一次出现的（上线日期只写在 glossary.yaml 里，合并过来）
+    seen: dict[str, Term] = {}
+    uniq = []
     for t in terms:
         if t.id not in seen:
-            seen.add(t.id)
+            seen[t.id] = t
             uniq.append(t)
+        elif t.since and not seen[t.id].since:
+            seen[t.id].since = t.since
     return Glossary(uniq, typos)

@@ -59,7 +59,10 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
         usable.append(m)
         log(f"  {m.bvid} 保留 {len(vc.claims)} 条，丢弃 {len(vc.rejected)} 条：{m.title}")
         videos.append(vc)
-    findings = aggregate(videos)
+    releases = glossary.releases()
+    if target.since:
+        releases.setdefault(cid, target.since)
+    findings = aggregate(videos, releases=releases, names=glossary.names())
     annotate(findings, kb, cid)
     return write_draft(work / "drafts", target.id, target.zh, usable, videos, findings,
                        kb_not_mentioned(findings, kb, cid))

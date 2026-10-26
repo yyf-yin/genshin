@@ -51,6 +51,8 @@ class SourceConfig:
     ocr: str = "off"  # 没字幕时读硬字幕（优先于语音识别）：off / whitelist / all
     ocr_crop: tuple[float, ...] = ()  # 空就用 ocr.DEFAULT_CROP
     ocr_crop_up: dict[str, tuple[float, ...]] = field(default_factory=dict)  # 每个 UP 主字幕位置不一样时单独写
+    fresh_slots: int = 3  # 每个角色留几个名额给最近的视频（见 select_videos）
+    fresh_days: int = 120
 
     def crop_for(self, up: str) -> tuple[float, ...]:
         from .ocr import DEFAULT_CROP
@@ -81,7 +83,8 @@ def load_sources(path: Path) -> SourceConfig:
                         list(d.get("require_words") or []),
                         str(d.get("asr") or "off"), str(d.get("asr_model") or "small"),
                         str(d.get("ocr") or "off"), tuple(d.get("ocr_crop") or ()),
-                        {str(k): tuple(v) for k, v in (d.get("ocr_crop_up") or {}).items()})
+                        {str(k): tuple(v) for k, v in (d.get("ocr_crop_up") or {}).items()},
+                        int(d.get("fresh_slots", 3)), int(d.get("fresh_days") or 120))
 
 
 @dataclass
@@ -121,10 +124,14 @@ class Material:
 
 def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], min_duration: int = 120,
                   exclude_words: list[str] = (), rejected: list[tuple[VideoHit, str]] | None = None,
-                  require_words: list[str] = (), limit: int | None = -1) -> list[VideoHit]:
+                  require_words: list[str] = (), limit: int | None = -1, fresh_slots: int = 0,
+                  fresh_days: int = 120, now: float | None = None) -> list[VideoHit]:
     """过滤并排序：标题或简介里要有角色名；标题、简介或标签里要有 require_words 之一（如“原神”）；
     标题不含排除词；上线日期之后发布；不要短视频；
-    白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。"""
+    白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。
+
+    fresh_slots：前几个名额留给最近 fresh_days 天内发布的视频。上线期的攻略播放量天然最高，
+    不留名额的话，后来版本补齐的队友（如法尔伽之后出的妮可）永远排不进来。"""
     since_ts = datetime(target.since.year, target.since.month, target.since.day,
                         tzinfo=timezone.utc).timestamp() if target.since else 0
     wl = set(whitelist)
@@ -151,6 +158,10 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
         kept.append(h)
     kept.sort(key=lambda h: (not (h.author in wl or str(h.mid) in wl),
                              not any(w in h.title for w in GUIDE_WORDS), -h.play))
+    if fresh_slots:
+        cutoff = (now if now is not None else datetime.now(timezone.utc).timestamp()) - fresh_days * 86400
+        fresh = [h for h in kept if h.pubdate >= cutoff][:fresh_slots]
+        kept = fresh + [h for h in kept if h not in fresh]
     return kept[: target.max_videos if limit == -1 else limit]
 
 
@@ -227,7 +238,7 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         hits += found
     rejected: list[tuple[VideoHit, str]] = []
     chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected,
-                           cfg.require_words, limit=None)
+                           cfg.require_words, limit=None, fresh_slots=cfg.fresh_slots, fresh_days=cfg.fresh_days)
     reasons = Counter(why.split("「")[0].split(" ")[0] for _, why in rejected)
     log(f"  候选 {len(chosen)} 个视频（取前 {target.max_videos} 个能用的）；筛掉 {len(rejected)} 个：" + "，".join(f"{k} {n}" for k, n in reasons.items()))
     if explain:
