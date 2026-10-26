@@ -253,3 +253,10 @@ def test_harvest_prefers_subtitled_videos_and_uses_pinned_only_as_filler(tmp_pat
     assert [m.bvid for m in got] == ["BV1", "BV2"]  # BV0 只有置顶评论，被有字幕的挤掉
     got = hv.harvest(None, Target("vesna", "薇斯纳", queries=["{zh}"], max_videos=5), cfg, tmp_path, log=lambda *_: None)
     assert [m.bvid for m in got] == ["BV1", "BV2", "BV0"]  # 名额够才用它兜底
+
+
+def test_guide_titles_rank_above_popular_chatter():
+    t = Target("varka", "法尔伽")
+    hits = [VideoHit("BV1", "法尔伽的几个发现", "x", 1, 99999, 1, 600),
+            VideoHit("BV2", "法尔伽配队攻略", "x", 2, 10, 1, 600)]
+    assert [h.bvid for h in select_videos(hits, t, [])] == ["BV2", "BV1"]

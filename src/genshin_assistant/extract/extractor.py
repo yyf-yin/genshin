@@ -171,7 +171,8 @@ def normalize_claim(c: Claim, ctx: ExtractContext) -> Claim:
     def char_id(name) -> str:
         if not name:
             return ""
-        t = g.resolve(str(name), "character")
+        name = str(name).removeprefix("new:")
+        t = g.resolve(name, "character")
         if t:
             return t.id
         flags.append(f"未知角色：{name}")

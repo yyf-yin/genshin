@@ -9,7 +9,7 @@ from ..bili.harvest import Material, Target, load_materials
 from ..kb import KnowledgeBase
 from .compare import annotate, kb_not_mentioned
 from .draft import write_draft
-from .extractor import ExtractContext, extract_video
+from .extractor import ExtractContext, extract_video, normalize_claim
 from .glossary import Glossary
 from .llm import JSONModel, LLMError
 from .schema import VideoClaims
@@ -47,6 +47,8 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
         cache = bili_dir / target.id / f"{m.bvid}.claims.json"
         if cache.exists() and not refresh:
             vc = VideoClaims(**json.loads(cache.read_text(encoding="utf-8")))
+            # 名词表、词表改了以后不用重新调用模型：用当前名词表重新归一、重算标记
+            vc.claims = [normalize_claim(c.model_copy(update={"flags": []}), ctx) for c in vc.claims]
         else:
             try:
                 vc = extract_video(m, ctx, model)

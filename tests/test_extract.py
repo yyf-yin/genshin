@@ -247,3 +247,16 @@ def test_pipeline_skips_video_when_model_fails(tmp_path, kb, glossary):
     yml, _ = extract_target(kb, glossary, Target("neuvillette", "那维莱特"), Broken([]), work, log=logs.append)
     assert yaml.safe_load(yml.read_text(encoding="utf-8"))["summary"]["videos"] == 0
     assert any("抽取失败" in x for x in logs) and not (work / "bili" / "neuvillette" / "BV1.claims.json").exists()
+
+
+def test_cached_claims_are_renormalized_with_current_glossary(tmp_path, kb, glossary):
+    work = tmp_path / "work"
+    d = work / "bili" / "neuvillette"
+    material("BV1").save(d / "BV1.json")
+    stale = VideoClaims(bvid="BV1", claims=[Claim(kind="teammate", subject="neuvillette", bvid="BV1",
+                                                   data={"char": "new:莫娜"}, flags=["未知角色：new:莫娜"],
+                                                   evidence=[Evidence(quote="队友首选芙宁娜", bvid="BV1", t=20)])])
+    (d / "BV1.claims.json").write_text(stale.model_dump_json(), encoding="utf-8")
+    yml, _ = extract_target(kb, glossary, Target("neuvillette", "那维莱特"), FakeModel([]), work, log=lambda *_: None)
+    f = yaml.safe_load(yml.read_text(encoding="utf-8"))["findings"][0]
+    assert f["data"]["char"] == "mona" and f["flags"] == []

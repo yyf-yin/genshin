@@ -17,7 +17,10 @@ from .client import BiliClient, BiliError, RateLimited
 WHITELIST_EARLY_DAYS = 60
 DEFAULT_QUERIES = ["{zh} 配队", "{zh} 养成 攻略", "{zh} 替代 平替"]
 # 标题里有这些词的多半不是配队养成攻略（试点里选进过“法尔伽幻化武器攻略”）
-DEFAULT_EXCLUDE = ["幻化", "外观", "剧情", "抽卡", "抽取记录", "爆料", "测试服", "前瞻", "手书", "MMD", "cos", "鬼畜"]
+DEFAULT_EXCLUDE = ["幻化", "外观", "剧情", "抽卡", "抽取记录", "爆料", "测试服", "前瞻", "手书", "MMD", "cos", "鬼畜",
+                   "有趣", "小知识", "冷知识", "彩蛋"]
+# 标题里有这些词的排在前面（同一档里再按播放量），杂谈视频播放量高也排不到攻略前面
+GUIDE_WORDS = ["攻略", "测评", "评测", "配队", "养成", "教学", "指南", "圣遗物", "武器", "手法", "培养"]
 
 
 @dataclass
@@ -134,7 +137,8 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
                 rejected.append((h, why))
             continue
         kept.append(h)
-    kept.sort(key=lambda h: (not (h.author in wl or str(h.mid) in wl), -h.play))
+    kept.sort(key=lambda h: (not (h.author in wl or str(h.mid) in wl),
+                             not any(w in h.title for w in GUIDE_WORDS), -h.play))
     return kept[: target.max_videos if limit == -1 else limit]
 
 
