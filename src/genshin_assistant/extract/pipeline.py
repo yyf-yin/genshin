@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -9,11 +10,14 @@ from ..bili.harvest import Material, Target, load_materials
 from ..kb import KnowledgeBase
 from .compare import annotate, kb_not_mentioned
 from .draft import write_draft
-from .extractor import ExtractContext, extract_video, normalize_claim
+from .extractor import SYSTEM_PROMPT, ExtractContext, extract_video, normalize_claim
 from .glossary import Glossary
 from .llm import JSONModel, LLMError
 from .schema import VideoClaims
 from .vote import aggregate
+
+
+PROMPT_VERSION = hashlib.sha1(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:8]  # 提示词改了，旧的抽取结果也要作废
 
 
 def core_id(kb: KnowledgeBase, target: Target) -> str:
@@ -48,8 +52,8 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
         vc = None
         if cache.exists() and not refresh:
             vc = VideoClaims(**json.loads(cache.read_text(encoding="utf-8")))
-            if vc.source_hash != m.content_hash():
-                log(f"  {m.bvid} 字幕或简介变了，重新抽取")
+            if vc.source_hash != f"{m.content_hash()}-{PROMPT_VERSION}":
+                log(f"  {m.bvid} 字幕、简介或提示词变了，重新抽取")
                 vc = None
         if vc is not None:
             # 名词表、词表改了以后不用重新调用模型：用当前名词表重新归一、重算标记
@@ -57,7 +61,7 @@ def extract_target(kb: KnowledgeBase, glossary: Glossary, target: Target, model:
         else:
             try:
                 vc = extract_video(m, ctx, model)
-                vc.source_hash = m.content_hash()
+                vc.source_hash = f"{m.content_hash()}-{PROMPT_VERSION}"
             except LLMError as e:
                 log(f"  {m.bvid} 抽取失败，跳过（下次重跑会再试）：{e}")
                 continue

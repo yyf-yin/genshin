@@ -11,6 +11,7 @@ from genshin_assistant.bili.api import Comment, SubtitleLine
 from genshin_assistant.bili.harvest import Material, Target
 from genshin_assistant.extract.compare import annotate, kb_not_mentioned
 from genshin_assistant.extract.extractor import ExtractContext, extract_video
+from genshin_assistant.extract.pipeline import PROMPT_VERSION
 from genshin_assistant.extract.glossary import Glossary, Term, load_glossary
 from genshin_assistant.extract.llm import DeepSeek
 from genshin_assistant.extract.pipeline import extract_target
@@ -258,7 +259,7 @@ def test_cached_claims_are_renormalized_with_current_glossary(tmp_path, kb, glos
     work = tmp_path / "work"
     d = work / "bili" / "neuvillette"
     material("BV1").save(d / "BV1.json")
-    stale = VideoClaims(bvid="BV1", source_hash=material("BV1").content_hash(), claims=[Claim(kind="teammate", subject="neuvillette", bvid="BV1",
+    stale = VideoClaims(bvid="BV1", source_hash=f"{material('BV1').content_hash()}-{PROMPT_VERSION}", claims=[Claim(kind="teammate", subject="neuvillette", bvid="BV1",
                                                    data={"char": "new:莫娜"}, flags=["未知角色：new:莫娜"],
                                                    evidence=[Evidence(quote="队友首选芙宁娜", bvid="BV1", t=20)])])
     (d / "BV1.claims.json").write_text(stale.model_dump_json(), encoding="utf-8")
