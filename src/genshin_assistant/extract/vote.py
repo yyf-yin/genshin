@@ -1,18 +1,21 @@
 """跨视频汇总：同一结论按支持它的视频数计票，矛盾的标为“有争议”，不同命座、玩法的结论分开。
 
 时效：原神常常先出主 C，后面几个版本才补齐最佳队友。妮可比法尔伽晚上线，法尔伽上线期的攻略不可能推荐她，
-所以推荐某个队友的票数只拿“这个队友上线之后发布的视频”当分母；只有旧视频支持、而之后又出了被推荐的新队友的，
-标“可能已过时”交给人审。
+所以推荐某个队友的票只在“这个队友上线前一个版本之后发布的视频”里数（攻略常提前讲下个版本的角色）。
+A 只有旧视频推荐，而之后出了和 A 功能重叠的新队友 B，B 上线后的视频（至少 MIN_LATER 个）推荐 B、都不再推荐 A，
+才标“可能已被 B 取代”。
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 from .schema import ALWAYS_REVIEW, Claim, Evidence, VideoClaims
 
+PREVIEW = timedelta(days=42)  # 攻略提前一个版本讲新角色
+MIN_LATER = 3  # 新队友上线后至少要有这么多视频，才判断旧推荐是否被取代
 KIND_ORDER = ["teammate", "slot_function", "team_constraint", "substitution", "cons_effect", "playstyle", "build"]
 LEVEL_ZH = {"core": "核心", "major": "重要", "minor": "加分"}
 
@@ -31,8 +34,9 @@ class Finding:
     evidence: list[Evidence]
     review_flags: list[str] = field(default_factory=list)
     kb_status: str = ""
-    eligible: int = 0  # 能提到这条的视频数（队友上线之后发布的）；0 表示没算
-    eligible_note: str = ""  # 例如“只算 妮可 上线后的视频”
+    eligible: int = 0  # 能提到这条的视频数（队友上线前一个版本之后发布的）；0 表示没算
+    eligible_support: int = 0  # 这些视频里持多数意见的
+    eligible_note: str = ""  # 例如“妮可 2026-05-14 上线，只算之后的视频”
     dates: tuple[str, str] = ("", "")  # 持多数意见的视频，最早和最晚发布日期
 
     @property
@@ -96,33 +100,37 @@ def aggregate(videos: list[VideoClaims], per_video_evidence: int = 2,
         f.dates = (days[0], days[-1]) if days else ("", "")
         who = _newcomer(f)
         if who and who in releases:
-            since = releases[who].isoformat()
-            f.eligible = sum(1 for d in published.values() if d and d >= since)
-            if f.eligible < len(videos):
-                f.eligible_note = f"只算 {names.get(who, who)} 上线（{since}）后的视频"
+            window = (releases[who] - PREVIEW).isoformat()
+            in_window = {b for b, d in published.items() if d and d >= window}
+            if len(in_window) < len(videos):
+                f.eligible = len(in_window)
+                f.eligible_support = len(in_window & set(votes[value]))
+                f.eligible_note = f"{names.get(who, who)} {releases[who]} 上线，只算之后（含前一个版本）的视频"
         f.review_flags = flags
         findings.append(f)
-    _flag_outdated(findings, releases, names)
+    _flag_outdated(findings, releases, names, published)
     _flag_before_rework(findings, names, reworks)
     findings.sort(key=lambda f: (KIND_ORDER.index(f.kind), f.subject, -f.support, str(f.data)))
     return findings
 
 
-def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: dict[str, str]) -> None:
-    """有视频推荐了某个后出的队友，而另一条推荐只来自那个队友上线之前的视频：多半是当时的替代，标出来人审。"""
-    newer = sorted(((releases[c].isoformat(), c) for f in findings
-                    if f.value == "for" and (c := _newcomer(f)) in releases and f.dates[1] >= releases[c].isoformat()),
-                   reverse=True)
-    if not newer:
-        return
-    for f in findings:
-        if f.value != "for" or not _newcomer(f) or not f.dates[1]:
+def _flag_outdated(findings: list[Finding], releases: dict[str, date], names: dict[str, str],
+                   published: dict[str, str]) -> None:
+    """A 只有旧视频推荐；之后出了和 A 有相同功能的 B，B 上线后的视频推荐 B、没有一个再推荐 A：A 可能已被 B 取代。"""
+    mates = [f for f in findings if f.kind == "teammate" and f.value == "for" and f.cons is None and f.playstyle is None]
+    for a in mates:
+        if not a.dates[1]:
             continue
-        hit = next(((d, c) for d, c in newer if c != _newcomer(f) and f.dates[1] < d), None)
-        if hit:
-            d, c = hit
-            f.review_flags.insert(0, f"可能已过时：支持它的视频都发布于 {names.get(c, c)} 上线（{d}）之前，"
-                                     f"而之后的视频推荐了 {names.get(c, c)}")
+        for b in sorted(mates, key=lambda x: releases.get(x.data.get("char"), date.min), reverse=True):
+            bid = b.data.get("char")
+            if b is a or bid not in releases or a.dates[1] >= releases[bid].isoformat():
+                continue
+            shared = set(a.data.get("functions") or []) & set(b.data.get("functions") or [])
+            later = {v for v, d in published.items() if d and d >= releases[bid].isoformat()}
+            if shared and len(later) >= MIN_LATER and set(b.votes["for"]) & later:
+                a.review_flags.insert(0, f"可能已被 {names.get(bid, bid)} 取代：支持它的视频都早于 {names.get(bid, bid)} 上线"
+                                         f"（{releases[bid]}），之后的 {len(later)} 个视频都没再推荐它（同为 {'、'.join(sorted(shared))}）")
+                break
 
 
 def _flag_before_rework(findings: list[Finding], names: dict[str, str], reworks: dict[str, list[tuple[date, str]]]) -> None:

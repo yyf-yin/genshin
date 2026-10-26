@@ -22,7 +22,7 @@ def _fmt_t(t: float | None) -> str:
 
 def _support(f: Finding, total: int) -> str:
     if f.eligible_note:
-        return f"{f.support}/{f.eligible}（{f.eligible_note}，共 {total} 个）"
+        return f"{f.eligible_support}/{f.eligible}（{f.eligible_note}）"
     return f"{f.support}/{total}"
 
 

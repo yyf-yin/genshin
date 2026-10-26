@@ -279,16 +279,24 @@ def test_alternative_main_stat_is_not_a_conflict(kb):
 
 def test_teammates_released_later_are_counted_only_against_newer_videos():
     from datetime import date
-    old = [VideoClaims(bvid=b, published="2026-02-20", claims=[claim(b, char="bennett"), claim(b, char="durin")])
-           for b in ("A", "B", "C")]
-    new = [VideoClaims(bvid=b, published="2026-06-01", claims=[claim(b, char="nike"), claim(b, char="durin")])
-           for b in ("D", "E")]
-    by = {f.data["char"]: f for f in aggregate(old + new, releases={"nike": date(2026, 5, 20)},
+    old = [VideoClaims(bvid=b, published="2026-02-20", claims=[
+        claim(b, char="bennett", functions=["healer", "pyro_aura"]), claim(b, char="durin", functions=["shred"]),
+        claim(b, char="venti", functions=["grouping"])]) for b in ("A", "B", "C")]
+    new = [VideoClaims(bvid=b, published="2026-06-01", claims=[
+        claim(b, char="nike", functions=["pyro_aura"]), claim(b, char="durin", functions=["shred"])])
+        for b in ("D", "E", "F")]
+    pre = [VideoClaims(bvid="P", published="2026-04-20", claims=[claim("P", char="nike", functions=["pyro_aura"])])]
+    by = {f.data["char"]: f for f in aggregate(old + pre + new, releases={"nike": date(2026, 5, 14)},
                                                names={"nike": "妮可", "bennett": "班尼特"})}
-    nike, bennett, durin = by["nike"], by["bennett"], by["durin"]
-    assert (nike.support, nike.eligible) == (2, 2) and "妮可 上线" in nike.eligible_note
-    assert bennett.review_flags[0].startswith("可能已过时") and "妮可" in bennett.review_flags[0]
+    nike, bennett, durin, venti = by["nike"], by["bennett"], by["durin"], by["venti"]
+    # 提前一个版本讲妮可的视频也算，分子分母同一个窗口
+    assert (nike.eligible_support, nike.eligible) == (4, 4) and "妮可 2026-05-14 上线" in nike.eligible_note
+    assert bennett.review_flags[0].startswith("可能已被 妮可 取代") and "pyro_aura" in bennett.review_flags[0]
     assert not durin.review_flags and durin.dates == ("2026-02-20", "2026-06-01")  # 新视频也推荐，不算过时
+    assert not venti.review_flags  # 功能不重叠，不算被取代
+    few = aggregate(old + new[:2], releases={"nike": date(2026, 5, 14)})  # 新视频太少，不下结论
+    assert not any(f.review_flags for f in few if f.data.get("char") == "bennett")
+
 
 
 def test_findings_older_than_a_rework_are_flagged():

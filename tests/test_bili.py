@@ -1,7 +1,7 @@
 """B 站客户端测试：全部用假的网络层，不会真的请求 B 站。"""
 
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -429,11 +429,21 @@ def test_slow_trickle_hits_total_timeout(monkeypatch):
         cl._urllib_transport("https://cdn/v.mp4", {})
 
 
-def test_select_videos_reserves_slots_for_recent_videos():
-    t = Target("varka", "法尔伽", since=date(2026, 2, 19), max_videos=3)
-    launch, now = 1771500000, 1771500000 + 200 * 86400  # 上线期，以及 200 天后
-    hits = [VideoHit(f"OLD{i}", f"法尔伽配队攻略{i}", "x", i, 100000 - i, launch, 600) for i in range(5)]
-    hits += [VideoHit("NEW1", "法尔伽 妮可 配队", "y", 9, 300, now - 10 * 86400, 600)]
-    got = [h.bvid for h in select_videos(hits, t, [], fresh_slots=2, now=now)]
-    assert got == ["NEW1", "OLD0", "OLD1"]  # 新视频播放量低也能排进来
-    assert [h.bvid for h in select_videos(hits, t, [], now=now)] == ["OLD0", "OLD1", "OLD2"]
+def test_harvest_takes_one_video_per_recent_version_then_by_rank(tmp_path, monkeypatch):
+    from genshin_assistant.bili import harvest as hv
+    from genshin_assistant.bili.api import VideoInfo
+    ts = lambda y, m, d: int(datetime(y, m, d, tzinfo=timezone.utc).timestamp())  # noqa: E731
+    hits = [VideoHit(f"L{i}", f"法尔伽配队攻略{i}", "x", i, 100000 - i, ts(2026, 2, 20), 600) for i in range(6)]
+    hits += [VideoHit("N1", "法尔伽 妮可 配队", "y", 7, 900, ts(2026, 5, 25), 600),
+             VideoHit("O1", "法尔伽 深渊", "y", 8, 800, ts(2026, 10, 10), 600),
+             VideoHit("O2", "法尔伽 深渊 无字幕", "y", 9, 50000, ts(2026, 10, 12), 600)]
+    monkeypatch.setattr(hv, "search_videos", lambda client, kw, order="totalrank": hits)
+    monkeypatch.setattr(hv, "video_info", lambda c, b: VideoInfo(b, 1, 2, b, "", 0, 600, "x", 1))
+    monkeypatch.setattr(hv, "pinned_comments", lambda c, i: [])
+    monkeypatch.setattr(hv, "subtitles", lambda c, i: ("", []) if i.bvid == "O2" else ("ai-zh", [SubtitleLine(0, 1, "字幕")]))
+    versions = [("月之五", date(2026, 2, 25)), ("月之七", date(2026, 5, 20)), ("7.1", date(2026, 9, 23))]
+    cfg = hv.SourceConfig({}, [], recent_slots=2, versions=versions)
+    t = Target("varka", "法尔伽", since=date(2026, 2, 19), queries=["{zh}"], max_videos=4)
+    got = [m.bvid for m in hv.harvest(None, t, cfg, tmp_path, log=lambda *_: None)]
+    # 7.1 播放量最高的 O2 没字幕，换同版本的 O1；再取月之七的 N1；剩下两个按播放量
+    assert got == ["O1", "N1", "L0", "L1"]

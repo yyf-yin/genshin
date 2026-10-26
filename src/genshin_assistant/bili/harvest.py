@@ -51,8 +51,10 @@ class SourceConfig:
     ocr: str = "off"  # 没字幕时读硬字幕（优先于语音识别）：off / whitelist / all
     ocr_crop: tuple[float, ...] = ()  # 空就用 ocr.DEFAULT_CROP
     ocr_crop_up: dict[str, tuple[float, ...]] = field(default_factory=dict)  # 每个 UP 主字幕位置不一样时单独写
-    fresh_slots: int = 3  # 每个角色留几个名额给最近的视频（见 select_videos）
-    fresh_days: int = 120
+    # 前 recent_slots 个名额按版本分层：从最新版本往回，每个版本取一个最好的视频。原神常常先出主 C、
+    # 后几个版本才补齐最佳队友（法尔伽之后的妮可），只按播放量选会全是上线期的旧攻略
+    recent_slots: int = 4
+    versions: list[tuple[str, date]] = field(default_factory=list)  # data/releases.yaml 的版本表
 
     def crop_for(self, up: str) -> tuple[float, ...]:
         from .ocr import DEFAULT_CROP
@@ -65,7 +67,16 @@ class SourceConfig:
         return None
 
 
-def load_sources(path: Path) -> SourceConfig:
+def load_versions(path: Path) -> list[tuple[str, date]]:
+    if not path.exists():
+        return []
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return [(str(v["version"]), v["start"] if isinstance(v["start"], date) else date.fromisoformat(str(v["start"])))
+            for v in raw.get("versions") or []]
+
+
+def load_sources(path: Path, releases_path: Path | None = None) -> SourceConfig:
+    """releases_path 默认是 sources.yaml 往上两级的 releases.yaml（data/releases.yaml）。"""
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     d = raw.get("defaults") or {}
     targets = {}
@@ -84,7 +95,8 @@ def load_sources(path: Path) -> SourceConfig:
                         str(d.get("asr") or "off"), str(d.get("asr_model") or "small"),
                         str(d.get("ocr") or "off"), tuple(d.get("ocr_crop") or ()),
                         {str(k): tuple(v) for k, v in (d.get("ocr_crop_up") or {}).items()},
-                        int(d.get("fresh_slots", 3)), int(d.get("fresh_days") or 120))
+                        int(d.get("recent_slots", 4)),
+                        load_versions(releases_path or path.parent.parent / "releases.yaml"))
 
 
 @dataclass
@@ -131,14 +143,10 @@ class Material:
 
 def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], min_duration: int = 120,
                   exclude_words: list[str] = (), rejected: list[tuple[VideoHit, str]] | None = None,
-                  require_words: list[str] = (), limit: int | None = -1, fresh_slots: int = 0,
-                  fresh_days: int = 120, now: float | None = None) -> list[VideoHit]:
+                  require_words: list[str] = (), limit: int | None = -1) -> list[VideoHit]:
     """过滤并排序：标题或简介里要有角色名；标题、简介或标签里要有 require_words 之一（如“原神”）；
     标题不含排除词；上线日期之后发布；不要短视频；
-    白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。
-
-    fresh_slots：前几个名额留给最近 fresh_days 天内发布的视频。上线期的攻略播放量天然最高，
-    不留名额的话，后来版本补齐的队友（如法尔伽之后出的妮可）永远排不进来。"""
+    白名单 UP 主优先，其余按播放量。传入 rejected 列表会收集被筛掉的视频和原因。"""
     since_ts = datetime(target.since.year, target.since.month, target.since.day,
                         tzinfo=timezone.utc).timestamp() if target.since else 0
     wl = set(whitelist)
@@ -165,11 +173,24 @@ def select_videos(hits: list[VideoHit], target: Target, whitelist: list[str], mi
         kept.append(h)
     kept.sort(key=lambda h: (not (h.author in wl or str(h.mid) in wl),
                              not any(w in h.title for w in GUIDE_WORDS), -h.play))
-    if fresh_slots:
-        cutoff = (now if now is not None else datetime.now(timezone.utc).timestamp()) - fresh_days * 86400
-        fresh = [h for h in kept if h.pubdate >= cutoff][:fresh_slots]
-        kept = fresh + [h for h in kept if h not in fresh]
     return kept[: target.max_videos if limit == -1 else limit]
+
+
+def version_buckets(ranked: list[VideoHit], versions: list[tuple[str, date]],
+                    now: float | None = None) -> list[tuple[str, list[VideoHit]]]:
+    """把候选按发布时所在的版本分组，新版本在前，组内保持原来的排序。没有版本表就按 6 周一段切。"""
+    if versions:
+        starts = sorted((datetime(d.year, d.month, d.day, tzinfo=timezone.utc).timestamp(), name)
+                        for name, d in versions)
+    else:
+        end = now if now is not None else datetime.now(timezone.utc).timestamp()
+        starts = [(end - i * 42 * 86400, f"{i * 6} 周前") for i in range(60, 0, -1)]
+    groups: dict[str, list[VideoHit]] = {}
+    for h in ranked:
+        name = next((n for t, n in reversed(starts) if h.pubdate >= t), "")
+        groups.setdefault(name, []).append(h)
+    order = [n for _, n in reversed(starts)] + [""]
+    return [(n, groups[n]) for n in order if n in groups]
 
 
 def whitelist_names(whitelist: list[str]) -> list[str]:
@@ -245,7 +266,7 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
         hits += found
     rejected: list[tuple[VideoHit, str]] = []
     chosen = select_videos(hits, target, cfg.whitelist, cfg.min_duration, cfg.exclude_words, rejected,
-                           cfg.require_words, limit=None, fresh_slots=cfg.fresh_slots, fresh_days=cfg.fresh_days)
+                           cfg.require_words, limit=None)
     reasons = Counter(why.split("「")[0].split(" ")[0] for _, why in rejected)
     log(f"  候选 {len(chosen)} 个视频（取前 {target.max_videos} 个能用的）；筛掉 {len(rejected)} 个：" + "，".join(f"{k} {n}" for k, n in reasons.items()))
     if explain:
@@ -255,57 +276,74 @@ def harvest(client: BiliClient, target: Target, cfg: SourceConfig, out_dir: Path
     wl = set(cfg.whitelist)
     results: list[Material] = []
     no_subs: list[Material] = []  # 只有置顶评论、没有字幕的：有字幕的候选用完了才补进来
-    for h in chosen:
-        if len(results) >= target.max_videos:
-            break
+    tried: set[str] = set()
+
+    def take(h: VideoHit) -> bool:
+        """取一个候选的材料，有字幕就收下并返回 True。撞到风控抛 RateLimited。"""
+        tried.add(h.bvid)
         path = out_dir / target.id / f"{h.bvid}.json"
         if path.exists() and not refresh:
             m = Material.load(path)
             m.whitelisted = m.up in wl or str(m.up_mid) in wl
             if not m.subtitles:
-                try:
-                    _maybe_asr(client, m, target, cfg, out_dir, asr_hint or "、".join(target.names()), log)
-                except RateLimited as e:
-                    log(f"  停下：{e}")
-                    break
+                _maybe_asr(client, m, target, cfg, out_dir, asr_hint or "、".join(target.names()), log)
                 if m.subtitles:
                     m.save(path)
             if m.subtitles:
                 results.append(m)
                 log(f"  {h.bvid} 已有，跳过：{h.title}")
-            elif m.pinned:
+                return True
+            if m.pinned:
                 no_subs.append(m)
-            continue
+            return False
         try:
             info = video_info(client, h.bvid)
             pinned = pinned_comments(client, info)
             lan, lines = subtitles(client, info)
-        except RateLimited as e:
-            log(f"  停下：{e}")
-            break
+        except RateLimited:
+            raise
         except BiliError as e:
             log(f"  {h.bvid} 取材失败：{e}")
-            continue
+            return False
         m = Material(bvid=h.bvid, title=info.title, up=info.owner, up_mid=info.owner_mid, pubdate=info.pubdate,
                      duration=info.duration, desc=info.desc, pinned=pinned, subtitle_lan=lan, subtitles=lines,
                      whitelisted=info.owner in wl or str(info.owner_mid) in wl,
                      fetched_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
         try:
             _maybe_asr(client, m, target, cfg, out_dir, asr_hint or "、".join(target.names()), log)
-        except RateLimited as e:
-            log(f"  停下：{e}")
+        finally:
             m.save(path)
-            break
-        lan, lines = m.subtitle_lan, m.subtitles
-        m.save(path)
-        if not lines:
+        if not m.subtitles:
             # 没有字幕（可能是硬字幕或 UP 关了 AI 字幕），信息太少：先换下一个候选，名额不够再用它的置顶评论兜底
             log(f"  {h.bvid} 没有字幕，换下一个{'（有置顶评论，备用）' if pinned else ''}：{info.title}")
             if pinned:
                 no_subs.append(m)
-            continue
+            return False
         results.append(m)
-        log(f"  {h.bvid} 字幕 {len(lines)} 行（{lan or '无字幕'}），置顶 {len(pinned)} 条：{info.title}")
+        log(f"  {h.bvid} 字幕 {len(m.subtitles)} 行（{m.subtitle_lan or '无字幕'}），置顶 {len(pinned)} 条：{info.title}")
+        return True
+
+    try:
+        # 第一轮：从最新版本往回，每个版本取一个；某个版本的候选都没字幕就看下一个版本
+        recent = min(cfg.recent_slots, target.max_videos)
+        buckets = [list(hs) for _, hs in version_buckets(chosen, cfg.versions)] if recent else []
+        got = 0
+        while got < recent and any(buckets):
+            for hs in buckets:
+                while hs and got < recent:
+                    if take(hs.pop(0)):
+                        got += 1
+                        break
+                if got >= recent:
+                    break
+        # 第二轮：剩下的名额按原排序（白名单、攻略词、播放量）
+        for h in chosen:
+            if len(results) >= target.max_videos:
+                break
+            if h.bvid not in tried:
+                take(h)
+    except RateLimited as e:
+        log(f"  停下：{e}")
     for m in no_subs[: max(0, target.max_videos - len(results))]:
         log(f"  {m.bvid} 有字幕的候选不够，用置顶评论兜底：{m.title}")
         results.append(m)
