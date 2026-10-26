@@ -2,6 +2,7 @@
 
 import json
 from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -373,7 +374,7 @@ def test_hardsub_drops_number_only_readouts(tmp_path, monkeypatch):
     monkeypatch.setattr(ocr, "extract_frames", lambda *a: frames)
     monkeypatch.setattr(ocr, "_same_frame", lambda: lambda a, b: False)
     said = {"0.jpg": "薇斯纳，风属性", "1.jpg": "87%", "2.jpg": "充能要140%"}
-    monkeypatch.setattr(ocr, "_engine", lambda: lambda p: [[None, said[p.rsplit("/", 1)[-1]], 0.9]])
+    monkeypatch.setattr(ocr, "_engine", lambda: lambda p: [[None, said[Path(p).name], 0.9]])
     got = ocr.hardsub_lines(tmp_path / "v.mp4", tmp_path)
     assert [s.text for s in got] == ["薇斯纳，风属性", "充能要140%"]
 
