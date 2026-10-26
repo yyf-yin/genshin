@@ -105,7 +105,8 @@ def write_draft(out_dir: Path, target_id: str, target_zh: str, materials: list[M
     team_kinds = {"teammate", "slot_function", "team_constraint", "substitution"}
     cores = sorted({f.subject for f in findings if f.kind in team_kinds},
                    key=lambda c: (c != target_id, -sum(1 for f in findings if f.subject == c)))
-    sections = [(f"{zh}（{c} 队）" if c != target_id else zh, kind, c) for c in cores
+    sections = [(f"{zh}（{c} 队，依据：{target_zh} 的攻略，会偏向推荐{target_zh}）" if c != target_id else zh, kind, c)
+                for c in cores
                 for kind, zh in KIND_ZH.items() if kind in team_kinds]
     sections += [(zh, kind, None) for kind, zh in KIND_ZH.items() if kind not in team_kinds]
     for title, kind, core in sections:
