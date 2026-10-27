@@ -7,6 +7,8 @@
     python -m genshin_assistant build 阿罗夏 --cons 1      # 养成方案
     python -m genshin_assistant bili run 那维莱特        # B 站取材 + DeepSeek 抽取 → work/drafts/
     python -m genshin_assistant game 桑多涅
+    python -m genshin_assistant web                      # 本机网页问答（DeepSeek 解析问题、解释引擎结果）
+    python -m genshin_assistant chat                     # 同上，命令行版
 游戏数据相关的命令见 gamedata/cli.py。
 """
 
@@ -136,6 +138,13 @@ def main(argv: list[str] | None = None) -> None:
     b.add_argument("--cons", type=int, default=0)
     b.add_argument("--playstyle", default="default")
     b.add_argument("--json", action="store_true")
+    for name, helptext in (("web", "打开本机网页，用中文提问配队和养成"), ("chat", "命令行里用中文提问配队和养成")):
+        x = sub.add_parser(name, help=helptext)
+        x.add_argument("--key-file", help="DeepSeek key 文件（默认先看 DEEPSEEK_API_KEY，再找仓库和上一级目录的 ds_key.txt）")
+        x.add_argument("--roster", help="「我的角色」存哪（默认 work/roster.json）")
+        if name == "web":
+            x.add_argument("--port", type=int, default=8765)
+            x.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
     args = p.parse_args(argv)
@@ -164,12 +173,58 @@ def main(argv: list[str] | None = None) -> None:
     if args.cmd == "build":
         _show_build(kb, args)
         return
+    if args.cmd in ("web", "chat"):
+        _chat(args, kb)
+        return
     roster = _roster(kb, args.own, args.missing, args.character, args.cons)
     rec = Engine(kb).recommend(args.character, roster, args.playstyle)
     if args.json:
         print(json.dumps(rec.to_dict(), ensure_ascii=False, indent=2))
     else:
         _print(rec)
+
+
+def _deepseek_key(key_file: str | None, data_dir: Path) -> str | None:
+    import os
+
+    if key_file:
+        return Path(key_file).read_text(encoding="utf-8").strip()
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        return None  # DeepSeek 自己读环境变量
+    for d in (data_dir.parent, data_dir.parent.parent):
+        if (d / "ds_key.txt").exists():
+            return (d / "ds_key.txt").read_text(encoding="utf-8").strip()
+    return None
+
+
+def _chat(args, kb) -> None:
+    from .chat import Assistant, Roster
+    from .extract.llm import DeepSeek, LLMError
+
+    data_dir = Path(args.data)
+    work = data_dir.parent / "work"
+    try:
+        model = DeepSeek(api_key=_deepseek_key(args.key_file, data_dir), cache_dir=work / "llm-cache" / "chat")
+    except LLMError as e:
+        sys.exit(f"{e}，或者把 key 放进仓库上一级目录的 ds_key.txt，或用 --key-file 指定")
+    roster = Roster(Path(args.roster) if args.roster else work / "roster.json")
+    assistant = Assistant(kb, model, data_dir, roster)
+    if args.cmd == "web":
+        from .chat.web import serve
+        serve(assistant, args.port, not args.no_browser)
+        return
+    print("问配队或养成，例如「我有沃雅妮莎，怎么配队」。空行退出。")
+    last = None
+    while True:
+        try:
+            q = input("\n> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not q:
+            break
+        reply = assistant.ask(q, last)
+        last = reply.query
+        print(reply.answer if reply.explained_by_llm else "[大模型解释失败，下面是引擎原始结果]\n" + reply.answer)
 
 
 def _add_bili_parser(sub) -> None:
