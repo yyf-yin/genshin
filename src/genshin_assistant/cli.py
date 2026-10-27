@@ -9,7 +9,8 @@
     python -m genshin_assistant game 桑多涅
     python -m genshin_assistant web                      # 本机网页问答（DeepSeek 解析问题、解释引擎结果）
     python -m genshin_assistant chat                     # 同上，命令行版
-游戏数据相关的命令见 gamedata/cli.py。
+    python -m genshin_assistant damage examples/damage/neuvillette.yaml   # 伤害计算
+游戏数据相关的命令见 gamedata/cli.py，伤害计算见 damage/cli.py。
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import sys
 from pathlib import Path
 
 from .engine import Engine, Owned, Recommendation
+from .damage import cli as damage_cli
 from .gamedata import cli as gamedata_cli
 from .kb import DEFAULT_DATA_DIR, KnowledgeBase, load
 
@@ -147,6 +149,7 @@ def main(argv: list[str] | None = None) -> None:
             x.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
+    damage_cli.add_subcommands(sub)
     args = p.parse_args(argv)
 
     if args.cmd == "import-gamedata":
@@ -158,6 +161,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.cmd in gamedata_cli.COMMANDS:
         gamedata_cli.run(args, kb)
+        return
+    if args.cmd in damage_cli.COMMANDS:
+        damage_cli.run(args, kb)
         return
     if args.cmd == "validate":
         from .gamedata import load_gamedata

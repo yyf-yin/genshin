@@ -75,6 +75,13 @@ def _str(dumper: yaml.SafeDumper, value: str):
 _Dumper.add_representer(str, _str)
 
 
+class _Flow(list):
+    """写成一行 [a, b, c] 的列表（天赋参数表）。"""
+
+
+_Dumper.add_representer(_Flow, lambda d, v: d.represent_sequence("tag:yaml.org,2002:seq", v, flow_style=True))
+
+
 def dump(data, path: Path, header: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     body = yaml.dump(data, Dumper=_Dumper, allow_unicode=True, sort_keys=False, width=10_000)
@@ -99,6 +106,7 @@ class Importer:
         self.hyperlinks = {h["id"]: h for h in agd["hyperlinks"]}
         self.tutorials = {t["id"]: t for t in agd["tutorials"]}
         self.resonance = agd["resonance"]
+        self.element_coeff = agd.get("element_coeff", [])
         self._intros = self._find_intros()
         self._witch = self._find_witch_quests()
 
@@ -277,6 +285,15 @@ class Importer:
                 out[f"{n}pc"] = a[f"effect{n}Pc"]
         return {k: v for k, v in out.items() if v is not None}
 
+    # ---------- 伤害计算用的数值表 ----------
+
+    def talent_multipliers(self, key: str) -> dict:
+        """天赋每一行的模板和 1~15 级参数，给伤害计算用（damage/talents.py 负责解析）。"""
+        return talent_multipliers(self.zh["talents"].get(key, {}), self.gdb["stats"]["talents"].get(key, {}))
+
+    def level_multipliers(self) -> dict[int, float]:
+        return level_multipliers(self.element_coeff)
+
     # ---------- 教程 ----------
 
     def tutorials_by_topic(self) -> dict[str, list[str]]:
@@ -327,11 +344,51 @@ class Importer:
         dump({"source_version": self.gdb_version, "generated": stamp,
               "latest_game_version": max(self.version["characters"].values(), key=_version_key)},
              game / "meta.yaml", header)
+        write_damage_tables(game, header, {k: self.talent_multipliers(k) for k in keys}, self.level_multipliers())
         tutorials = self.tutorials_by_topic()
         dump({"tutorials": tutorials}, data_dir / "mechanics" / "official_tutorials.yaml", header)
         dump({"resonances": self.resonances()}, data_dir / "mechanics" / "official_resonance.yaml", header)
         return {"characters": len(keys), "weapons": len(weapons), "artifact_sets": len(sets),
                 "terms": len(glossary), "tutorial_topics": len(tutorials)}
+
+
+def talent_multipliers(talent: dict, params: dict) -> dict:
+    """{天赋槽: [{name, template, params: {paramN: [1~15级]}}]}，只留带百分比参数（倍率）的行。"""
+    out = {}
+    for src, dst in TALENT_SLOTS:
+        labels = talent.get(src, {}).get("attributes", {}).get("labels", [])
+        if not labels or src not in params:
+            continue
+        rows = []
+        for label in labels:
+            name, _, template = label.partition("|")
+            used = _PARAM_REF.findall(template)
+            if not any(fmt.endswith("P") for _, fmt in used):
+                continue
+            rows.append({
+                "name": name,
+                "template": template,
+                "params": {f"param{n}": _Flow(round(v, 6) for v in params[src].get(f"param{n}", [])) for n, _ in used},
+            })
+        if rows:
+            out[dst] = rows
+    return out
+
+
+def level_multipliers(element_coeff: list[dict]) -> dict[int, float]:
+    """角色等级 → 等级系数（ElementCoeffExcelConfigData 的 playerElementLevelCo，第 0 行是占位，第 n 行是 n 级）。"""
+    return {lv: round(row["playerElementLevelCo"], 4) for lv, row in enumerate(element_coeff) if 1 <= lv <= 100}
+
+
+def write_damage_tables(game: Path, header: str, multipliers: dict[str, dict], levels: dict[int, float]) -> None:
+    dump({k: v for k, v in sorted(multipliers.items()) if v}, game / "talent_multipliers.yaml", header + (
+        "# 天赋倍率：template 是游戏里的显示模板，params 是 1~15 级的原始数值（百分比按小数存）。\n"
+        "# 解析见 src/genshin_assistant/damage/talents.py。\n"))
+    dump({"level_multiplier": levels}, game / "level_multiplier.yaml", header + (
+        "# 等级系数（剧变、月曜反应和激化的基础值），按触发角色的等级。\n"))
+
+
+_PARAM_REF = re.compile(r"\{param(\d+):([A-Z0-9]+)\}")
 
 
 def _enabled_reactions(passives: list[dict]) -> list[str]:

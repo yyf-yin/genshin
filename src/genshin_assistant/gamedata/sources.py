@@ -25,6 +25,7 @@ AGD_FILES = {
     "tutorials": "ExcelBinOutput/TutorialDetailExcelConfigData.json",
     "proud_skills": "ExcelBinOutput/ProudSkillExcelConfigData.json",
     "resonance": "ExcelBinOutput/TeamResonanceExcelConfigData.json",
+    "element_coeff": "ExcelBinOutput/ElementCoeffExcelConfigData.json",  # 剧变/月曜反应的等级系数
     "textmap": "TextMap/TextMapCHS.json",
     "textmap_medium": "TextMap/TextMap_MediumCHS.json",
 }

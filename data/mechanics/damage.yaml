@@ -45,9 +45,24 @@ formula:
 
 level_multiplier:
   verified: true
-  zh: 剧变反应的等级系数（按触发者的角色等级）
-  note: 社区普遍认为月曜反应也用这张表（未核实）；星烁反应是否用这张表未知
+  zh: 剧变反应、激化、月曜反应的等级系数（按触发者的角色等级）
+  note: |-
+    完整的 1~100 级表在 data/game/level_multiplier.yaml，由导入脚本从游戏数据 ElementCoeffExcelConfigData 生成。
+    月曜反应也用这张表（社区实测）；星烁反应是否用这张表未知。
   values: {1: 17.17, 20: 80.58, 40: 207.38, 50: 323.60, 60: 492.88, 70: 765.64, 80: 1077.44, 90: 1446.85}
+
+lunar:
+  verified: false
+  zh: 月曜反应伤害（6.0 起），代码见 src/genshin_assistant/damage/formulas.py
+  text: |-
+    反应本身（如月感电落雷）：系数 × 等级系数 ×（1 + 月曜基础伤害提升）×（1 + 精通加成 + 月曜反应加成）× 擢升区 × 暴击区 × 抗性区
+    角色技能直接造成的月曜伤害（「月感电伤害」这类天赋行）：技能倍率 × 属性 × 直伤系数 ×（同上各区）
+    不吃防御区，也不吃普通的增伤区（元素伤害加成、造成的伤害提升都不算）。
+    反应系数：月感电 1.8、月结晶 0.96；月绽放反应本身不直接造成伤害。
+    直伤系数：月感电 3、月绽放 1、月结晶 1.6。
+    多名角色共同施加元素时：每人按自己的面板算一份，最高的 ×1、第二 ×1/2、其余 ×1/12，再相加。
+  verified_parts: 精通加成 6×EM/(EM+2000)、月感电直伤 ×3、多人合并规则与攻略给出的数值一致（Icy Veins 2025 整理）
+  source: 社区实测；系数和「不吃增伤区」还需对照游戏内实测
 
 elemental_mastery:
   verified: true
@@ -57,7 +72,7 @@ elemental_mastery:
   additive: 5 × EM / (EM + 1200)
   crystallize_shield: 4.44 × EM / (EM + 1400)
   lunar: 6 × EM / (EM + 2000)
-  lunar_verified: false
+  lunar_verified: true  # 和攻略给出的 500/1000/1500 精通 → +120%/+200%/+257% 吻合
 
 energy:
   verified: true
