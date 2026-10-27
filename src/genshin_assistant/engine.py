@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter, defaultdict
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 
 from .conditions import check, evaluate
 from .kb import KnowledgeBase
-from .models import Avoid, Build, Level, Need, Slot, TeamRule, TeamTemplate
+from .models import Avoid, Build, EquipmentBuff, Level, Need, Slot, TeamRule, TeamTemplate, WeaponOption
 
 # 候选名单之外、由引擎自动找到的角色的基础分
 AUTO_CANDIDATE_SCORE = 0.5
@@ -45,6 +45,12 @@ class Kit:
     position: str | None = None  # 玩法的 field：on_field / off_field / flex
     traits: dict[str, float] = field(default_factory=dict)
     gear: list[str] = field(default_factory=list)  # 配装里会给队友加成的装备，见 equipment_buffs.yaml
+    # 以下给「增益装备一队只能有一件」用：provides 先按首选配装算，组队时可能换成后面的选项
+    base_provides: dict[str, float] = field(default_factory=dict)  # 不含装备
+    artifact_options: list[list[EquipmentBuff]] = field(default_factory=list)  # 每种圣遗物组合里的增益装备
+    weapon_options: list[tuple[WeaponOption, EquipmentBuff | None]] = field(default_factory=list)  # 按档次
+    artifact_choice: int = 0
+    weapon_choice: str | None = None
 
     def has(self, tag: str) -> float:
         """功能强度。「buff:*」这种通配写法取同类标签里最高的，槽位可以写「任何增益」。"""
@@ -63,6 +69,8 @@ class Member:
     cons: int
     slot_score: float
     build: dict | None = None
+    artifact_choice: int = 0  # 第几套圣遗物组合（为了不和队友撞增益装备，可能不是首选）
+    weapon_choice: str | None = None
 
 
 @dataclass
@@ -160,21 +168,30 @@ class Engine:
         avoids = [a for a in p.avoids if check(a.when, ctx)]
         rules = [r for r in p.team_rules if check(r.when, ctx)]
         traits = {t.tag: t.score for t in p.traits if check(t.when, ctx)}
-        gear: list[str] = []
+        arts: list[list[EquipmentBuff]] = []
+        weapons: list[tuple[WeaponOption, EquipmentBuff | None]] = []
         b = self._find_build(c.id, p.id, cons)
         if b is not None:
-            # 只看首选配装：首选武器、首选圣遗物组合
-            picks = [("weapon", w.zh, 1) for w in sorted(b.weapons, key=lambda w: w.rank)[:1]]
-            picks += [("artifact_set", a.zh, a.pieces) for a in (b.artifact_sets[0] if b.artifact_sets else [])]
-            for kind, zh, pieces in picks:
-                e = self.kb.equipment_buff(kind, zh, pieces)
-                if e is None:
-                    continue
-                gear.append(e.zh)
-                for g in e.provides:
-                    if check(g.when, ctx):
-                        provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
-        return Kit(c.id, c.zh, c.element.value, p.id, cons, provides, needs, avoids, rules, p.field, traits, gear)
+            arts = [[e for a in combo if (e := self.kb.equipment_buff("artifact_set", a.zh, a.pieces))]
+                    for combo in b.artifact_sets]
+            weapons = [(w, self.kb.equipment_buff("weapon", w.zh)) for w in sorted(b.weapons, key=lambda w: w.rank)]
+        k = Kit(c.id, c.zh, c.element.value, p.id, cons, dict(provides), needs, avoids, rules, p.field, traits,
+                base_provides=provides, artifact_options=arts, weapon_options=weapons,
+                weapon_choice=weapons[0][0].zh if weapons else None)
+        return self._equip(k, 0, k.weapon_choice)
+
+    def _equip(self, k: Kit, artifact_choice: int, weapon_choice: str | None) -> Kit:
+        """按选定的圣遗物组合和武器，把装备给队友的加成算进 provides。"""
+        provides = dict(k.base_provides)
+        gear = list(k.artifact_options[artifact_choice]) if k.artifact_options else []
+        gear += [e for w, e in k.weapon_options if w.zh == weapon_choice and e]
+        ctx = {"cons": k.cons}
+        for e in gear:
+            for g in e.provides:
+                if check(g.when, ctx):
+                    provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
+        return replace(k, provides=provides, gear=[e.zh for e in gear],
+                       artifact_choice=artifact_choice, weapon_choice=weapon_choice)
 
     def available_playstyles(self, char_id: str, cons: int) -> list[str]:
         c = self.kb.characters[char_id]
@@ -215,8 +232,8 @@ class Engine:
                 break
         for r in top:
             for m in r.members:
-                b = self.build(m.char, m.playstyle, m.cons, self._weapons(m.char, roster))
-                m.build = b
+                m.build = self.build(m.char, m.playstyle, m.cons, self._weapons(m.char, roster),
+                                     m.artifact_choice, m.weapon_choice)
         return Recommendation(core_char.id, core_char.zh, core_cons, top, invalid, list(excluded.values()))
 
     def _cons(self, char_id: str, roster: Roster) -> int:
@@ -281,29 +298,77 @@ class Engine:
         teams: list[TeamResult] = []
         in_valid_team: set[tuple[str, str]] = set()
         constraint_hits: dict[tuple[str, str], Counter] = defaultdict(Counter)
+        gear_reasons: dict[str, str] = {}
         # 每槽候选通常不超过十几个，直接穷举；数据变多后再换成束搜索
         for combo in itertools.product(*per_slot):
             chars = [k.char for k, _ in combo]
             if len(set(chars)) != len(chars):
                 continue
-            failed = self._failed_constraints(t, [k for k, _ in combo])
-            failed += [r for r in self._failed_rules([k for k, _ in combo]) if r.hard]
             pairs = [(s.id, k.char) for s, (k, _) in zip(t.slots, combo) if not s.fixed]
+            kits, gear_conflict = self._assign_gear([k for k, _ in combo], roster)
+            if gear_conflict:
+                gear_reasons[gear_conflict] = gear_conflict
+                for p in pairs:
+                    constraint_hits[p][gear_conflict] += 1
+                continue
+            combo = tuple((k, base) for k, (_, base) in zip(kits, combo))
+            lacking = [k.zh for s, k in zip(t.slots, kits) if any(k.has(x) <= 0 for x in s.core_tags())]
+            failed = [x.id for x in self._failed_constraints(t, kits)]
+            failed += [r.id for r in self._failed_rules(kits) if r.hard]
+            if lacking:
+                why = f"{'、'.join(lacking)}让出增益装备后缺少槽位核心功能"
+                gear_reasons[why] = why
+                failed.insert(0, why)
             if failed:
                 for p in pairs:
-                    constraint_hits[p][failed[0].id] += 1
+                    constraint_hits[p][failed[0]] += 1
                 continue
             in_valid_team.update(pairs)
             teams.append(self._score(t, combo, roster))
 
         reasons = {k.id: k.reason for k in t.constraints}
         reasons.update({r.id: r.reason for s in per_slot for k, _ in s for r in k.rules})
+        reasons.update(gear_reasons)
         for pair, hits in constraint_hits.items():
             if pair not in in_valid_team:
                 exclusions.append(Exclusion(pair[0], pair[1], "违反整队限制：" + reasons[hits.most_common(1)[0][0]]))
         if not teams:
             return [], "没有满足整队限制的组合", exclusions
         return teams, None, exclusions
+
+    def _assign_gear(self, kits: list[Kit], roster: Roster) -> tuple[list[Kit], str | None]:
+        """增益装备（equipment_buffs.yaml 里的套装和武器）同一件一队只生效一次，所以一队只带一件：
+        每人按配装顺序挑第一个不和队友撞的选项，选项序号之和最小的方案胜出。
+        有人所有选项都撞时队伍不成立，返回原因。"""
+        def pick(options: list[list], label: str) -> tuple[list[int], str | None]:
+            best: tuple[int, ...] | None = None
+            for choice in itertools.product(*(range(len(o)) for o in options)):
+                names = [n for o, i in zip(options, choice) for n in o[i]]
+                if len(names) == len(set(names)) and (best is None or sum(choice) < sum(best)):
+                    best = choice
+            if best is not None:
+                return list(best), None
+            firsts = Counter(n for o in options for n in o[0])
+            dup = next((n for n, c in firsts.items() if c > 1), "")
+            who = [k.zh for k, o in zip(kits, options) if dup in o[0]]
+            return [], f"{'、'.join(who)}都要带{dup}，同一件增益{label}一队只能有一件"
+
+        arts = [[[e.zh for e in combo] for combo in k.artifact_options] or [[]] for k in kits]
+        held = []  # 每人拥有的武器（没限制武器时是全部），按档次
+        for k in kits:
+            owned = self._weapons(k.char, roster)
+            ws = [w for w, _ in k.weapon_options if owned is None or w.id in owned or w.source == "craftable"]
+            held.append(ws or [w for w, _ in k.weapon_options[:1]])
+        buff = {k.char: {w.zh: e for w, e in k.weapon_options} for k in kits}
+        weapons = [[[buff[k.char][w.zh].zh] if buff[k.char][w.zh] else [] for w in ws] or [[]] for k, ws in zip(kits, held)]
+        a_choice, why = pick(arts, "圣遗物")
+        if why:
+            return kits, why
+        w_choice, why = pick(weapons, "武器")
+        if why:
+            return kits, why
+        return [self._equip(k, a, ws[w].zh if ws else None)
+                for k, a, w, ws in zip(kits, a_choice, w_choice, held)], None
 
     @staticmethod
     def _team_funcs(kits: list[Kit]) -> dict:
@@ -334,7 +399,8 @@ class Engine:
             covered = sum(f.weight * k.has(f.tag) for f in extra)
             score = base * (1 + covered) / (1 + total)
             slot_scores.append(score)
-            members.append(Member(s.id, k.char, k.zh, k.playstyle, k.cons, round(score, 3)))
+            members.append(Member(s.id, k.char, k.zh, k.playstyle, k.cons, round(score, 3), None,
+                                  k.artifact_choice, k.weapon_choice))
 
         kits = [k for k, _ in combo]
         needs: list[NeedStatus] = []
@@ -404,7 +470,9 @@ class Engine:
 
     # ---------- 养成方案 ----------
 
-    def build(self, char_id: str, playstyle: str, cons: int, owned_weapons: set[str] | None = None) -> dict | None:
+    def build(self, char_id: str, playstyle: str, cons: int, owned_weapons: set[str] | None = None,
+              artifact_choice: int = 0, weapon_choice: str | None = None) -> dict | None:
+        """artifact_choice / weapon_choice：组队时为了不和队友撞增益装备选的那一套，排到最前面。"""
         b = self._find_build(char_id, playstyle, cons)
         if b is None:
             return None
@@ -412,7 +480,11 @@ class Engine:
             {**w.model_dump(), "owned": owned_weapons is None or w.id in owned_weapons or w.source == "craftable"}
             for w in sorted(b.weapons, key=lambda w: w.rank)
         ]
-        best = next((w for w in weapons if w["owned"]), None)
+        first_owned = next((w for w in weapons if w["owned"]), None)
+        best = next((w for w in weapons if w["zh"] == weapon_choice), None) or first_owned
+        sets = [[a.model_dump() for a in combo] for combo in b.artifact_sets]
+        if 0 < artifact_choice < len(sets):
+            sets.insert(0, sets.pop(artifact_choice))
         return {
             "char": char_id,
             "playstyle": playstyle,
@@ -420,7 +492,8 @@ class Engine:
             "zh": b.zh,
             "recommended_weapon": best,
             "weapons": weapons,
-            "artifact_sets": [[a.model_dump() for a in combo] for combo in b.artifact_sets],
+            "artifact_sets": sets,
+            "gear_swapped": artifact_choice > 0 or best is not first_owned,  # 让出了增益装备
             "main_stats": b.main_stats,
             "substats": b.substats,
             "energy_recharge": b.energy_recharge,

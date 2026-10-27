@@ -319,3 +319,37 @@ def test_talents_are_level_or_skip_only():
         Talents(level=["skill"], skip=["skill"])
     with pytest.raises(ValidationError):
         Talents(level=["E"])
+
+
+# ---------- 增益装备一队只能有一件 ----------
+
+def test_team_buff_gear_is_unique_per_team(tmp_path):
+    chars = [char("dps", "hydro", [{"tag": "main_dps"}]),
+             char("swirl1", "anemo", [{"tag": "grouping"}]),
+             char("swirl2", "anemo", [{"tag": "grouping"}]),
+             char("flex", "pyro", [{"tag": "healer"}])]
+    team = {"id": "t", "zh": "队", "core": {"char": "dps"}, "slots": [
+        {"id": "dps", "fixed": {"char": "dps"}},
+        {"id": "a", "functions": [{"tag": "grouping", "level": "core"}],
+         "candidates": [{"char": "swirl1", "score": 1.0}, {"char": "swirl2", "score": 0.9}]},
+        {"id": "b", "functions": [{"tag": "elemental_shred", "level": "major", "weight": 0.3}],
+         "candidates": [{"char": "swirl2", "score": 1.0}, {"char": "flex", "score": 0.6}]}]}
+    base = {"cons": "0-6", "main_stats": {}, "substats": []}
+    vv = {"set": "vv", "zh": "风套", "pieces": 4}
+    builds = [{**base, "char": "swirl1", "weapons": [{"id": "ttds", "zh": "讨龙", "rank": 1}], "artifact_sets": [[vv]]},
+              {**base, "char": "swirl2", "weapons": [{"id": "ttds", "zh": "讨龙", "rank": 1}], "artifact_sets": [[vv]]},
+              {**base, "char": "flex", "weapons": [{"id": "ttds", "zh": "讨龙", "rank": 1}, {"id": "w2", "zh": "白板", "rank": 2}],
+               "artifact_sets": [[vv], [{"set": "no", "zh": "宗室", "pieces": 4}]]}]
+    kb = make_kb(tmp_path, chars, [team], builds)
+    (tmp_path / "equipment_buffs.yaml").write_text(yaml.safe_dump({"equipment": [
+        {"kind": "artifact_set", "zh": "风套", "provides": [{"tag": "elemental_shred"}]},
+        {"kind": "weapon", "zh": "讨龙", "provides": [{"tag": "team_dmg_buff"}]}]}, allow_unicode=True), encoding="utf-8")
+    kb = load(tmp_path)
+
+    rec = Engine(kb).recommend("dps", roster("swirl1", "swirl2", "flex"))
+    assert rec.teams and all({"swirl1", "swirl2"} - {m.char for m in t.members} for t in rec.teams)
+    assert any("都要带风套" in e.reason for e in rec.excluded)
+    flex = next(m for t in rec.teams for m in t.members if m.char == "flex")
+    # 风套、讨龙让给 swirl1，flex 换成第二套圣遗物和第二把武器
+    assert flex.build["artifact_sets"][0][0]["zh"] == "宗室" and flex.build["recommended_weapon"]["zh"] == "白板"
+    assert flex.build["gear_swapped"] is True

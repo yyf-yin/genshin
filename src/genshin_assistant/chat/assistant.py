@@ -40,6 +40,7 @@ EXPLAIN_SYSTEM = """你是原神配队与养成助手，用中文回答玩家。
 - status 是 no_team_template 时，说明还没有现成队伍，再按 kit（这个角色提供的功能、对队友的需求、整队规则）讲适合什么样的队友，但不要点名具体角色，除非 appears_in 里有
 - 理由只能来自引擎结果：保留/失去的功能照 kept、lost 原样讲，扣分只讲 needs、conflicts 里的，不要自己补强度评价或扣分原因
 - 武器按 rank 讲，rank 相同的写成并列
+- 队员 gear_swapped 为 true 表示首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已由队友带着，同一件一队只生效一次，所以他换成了列出的次选，要点明
 - 不要在回答里出现英文字段名（如 override_reason、kept、verified）
 - 简洁，用短段落和列表，不要寒暄
 输出 JSON：{{"answer": "Markdown 格式的回答"}}"""
@@ -260,7 +261,8 @@ def _trim_rec(r: dict) -> dict:
         b = m["build"] or {}
         w = b.get("recommended_weapon")
         return {"slot": m["slot"], "zh": m["zh"], "cons": m["cons"], "weapon": w["zh"] if w else None,
-                "artifacts": [" + ".join(_piece(a) for a in c) for c in b.get("artifact_sets", [])][:2]}
+                "artifacts": [" + ".join(_piece(a) for a in c) for c in b.get("artifact_sets", [])][:2],
+                "gear_swapped": b.get("gear_swapped", False)}
 
     teams = []
     for t in r["teams"]:
