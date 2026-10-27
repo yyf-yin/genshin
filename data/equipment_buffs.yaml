@@ -3,6 +3,7 @@
 # 砂糖 = 技能增益 + 翠绿之影 + 讨龙英杰谭。只写给队友的部分，只给装备者自己的不写。
 # value：圣遗物按原文；武器按精炼 1（4 星武器常见满精，note 里写了精 5 的数值）。
 # 依赖队伍条件的（扩散/结晶到的元素、月兆等级）先按「条件满足」写，score 调低一些表示不稳定。
+# 伤害计算（damage/team.py）用 value 算具体加成：to 写加成给谁（默认 all），choose_one: true 表示几条里只生效一条。
 equipment:
   # ---------- 圣遗物（4 件套） ----------
   - kind: artifact_set
@@ -12,6 +13,7 @@ equipment:
       - {tag: shred:hydro, score: 1.0, value: 0.4}
       - {tag: shred:electro, score: 1.0, value: 0.4}
       - {tag: shred:cryo, score: 1.0, value: 0.4}
+    choose_one: true
     note: 只降低被扩散到的元素的抗性；星扩散也降冰抗。实际生效的是队里有、且被扩散到的元素
   - kind: artifact_set
     zh: 深林的记忆
@@ -41,6 +43,14 @@ equipment:
       - {tag: element_dmg_buff:cryo, score: 0.5, value: 0.35}
     note: 按拾取的晶片元素给加成，同时只有一种；需要岩元素结晶或月结晶
   - kind: artifact_set
+    zh: 烬城勇者绘卷
+    provides:
+      - {tag: element_dmg_buff:pyro, score: 0.7, value: 0.3}
+      - {tag: element_dmg_buff:hydro, score: 0.7, value: 0.3}
+      - {tag: element_dmg_buff:electro, score: 0.7, value: 0.3}
+      - {tag: element_dmg_buff:cryo, score: 0.7, value: 0.3}
+    note: 装备者触发反应后，反应相关元素伤害 +12%，夜魂加持下再 +28%；按平均覆盖约 30% 写。同名不叠加
+  - kind: artifact_set
     zh: 炉火融炼之心
     provides:
       - {tag: reaction_buff:stellar_superconduct, score: 0.8, value: 0.5}
@@ -65,6 +75,7 @@ equipment:
   # ---------- 武器 ----------
   - kind: weapon
     zh: 讨龙英杰谭
+    to: on_field
     provides:
       - {tag: buff:atk_pct, score: 0.8, value: 0.24}
     note: 只给下一个登场的角色；精 5 为 48%
@@ -99,11 +110,13 @@ equipment:
     note: 所有元素伤害加成，按装备者防御力，至多 25.6%
   - kind: weapon
     zh: 祭星者之望
+    to: on_field
     provides:
       - {tag: buff:dmg_bonus, score: 0.7, value: 0.28}
     note: 只给当前场上角色，需要装备者创造护盾
   - kind: weapon
     zh: 尘光七谕
+    to: on_field
     provides:
       - {tag: buff:dmg_bonus, score: 0.7, value: 0.26}
     note: 只给当前场上角色，需要装备者创造护盾，按攻击力至多 26%
@@ -126,6 +139,7 @@ equipment:
     note: 需要装备者创造护盾
   - kind: weapon
     zh: 霜结的誓金枝
+    to: others
     provides:
       - {tag: element_dmg_buff:geo, score: 0.6, value: 0.2}
       - {tag: reaction_buff:lunar_crystallize, score: 0.6, value: 0.2}
@@ -143,6 +157,7 @@ equipment:
     note: 按装备者精通给其他角色加攻击力，数值小
   - kind: weapon
     zh: 漩流颂歌
+    to: on_field
     provides:
       - {tag: buff:atk_pct, score: 0.7, value: 0.24}
     note: 只给当前场上角色，需要装备者治疗、生命值上限 40000 以上，3 层至多 24%；附近触发冻结或星扩散后 5 秒内再提高 75%

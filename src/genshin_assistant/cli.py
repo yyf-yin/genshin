@@ -45,6 +45,14 @@ def _print(rec: Recommendation) -> None:
         flag = "" if t.verified else "  [草稿数据，未审核]"
         print(f"\n{i}. {t.template_zh}  得分 {t.score}{flag}")
         print("   成员：" + "、".join(m.zh for m in t.members))
+        if t.damage:
+            d = t.damage
+            print(f"   全队一轮期望伤害 {d['total']:,}（标签分 {t.tag_score}）：" + "，".join(
+                f"{m['zh']} {m['share']:.0%}" for m in d["members"]))
+            if d["choices"]:
+                print("   几选一：" + "；".join(d["choices"]))
+            if d["missing"]:
+                print("   还没有伤害数据（按 0 算）：" + "、".join(d["missing"]))
         for n in t.needs:
             state = f"由{'、'.join(n.met_by)}满足" if n.met_by else f"未满足，扣 {n.penalty}"
             print(f"   需求：{n.owner}需要{n.tag_zh}（{n.reason}）→ {state}")

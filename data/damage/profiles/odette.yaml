@@ -1,0 +1,27 @@
+# AI 草稿：后台星超导副C。按「大招 → 战技 → 破晓终奏」，独舞倒影 20 秒内约 10 次舞步（拂羽、旋翼交替），
+# 处于极星辉域时每次舞步附带一段星超导伤害。辉映·星扩散的情况没算。未经实测核对。
+char: odette
+on_field_seconds: 4
+hits:
+  - {talent: 爆发:斩击伤害, count: 1}
+  - {talent: 爆发:斩击最终段, count: 1}
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 破晓终奏持续伤害, count: 3}
+  - {talent: 破晓终奏星超导, variant: 0, stellar: 星超导, count: 1}
+  - {talent: 拂羽舞步伤害, count: 5}
+  - {talent: 拂羽舞步星超导, variant: 0, stellar: 星超导, count: 5, when: "reaction('superconduct')"}
+  - {talent: 旋翼舞步伤害, count: 5}
+  - {talent: 旋翼舞步星超导, variant: 0, stellar: 星超导, count: 5, when: "reaction('superconduct')"}
+buffs:
+  - source: 疾板·苍羽一梦「雪鹄之梦」
+    stats: {星烁反应伤害提升: 50}
+  - source: 赤忱者的悲歌（攻击力超过 1000 的部分，每 100 点 +1.5%，至多 30%）
+    from_stat: {stat: atk, ratio: 0.00015, offset: -1000, cap: 0.30, key: 星烁基础伤害提升}
+  - source: 星耀祝礼·银晓之舞（每 100 攻击力 +0.7% 星超导/星扩散基础伤害，至多 14%）
+    to: all
+    from_stat: {stat: atk, ratio: 0.00007, cap: 0.14, key: 星烁基础伤害提升}
+  - source: 极星辉域（叠满后冰、雷伤害 +40%，物理抗性 -40%）
+    to: all
+    stats: {冰伤: 40, 雷伤: 40, 物理减抗: 40}
+    when: "reaction('superconduct')"
+verified: false

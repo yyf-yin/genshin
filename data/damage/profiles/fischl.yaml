@@ -1,0 +1,26 @@
+# AI 草稿：战技、大招交替召唤奥兹，奥兹几乎全程在场（约 1 秒一次攻击）。未经实测核对。
+char: fischl
+on_field_seconds: 2
+hits:
+  - {talent: 战技:召唤伤害, count: 0.8}
+  - {talent: 战技:奥兹攻击, count: 18}
+  - {talent: 爆发:落雷伤害, count: 1}
+  # 断罪雷影：站场角色触发雷元素相关反应时降下圣裁之雷（菲谢尔 80% 攻击力）
+  - {name: 断罪雷影, scaling: {atk: 0.8}, element: electro, count: 8, when: "count_any(['pyro', 'hydro', 'cryo', 'dendro']) > 0"}
+reactions:
+  # 奥兹挂的雷被站场角色打出超导（有奥黛塔时转为星超导）
+  - {reaction: 星超导, count: 8, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  # 魔导·秘仪：只有超载、感电/月感电才生效
+  - source: 魔导·秘仪（超载）
+    to: on_field
+    stats: {攻击力%: 22.5}
+    when: "count_tag('witch_arcana') >= 2 and reaction('overloaded')"
+  - source: 魔导·秘仪（超载）
+    stats: {攻击力%: 22.5}
+    when: "count_tag('witch_arcana') >= 2 and reaction('overloaded')"
+  - source: 魔导·秘仪（感电、月感电）
+    to: all
+    stats: {元素精通: 90}
+    when: "count_tag('witch_arcana') >= 2 and reaction('electro_charged')"
+verified: false

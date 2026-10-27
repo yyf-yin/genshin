@@ -120,6 +120,9 @@ class EquipmentBuff(BaseModel):
     provides: list[TagGrant]
     note: str = ""
     verified: bool = False
+    # 伤害计算用：加成给谁（all / others / on_field / off_field），几条加成是否只能生效其一（风套只降被扩散的元素）
+    to: str = "all"
+    choose_one: bool = False
 
 
 class CharRef(BaseModel):

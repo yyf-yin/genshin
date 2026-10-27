@@ -1,0 +1,27 @@
+# AI 草稿：战技 + 大招聚怪扩散，后台几乎不出伤害；价值在风套减抗、讨龙、精通分享。未经实测核对。
+# 被扩散的元素（group: swirl）由引擎在队里有的元素中挑总伤害最高的。
+char: sucrose
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:持续伤害, count: 3}
+  - {talent: 爆发:附加元素伤害, count: 3}
+reactions:
+  - {reaction: 扩散, element: electro, count: 4, when: "count('electro') > 0"}
+buffs:
+  - {source: 触媒置换术, to: "tag:element:cryo", group: swirl, option: cryo, stats: {元素精通: 50}}
+  - {source: 触媒置换术, to: "tag:element:electro", group: swirl, option: electro, stats: {元素精通: 50}}
+  - {source: 触媒置换术, to: "tag:element:hydro", group: swirl, option: hydro, stats: {元素精通: 50}}
+  - {source: 触媒置换术, to: "tag:element:pyro", group: swirl, option: pyro, stats: {元素精通: 50}}
+  - source: 小小的慧风（砂糖精通的 20%）
+    to: others
+    from_stat: {stat: em, ratio: 0.2, key: 元素精通}
+  - source: 魔导·秘仪（小型风灵）
+    to: all
+    stats: {普攻增伤: 5.71, 重击增伤: 5.71, 下落增伤: 5.71, 战技增伤: 5.71, 爆发增伤: 5.71}
+    when: "count_tag('witch_arcana') >= 2"
+  - source: 魔导·秘仪（大型风灵，只给魔导角色）
+    to: "tag:witch_arcana"
+    stats: {普攻增伤: 7.14, 重击增伤: 7.14, 下落增伤: 7.14, 战技增伤: 7.14, 爆发增伤: 7.14}
+    when: "count_tag('witch_arcana') >= 2"
+verified: false

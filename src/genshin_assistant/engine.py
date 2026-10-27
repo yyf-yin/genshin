@@ -124,6 +124,10 @@ class TeamResult:
     substitutions: list[SubstitutionDiff]
     verified: bool
     conflicts: list[Conflict] = field(default_factory=list)
+    # 有伤害数据时：score = 总伤害 / 本次最高总伤害 - penalty；tag_score 是只看标签时的分数
+    tag_score: float = 0.0
+    penalty: float = 0.0
+    damage: dict | None = None
 
 
 @dataclass
@@ -219,6 +223,7 @@ class Engine:
             for e in excl:
                 excluded.setdefault((e.slot, e.char), e)
 
+        self._rank_by_damage(results)
         results.sort(key=lambda r: r.score, reverse=True)
         seen: set[frozenset[str]] = set()
         top: list[TeamResult] = []
@@ -235,6 +240,32 @@ class Engine:
                 m.build = self.build(m.char, m.playstyle, m.cons, self._weapons(m.char, roster),
                                      m.artifact_choice, m.weapon_choice)
         return Recommendation(core_char.id, core_char.zh, core_cons, top, invalid, list(excluded.values()))
+
+    def _rank_by_damage(self, results: list[TeamResult]) -> None:
+        """有伤害数据的队伍按全队期望总伤害排：总伤害 / 最高总伤害，再减去没满足的需求、冲突的扣分。"""
+        best = max((r.damage["total"] for r in results if r.damage), default=0)
+        if best <= 0:
+            return
+        for r in results:
+            if r.damage:
+                r.score = round(r.damage["total"] / best - r.penalty, 3)
+
+    def _team_damage(self, kits: list[Kit]) -> dict | None:
+        """全队一轮的期望总伤害（damage/team.py）。主C没有循环数据时不算。"""
+        from .damage.team import MemberSpec, team_damage
+
+        profiles = self.kb.damage_profiles
+        if not profiles or self.kb.game is None or (kits[0].char, kits[0].playstyle) not in profiles:
+            return None
+        members = [
+            MemberSpec(k.char, k.zh, k.element, k.playstyle, k.cons, set(k.provides), k.position,
+                       self._find_build(k.char, k.playstyle, k.cons), k.weapon_choice, k.artifact_choice,
+                       [e for e in self.kb.equipment if e.zh in k.gear])
+            for k in kits
+        ]
+        if members[0].position is None:
+            members[0].position = "on_field"
+        return team_damage(self.kb.game, members, profiles).to_dict()
 
     def _cons(self, char_id: str, roster: Roster) -> int:
         if roster is None or char_id not in roster:
@@ -437,7 +468,8 @@ class Engine:
 
         score = sum(slot_scores) / len(slot_scores) - penalty_total
         subs = self._diffs(t, combo, roster)
-        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified, conflicts)
+        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified, conflicts,
+                          tag_score=round(score, 3), penalty=round(penalty_total, 3), damage=self._team_damage(kits))
 
     def _diffs(self, t: TeamTemplate, combo, roster: Roster) -> list[SubstitutionDiff]:
         diffs: list[SubstitutionDiff] = []

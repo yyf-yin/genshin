@@ -25,8 +25,14 @@ LUNAR = {
     "lunar_bloom": {"reaction": None, "direct": 1.0},
     "lunar_crystallize": {"reaction": 0.96, "direct": 1.6},
 }
-# 星烁反应：系数还没有可靠资料，计算时必须自己给 coefficient
-STELLAR = {"stellar_superconduct", "stellar_swirl"}
+# 星烁反应（7.0 起）。星超导系数随极星辉域层数从 1.0 涨到 2.0，首轮叠满后一直是 2.0，按 2.0 算（Cliff 2026-10-27）。
+# 星扩散直伤系数 1.0（社区资料）；星扩散反应本身的系数未知。
+STELLAR = {
+    "stellar_superconduct": {"reaction": 2.0, "direct": 2.0},
+    "stellar_swirl": {"reaction": None, "direct": 1.0},
+}
+# 月曜、星烁统称「特殊反应」：不吃防御区和普通增伤区，精通公式相同
+SPECIAL = {**LUNAR, **STELLAR}
 
 
 def em_bonus(em: float, kind: str) -> float:

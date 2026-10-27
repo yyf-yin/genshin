@@ -20,6 +20,8 @@ REACTION_ZH = {
     "lunar_crystallize": "月结晶", "stellar_superconduct": "星超导", "stellar_swirl": "星扩散",
 }
 LUNAR_REACTIONS = ["lunar_charged", "lunar_bloom", "lunar_crystallize"]
+STELLAR_REACTIONS = ["stellar_superconduct", "stellar_swirl"]
+SPECIAL_REACTIONS = LUNAR_REACTIONS + STELLAR_REACTIONS
 
 # 不是百分比的属性
 FLAT_KEYS = {"hp_flat", "atk_flat", "def_flat", "em", "flat_dmg"} | {f"{c}_flat_dmg" for c in CATEGORIES}
@@ -38,6 +40,10 @@ def _aliases() -> dict[str, str]:
         "固定伤害": "flat_dmg", "伤害值提高": "flat_dmg",
         "治疗加成": "heal", "护盾强效": "shield",
         "月曜基础伤害提升": "lunar_base_bonus", "月曜反应伤害提升": "lunar_bonus",
+        "星烁基础伤害提升": "stellar_base_bonus", "星烁反应伤害提升": "stellar_bonus",
+        # builds/ 里主词条、副词条的写法
+        "atk%": "atk_pct", "hp%": "hp_pct", "def%": "def_pct", "em": "em", "energy_recharge": "er",
+        "crit_rate": "cr", "crit_dmg": "cd", "healing_bonus": "heal",
     }
     for e, zh in ELEMENT_ZH.items():
         a[f"{zh}伤"] = a[f"{zh}元素伤害加成"] = a[f"{zh}伤害加成"] = f"{e}_dmg"
@@ -52,7 +58,7 @@ def _aliases() -> dict[str, str]:
             a[f"{name}固定伤害"] = a[f"{name}伤害值提高"] = f"{c}_flat_dmg"
     for r, zh in REACTION_ZH.items():
         a[f"{zh}加成"] = a[f"{zh}反应加成"] = a[f"{zh}伤害提升"] = f"{r}_bonus"
-    for r in LUNAR_REACTIONS:
+    for r in SPECIAL_REACTIONS:
         a[f"{REACTION_ZH[r]}基础伤害提升"] = f"{r}_base_bonus"
     return a
 
@@ -77,7 +83,8 @@ def stat_key(name: str) -> str:
 
 def _known(key: str) -> bool:
     base = {"hp_base", "atk_base", "def_base", "hp_pct", "atk_pct", "def_pct", "er", "cr", "cd", "dmg", "elevate",
-            "def_reduction", "def_ignore", "res_shred", "heal", "shield", "lunar_base_bonus", "lunar_bonus"} | FLAT_KEYS
+            "def_reduction", "def_ignore", "res_shred", "heal", "shield", "lunar_base_bonus", "lunar_bonus",
+            "stellar_base_bonus", "stellar_bonus"} | FLAT_KEYS
     if key in base:
         return True
     head, _, tail = key.rpartition("_")
@@ -86,7 +93,7 @@ def _known(key: str) -> bool:
     if key.endswith("_flat_dmg"):
         return key.removesuffix("_flat_dmg") in CATEGORIES
     if key.endswith("_base_bonus"):
-        return key.removesuffix("_base_bonus") in LUNAR_REACTIONS
+        return key.removesuffix("_base_bonus") in SPECIAL_REACTIONS
     if tail == "dmg":
         return head in ELEMENTS or head in CATEGORIES
     if tail in ("cr", "cd"):

@@ -13,13 +13,15 @@ import yaml
 from ..gamedata.store import GameData
 from . import formulas as f
 from .stats import (CATEGORIES, ELEMENT_ZH, FLOWER_HP, LUNAR_REACTIONS, MAIN_STATS, PLUME_ATK, REACTION_ZH,
-                    SUBSTAT_ROLL, Stats, character_stats, parse_value, set_2pc_stats, stat_key, weapon_stats)
+                    SPECIAL_REACTIONS, SUBSTAT_ROLL, Stats, character_stats, parse_value, set_2pc_stats, stat_key, weapon_stats)
 from .talents import SLOT_ZH, Talent, find_talent, load_talents
 
 SLOT_KEYS = {"普攻": "normal_attack", "普通攻击": "normal_attack", "a": "normal_attack", "normal_attack": "normal_attack",
              "战技": "skill", "元素战技": "skill", "e": "skill", "skill": "skill",
              "爆发": "burst", "元素爆发": "burst", "大招": "burst", "q": "burst", "burst": "burst"}
-LUNAR_ELEMENT = {"lunar_charged": "electro", "lunar_bloom": "dendro", "lunar_crystallize": "geo"}
+# 特殊反应伤害的元素（抗性按这个算）。星扩散的「星辉风旋」爆炸和角色技能里的星扩散伤害都是冰伤
+SPECIAL_ELEMENT = {"lunar_charged": "electro", "lunar_bloom": "dendro", "lunar_crystallize": "geo",
+                   "stellar_superconduct": "cryo", "stellar_swirl": "cryo"}
 TRANSFORMATIVE_ELEMENT = {"overloaded": "pyro", "superconduct": "cryo", "electro_charged": "electro",
                           "shattered": "physical", "bloom": "dendro", "hyperbloom": "dendro", "burgeoning": "dendro",
                           "burning": "pyro"}
@@ -185,7 +187,7 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
         raise ValueError(f"「{talent.name}」不是伤害倍率：{talent.template}")
     category = _category(talent, spec.get("category"))
     reaction = _reaction_key(spec.get("reaction"))
-    lunar = _reaction_key(spec.get("lunar")) or next(
+    special = _reaction_key(spec.get("special") or spec.get("lunar") or spec.get("stellar")) or next(
         (r for r in LUNAR_REACTIONS if f"{REACTION_ZH[r]}伤害" in talent.name), None)  # 「中间段月感电伤害」
     lv_mult = gd.level_multiplier(char_level)
     out = []
@@ -198,21 +200,13 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
         cr = st.get("cr") + st.get(f"{category}_cr")
         cd = st.get("cd") + st.get(f"{category}_cd")
         times = int(spec.get("times", 1))
-        if lunar:
-            coef = f.LUNAR[lunar]["direct"]
-            base_bonus = st.get("lunar_base_bonus") + st.get(f"{lunar}_base_bonus")
-            em = st.get("em")
-            react = f.em_bonus(em, "lunar") + st.get("lunar_bonus") + st.get(f"{lunar}_bonus")
-            element = LUNAR_ELEMENT[lunar]
-            zones = [
-                Zone("基础伤害", talent_part * base_mult + hit.flat, desc),
-                Zone(f"{REACTION_ZH[lunar]}系数", coef, "角色技能直接造成的月曜伤害（社区实测）"),
-                Zone("月曜基础伤害提升", 1 + base_bonus),
-                Zone("月曜反应加成", 1 + react, f"精通 {em:.0f}"),
-                Zone("擢升区", 1 + st.get("elevate")),
-                _res_zone(enemy, st, element),
-            ]
-            out.append(_finish(label + f"（{REACTION_ZH[lunar]}）", element, zones, cr, cd, times))
+        if special:
+            coef = f.SPECIAL[special]["direct"]
+            element = SPECIAL_ELEMENT[special]
+            zones = [Zone("基础伤害", talent_part * base_mult + hit.flat, desc),
+                     Zone(f"{REACTION_ZH[special]}系数", coef, "角色技能直接造成的反应伤害")]
+            zones += _special_zones(special, st, enemy)
+            out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd, times))
             continue
         base = talent_part * base_mult + hit.flat + st.get("flat_dmg") + st.get(f"{category}_flat_dmg")
         zones = [Zone("基础伤害", base, desc + (f"，倍率×{base_mult}" if base_mult != 1 else ""))]
@@ -238,28 +232,33 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
     return out
 
 
+def _special_zones(reaction: str, st: Stats, enemy: Enemy) -> list[Zone]:
+    """月曜/星烁共用：基础伤害提升、反应加成（精通 + 加成）、擢升、抗性。不吃防御和普通增伤。"""
+    family = "lunar" if reaction in LUNAR_REACTIONS else "stellar"
+    family_zh = "月曜" if family == "lunar" else "星烁"
+    em = st.get("em")
+    return [
+        Zone(f"{family_zh}基础伤害提升", 1 + st.get(f"{family}_base_bonus") + st.get(f"{reaction}_base_bonus")),
+        Zone(f"{family_zh}反应加成", 1 + f.em_bonus(em, "lunar") + st.get(f"{family}_bonus") + st.get(f"{reaction}_bonus"),
+             f"精通 {em:.0f}"),
+        Zone("擢升区", 1 + st.get("elevate")),
+        _res_zone(enemy, st, SPECIAL_ELEMENT[reaction]),
+    ]
+
+
 def reaction_hit(gd: GameData, spec: dict, st: Stats, enemy: Enemy, char_level: int) -> HitResult:
     """单独算一次剧变/月曜反应的伤害（按这个角色的等级和面板）。"""
     reaction = _reaction_key(spec["reaction"])
     lv_mult = gd.level_multiplier(char_level)
     times = int(spec.get("times", 1))
     em = st.get("em")
-    if reaction in f.STELLAR:
-        raise NotImplementedError(f"{REACTION_ZH[reaction]}的系数和公式还没有可靠资料，暂时不能算")
-    if reaction in f.LUNAR:
-        coef = spec.get("coefficient") or f.LUNAR[reaction]["reaction"]
+    if reaction in f.SPECIAL:
+        coef = spec.get("coefficient") or f.SPECIAL[reaction]["reaction"]
         if coef is None:
             raise NotImplementedError(f"{REACTION_ZH[reaction]}本身不直接造成伤害（或系数未知），可以用 coefficient 指定")
-        element = LUNAR_ELEMENT[reaction]
-        zones = [
-            Zone("基础伤害", float(coef) * lv_mult, f"系数 {coef} × 等级系数 {lv_mult:.1f}"),
-            Zone("月曜基础伤害提升", 1 + st.get("lunar_base_bonus") + st.get(f"{reaction}_base_bonus")),
-            Zone("月曜反应加成", 1 + f.em_bonus(em, "lunar") + st.get("lunar_bonus") + st.get(f"{reaction}_bonus"),
-                 f"精通 {em:.0f}"),
-            Zone("擢升区", 1 + st.get("elevate")),
-            _res_zone(enemy, st, element),
-        ]
-        return _finish(f"{REACTION_ZH[reaction]}反应", element, zones, st.get("cr"), st.get("cd"), times)
+        zones = [Zone("基础伤害", float(coef) * lv_mult, f"系数 {coef} × 等级系数 {lv_mult:.1f}")]
+        zones += _special_zones(reaction, st, enemy)
+        return _finish(f"{REACTION_ZH[reaction]}反应", SPECIAL_ELEMENT[reaction], zones, st.get("cr"), st.get("cd"), times)
     if reaction not in f.TRANSFORMATIVE:
         raise ValueError(f"{REACTION_ZH[reaction]} 要写在技能那一条上（reaction: {REACTION_ZH[reaction]}）")
     element = TRANSFORMATIVE_ELEMENT.get(reaction) or _element({}, None, None, spec.get("element"))

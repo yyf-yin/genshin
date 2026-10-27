@@ -182,6 +182,62 @@ def test_direct_lunar_skips_defense_and_dmg_bonus(gd):
     assert h.non_crit == pytest.approx(mult * atk * 3.0 * 0.9, rel=1e-6)
 
 
-def test_stellar_not_supported_yet(gd):
+def test_stellar_superconduct_reaction(gd):
+    h = calculate(gd, dict(BASE, hits=[{"reaction": "星超导"}])).hits[0]
+    assert h.element == "cryo"
+    assert h.non_crit == pytest.approx(2.0 * 1446.8535 * 0.9, rel=1e-6)  # 系数按叠满的 2.0
     with pytest.raises(NotImplementedError):
-        calculate(gd, dict(BASE, hits=[{"reaction": "星超导"}]))
+        calculate(gd, dict(BASE, hits=[{"reaction": "星扩散"}]))  # 星扩散反应系数未知
+
+
+# ---------- 队伍伤害 ----------
+
+@pytest.fixture(scope="module")
+def kb():
+    from genshin_assistant.kb import load
+
+    return load()
+
+
+def _team(kb, names):
+    from genshin_assistant.damage.team import MemberSpec
+    from genshin_assistant.engine import Engine
+
+    e = Engine(kb)
+    kits = [e.kit(kb.resolve(n).id, "default", 0) for n in names]
+    kits, why = e._assign_gear(kits, None)
+    assert why is None
+    return [MemberSpec(k.char, k.zh, k.element, k.playstyle, k.cons, set(k.provides), k.position or (None if i else "on_field"),
+                       e._find_build(k.char, k.playstyle, k.cons), k.weapon_choice, k.artifact_choice,
+                       [x for x in kb.equipment if x.zh in k.gear]) for i, k in enumerate(kits)]
+
+
+def test_witch_buff_needs_matching_reaction(kb):
+    from genshin_assistant.damage.team import team_damage
+
+    d = team_damage(kb.game, _team(kb, ["莱欧斯利", "奥黛塔", "菲谢尔", "砂糖"]), kb.damage_profiles)
+    # 菲谢尔的魔导·秘仪只在超载、感电时生效，冰雷队里没有；砂糖的魔导·秘仪（两名魔导角色）生效
+    assert not any("菲谢尔·魔导" in b for b in d.buffs)
+    assert any("砂糖·魔导·秘仪（小型风灵）" in b for b in d.buffs)
+
+
+def test_viridescent_shreds_one_element_xilonen_shreds_all(kb):
+    from genshin_assistant.damage.team import team_damage
+
+    d = team_damage(kb.game, _team(kb, ["莱欧斯利", "奥黛塔", "菲谢尔", "砂糖"]), kb.damage_profiles)
+    vv = [b for b in d.buffs if "翠绿之影" in b]
+    assert len(vv) == 1 and d.choices == ["砂糖·swirl：cryo"]
+    d2 = team_damage(kb.game, _team(kb, ["莱欧斯利", "奥黛塔", "菲谢尔", "希诺宁"]), kb.damage_profiles)
+    shred = [b for b in d2.buffs if "音火锻淬" in b]
+    assert any("冰" in b for b in shred) and any("雷" in b for b in shred) and not any("（水）" in b for b in shred)
+
+
+def test_engine_ranks_by_team_damage(kb):
+    from genshin_assistant.engine import Engine
+
+    rec = Engine(kb).recommend("莱欧斯利", None, None, top_n=10)
+    with_damage = [t for t in rec.teams if t.damage]
+    assert with_damage
+    best = max(t.damage["total"] for t in with_damage)
+    for t in with_damage:
+        assert t.score == pytest.approx(t.damage["total"] / best - t.penalty, abs=1e-3)
