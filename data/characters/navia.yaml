@@ -8,11 +8,14 @@ weapon: claymore
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: shred:geo
     score: 0.4
     when: cons >= 4
     evidence: 4 命「铭誓者的绝不姑息」：如霰澄天的鸣礼命中敌人时，将使该敌人的岩元素抗性降低20%，持续8秒。
     source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

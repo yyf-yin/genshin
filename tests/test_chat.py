@@ -123,6 +123,15 @@ def test_carry_answer_moved_out_of_character(kb):
     assert r.facts["carry"] == "那维莱特"
 
 
+def test_support_carries_from_team_templates(kb):
+    # 主C的队伍模板里已有这个辅助时，算合适的主C，而且排在前面（2026-10-27 奥黛塔被列成「不适合桑多涅」）
+    r = make(kb, {"intent": "team", "character": "奥黛塔"}).ask("奥黛塔怎么配队")
+    assert r.facts["status"] == "need_carry"
+    names = [c["zh"] for c in r.facts["candidates"]]
+    assert {"桑多涅", "薇斯纳", "赛诺"} <= set(names[:6])
+    assert "桑多涅" not in [c["zh"] for c in r.facts["unfit"]]
+
+
 def test_carry_without_template(kb):
     r = make(kb, {"intent": "team", "character": "沃雅妮莎", "carry": "法尔伽"}).ask("配法尔伽")
     assert r.facts["status"] == "carry_no_template"

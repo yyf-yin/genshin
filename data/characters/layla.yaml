@@ -19,4 +19,7 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「星示昭明」：垂裳端凝之夜开始发射一轮飞星时，将为附近的队伍中所有角色赋予「启明」效果，使普通攻击与重击造成的伤害提升，提升值相当于莱依拉生命值上限的5%。
     source: hints
+  - tag: application:cryo
+    score: 0.6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

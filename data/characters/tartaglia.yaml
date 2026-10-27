@@ -8,6 +8,9 @@ weapon: bow
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
-  provides: []
+  zh: 主C
+  provides:
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

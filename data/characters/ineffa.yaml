@@ -24,4 +24,10 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「敕谕未至之路」：队伍中自己的角色触发月感电反应时，将恢复5点元素能量，该效果每4秒至多触发一次。
     source: hints
+  - tag: application:electro
+    score: 0.8
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: sub_dps
+    score: 0.7
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

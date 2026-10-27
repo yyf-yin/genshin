@@ -8,7 +8,7 @@ weapon: polearm
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: interruption_res
     score: 0.4
@@ -19,4 +19,7 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「巡仪·蒇护禁罔」：发感电、月感电、超导、星超导、超载、原激化、超激化、超绽放、雷元素扩散反应后，将为队伍中附近的所有角色（除了赛诺自己）恢复3点元素能量。
     source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

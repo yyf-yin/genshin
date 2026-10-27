@@ -8,7 +8,7 @@ weapon: polearm
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: main_dps
     score: 0.7

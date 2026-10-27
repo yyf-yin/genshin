@@ -8,7 +8,7 @@ weapon: polearm
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: interruption_res
     score: 0.4
@@ -18,4 +18,7 @@ playstyles:
     score: 0.4
     evidence: 元素爆发「安神秘法」：命中敌人时，基于胡桃的生命值上限，恢复胡桃的生命值。
     source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

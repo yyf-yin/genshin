@@ -8,10 +8,13 @@ weapon: catalyst
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: interruption_res
     score: 0.4
     evidence: 元素战技「踏鲨破浪」：夜魂加持状态具有如下特性： ·搭乘鲨鲨冲浪板，提升玛拉妮的移动速度与抗打断能力。
     source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

@@ -23,4 +23,7 @@ playstyles:
     when: cons >= 6
     evidence: 6 命「「沃陆之邦」的训教」：外，伊安珊触发恢复夜魂值的效果时，若夜魂值恢复量溢出，将获得「极限发力」效果，使队伍中自己的当前场上角色造成的伤害提升25%，持续3秒。
     source: hints
+  - tag: buff:atk_flat
+    score: 0.8
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

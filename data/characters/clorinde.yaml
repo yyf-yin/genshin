@@ -8,15 +8,19 @@ weapon: sword
 rarity: 5
 playstyles:
 - id: default
-  zh: 待定
+  zh: 主C
   provides:
   - tag: healer
     score: 0.4
-    evidence: 元素战技「狩夜之巡」：契为0%时，将进行突进剑击； ·生命之契小于生命值上限的100%时，将为克洛琳德恢复生命值，回复量基于她的生命之契数值，并提升此次贯夜的范围与造成的伤害； ·生命之契大于
+    evidence: 元素战技「狩夜之巡」：契为0%时，将进行突进剑击； ·生命之契小于生命值上限的100%时，将为克洛琳德恢复生命值，回复量基于她的生命之契数值，并提升此次贯夜的范围与造成的伤害；
+      ·生命之契大于
     source: hints
   - tag: interruption_res
     score: 0.4
     when: cons >= 2
     evidence: 2 命「「自此，直面长夜之危」」：处于3层状态下时，克洛琳德的抗打断能力提升。
     source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
 verified: false

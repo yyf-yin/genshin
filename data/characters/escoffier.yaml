@@ -32,4 +32,7 @@ playstyles:
     when: cons >= 1
     evidence: 1 命「味蕾绽放的餐前旋舞」：素时，爱可菲施放元素战技低温烹饪或元素爆发花刀技法后的15秒内，队伍中附近的所有角色造成冰元素伤害时的暴击伤害提升60%。
     source: hints
+  - tag: application:cryo
+    score: 0.8
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

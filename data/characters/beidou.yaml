@@ -23,4 +23,11 @@ playstyles:
     when: cons >= 6
     evidence: 6 命「北斗祓幽孽」：斫雷持续期间，周围敌人的雷元素抗性降低15%。
     source: hints
+  - tag: application:electro
+    score: 0.8
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: shred:cryo
+    score: 0.7
+    when: cons >= 6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

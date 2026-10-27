@@ -15,4 +15,10 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「皇女幻绮谭」：现时，会对周围的敌人造成222%攻击力的雷元素伤害； 技能效果结束时，会为菲谢尔恢复20%生命值。
     source: hints
+  - tag: application:electro
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: sub_dps
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false

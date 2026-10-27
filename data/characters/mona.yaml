@@ -19,4 +19,7 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「灭绝的预言」：队伍中所有角色攻击处于星异状态下的敌人时，暴击率提升15%。
     source: hints
+  - tag: application:hydro
+    score: 0.6
+    source: '[常识] 2026-10-27 补'
 verified: false

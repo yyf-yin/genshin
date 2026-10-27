@@ -15,4 +15,14 @@ playstyles:
     when: cons >= 4
     evidence: 4 命「绯樱引雷章」：杀生樱的落雷命中敌人后，队伍中附近的所有角色获得20%雷元素伤害加成，持续5秒。
     source: hints
+  - tag: application:electro
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: sub_dps
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: reaction_buff:stellar_superconduct
+    score: 0.7
+    when: cons >= 1
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
 verified: false
