@@ -426,7 +426,7 @@ class Engine:
             "energy_recharge": b.energy_recharge,
             "energy_recharge_notes": b.energy_recharge_notes,
             "stat_targets": b.stat_targets,
-            "talents": b.talents,
+            "talents": b.talents.model_dump(),
             "notes": b.notes,
             "evidence": b.evidence,
             "verified": b.verified,

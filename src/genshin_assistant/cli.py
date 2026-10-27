@@ -100,8 +100,11 @@ def _show_build(kb, args) -> None:
         print(f"  - {n}")
     if b["stat_targets"]:
         print("面板目标：" + "；".join(b["stat_targets"]))
-    if b["talents"]:
-        print("天赋优先：" + " > ".join(_TALENT_ZH.get(t, t) for t in b["talents"]))
+    t = b["talents"]
+    if t["level"]:
+        print("天赋要点：" + "、".join(_TALENT_ZH.get(x, x) for x in t["level"]))
+    if t["skip"]:
+        print("天赋不用点：" + "、".join(_TALENT_ZH.get(x, x) for x in t["skip"]))
     for n in b["notes"]:
         print(f"备注：{n}")
 

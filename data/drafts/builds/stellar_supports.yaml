@@ -18,7 +18,7 @@ artifact_sets:
 main_stats: {sands: [atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [攻略] 龙四爷 32:14「这样大攻击杯子」
 substats: [crit_rate, crit_dmg, atk%, energy_recharge]
 energy_recharge: [115, 130]  # [常识]
-talents: [skill, burst]  # [常识]
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
 evidence: [龙四爷攻略组 BV1S4Tr6nE8U 31:52「流浪乐章直接走起四星的」；32:21「攻击沙漏」；32:23「然后暴击爆伤头」]
 verified: false
 ---
@@ -34,7 +34,7 @@ artifact_sets:
 main_stats: {sands: [energy_recharge, hp%], goblet: [hp%], circlet: [hp%, healing_bonus]}  # [常识]
 substats: [energy_recharge, hp%]  # [常识]
 energy_recharge: [160, 200]  # [常识] 带宗室要每轮开大
-talents: [burst, skill]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
 notes: ["6 命给场上角色 200 精通、40% 星超导增伤（2 个视频）"]
 verified: false
 ---
@@ -49,7 +49,7 @@ artifact_sets:
 main_stats: {sands: [atk%], goblet: [atk%], circlet: [crit_rate]}  # [攻略] 龙四爷 28:26「然后玩命上充能选择攻击沙」、28:29「攻击杯子和暴击头啊」
 substats: [energy_recharge, atk%, crit_rate]  # [攻略] 龙四爷「玩命上充能」
 energy_recharge: null
-talents: [burst, skill]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
 notes: ["6 命大招后 4 层增益，队伍星超导伤害额外加相当于七七攻击力 600% 的伤害（1 个视频），所以吃攻击力"]
 verified: false
 ---
@@ -65,7 +65,7 @@ artifact_sets:
 main_stats: {sands: [energy_recharge, atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [常识]
 substats: [energy_recharge, crit_rate, crit_dmg, atk%]  # [常识]
 energy_recharge: [180, 220]  # [常识]
-talents: [burst, skill]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
 notes: ["6 命（加强后）大招期间降冰、雷抗 15%，给场上角色 200 精通（3 个视频）"]
 verified: false
 ---
@@ -83,7 +83,7 @@ artifact_sets:
 main_stats: {sands: [energy_recharge], goblet: [atk%, anemo_dmg], circlet: [crit_rate]}  # [常识]
 substats: [energy_recharge, crit_rate, crit_dmg]  # [常识]
 energy_recharge: [200, 250]  # [常识]
-talents: [burst, skill]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
 verified: false
 ---
 char: escoffier
@@ -98,7 +98,7 @@ artifact_sets:
 main_stats: {sands: [atk%, energy_recharge], goblet: [atk%, cryo_dmg], circlet: [crit_rate, crit_dmg]}  # [常识]
 substats: [crit_rate, crit_dmg, atk%, energy_recharge]  # [常识]
 energy_recharge: [120, 160]  # [常识]
-talents: [skill, burst]  # [常识]
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
 verified: false
 ---
 char: xilonen
@@ -113,7 +113,7 @@ artifact_sets:
 main_stats: {sands: [def%, energy_recharge], goblet: [def%], circlet: [def%, healing_bonus]}  # [常识]
 substats: [energy_recharge, def%]  # [常识]
 energy_recharge: [140, 180]  # [常识]
-talents: [skill]  # [常识]
+talents: {level: [skill], skip: [normal]}  # [常识]
 verified: false
 ---
 char: lanyan
@@ -127,7 +127,7 @@ artifact_sets:
 main_stats: {sands: [atk%], goblet: [atk%], circlet: [atk%]}  # [常识] 护盾吃攻击力
 substats: [atk%, energy_recharge]  # [常识]
 energy_recharge: null
-talents: [skill]  # [常识]
+talents: {level: [skill], skip: [normal]}  # [常识]
 verified: false
 ---
 char: yumemizukimizuki
@@ -137,10 +137,10 @@ weapons:
   - {id: a_thousand_floating_dreams, zh: 千夜浮梦, rank: 1, source: limited_5star, note: "[常识] 吃精通"}
   - {id: wandering_evenstar, zh: 流浪的晚星, rank: 2, source: gacha_4star, note: "[常识]"}
 artifact_sets:
-  - [{set: scarletproof, zh: 血红之证, pieces: 4, note: "[攻略] 凉夏喵 12:11「梦见月推荐携带新出的…」、龙四爷 23:10「新的那个星扩散的那套」；是血红还是炉火待核对"}]
+  - [{set: scarletproof, zh: 血红之证, pieces: 4, note: "[攻略] 凉夏喵 12:11「梦见月推荐携带新出的…」、龙四爷 23:10「新的那个星扩散的那套」"}]
   - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4, note: "[攻略] 凉夏喵 12:04「圣遗物携带风套就可以了」"}]
 main_stats: {sands: [em], goblet: [em], circlet: [em, crit_rate]}  # [常识]
 substats: [crit_rate, crit_dmg, em]  # [攻略] 凉夏喵 12:25「然后双爆精通尽量堆高就可以了」
 energy_recharge: null
-talents: [skill]  # [攻略] 阿尘杂货铺「资源优先给梦见月的E和精通」
+talents: {level: [skill], skip: [normal]}  # [攻略] 阿尘杂货铺「资源优先给梦见月的E和精通」
 verified: false

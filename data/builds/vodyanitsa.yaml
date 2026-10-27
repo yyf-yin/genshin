@@ -13,7 +13,7 @@ weapons:
 artifact_sets:
   - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: 8 个视频里 7 个首选}]
   - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: 队里已有人带千岩时（贪欲九头蛇_）}]
-  - [{set: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, pieces: 4, note: 视频里叫“勇者套”，是不是这一套待核对}]
+  - [{set: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, pieces: 4, note: 视频里叫“勇者套”}]
   - [{set: instructor, zh: 教官, pieces: 4, note: 队里已有人带千岩时（Leah莉娅又迟到啦）}]
   - [{set: ocean_hued_clam, zh: 海染砗磲, pieces: 4, note: 辅助梦见月瑞希、那维莱特这类不吃攻击力的主C时（粥粥的终极理解）}]
 main_stats:
@@ -25,9 +25,8 @@ energy_recharge: null
 energy_recharge_notes:
   - 主要靠战技，实战里不放大招也可以（卡特亚），不用刻意堆充能
 stat_targets: [生命值越高越好；领唱/重唱从 40000 生命值以上的部分开始算]
-talents: [skill]
+talents: {level: [skill], skip: [normal, burst]}
 notes:
-  - 天赋：元素战技点满，普攻、大招可以不点（多数视频）
   - 1 命：治疗时全队攻击力 + 生命上限的 0.8%，6 个视频提到 1 命，卡特亚等认为提升比专武还大
 evidence:
   - 贪欲九头蛇_ BV1C3hC6kEQY 08:58「首推同期限定，漩流颂歌」；11:11「比如勇者套，或者昔时套」；11:20「主词条选择：沙杯头统一生生生」；11:23「副词条选择：生命值%>小生命>其他」；11:27「主力技能元素战技给皇冠」

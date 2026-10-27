@@ -307,3 +307,15 @@ def test_build_picks_constellation_tier(tmp_path):
     assert eng.build("hero", "default", 0)["energy_recharge"] == (220, 280)
     c1 = eng.build("hero", "default", 1)
     assert c1["zh"] == "一命起" and c1["recommended_weapon"]["id"] == "sig"
+
+
+def test_talents_are_level_or_skip_only():
+    from pydantic import ValidationError
+
+    from genshin_assistant.models import Talents
+
+    assert Talents(level=["skill"], skip=["normal"]).level == ["skill"]
+    with pytest.raises(ValidationError):
+        Talents(level=["skill"], skip=["skill"])
+    with pytest.raises(ValidationError):
+        Talents(level=["E"])

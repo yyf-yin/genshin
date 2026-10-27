@@ -119,7 +119,7 @@ artifacts:
   - {id: flower_of_paradise_lost, zh: 乐园遗落之花, aliases: [乐园]}
   - {id: nymphs_dream, zh: 水仙之梦, aliases: [水仙]}
   - {id: obsidian_codex, zh: 黑曜秘典, aliases: [黑曜]}
-  - {id: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, aliases: [绘卷, 勇者套]}  # “勇者套”是推断，待核对
+  - {id: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, aliases: [绘卷, 勇者套]}
   - {id: thundering_fury, zh: 如雷的盛怒, aliases: [如雷]}
   - {id: pale_flame, zh: 苍白之火, aliases: [苍白]}
   - {id: disenchantment_in_deep_shadow, zh: 影中沉凝的幻灭, aliases: [幻灭, 幻灭套, 沉寂幻灭, 超导套, 星超导套]}
