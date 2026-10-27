@@ -38,8 +38,8 @@ talents: {level: [skill, burst], skip: [normal]}
 char: sucrose
 cons: "0-6"
 weapons:
+  # 砂糖锁定翠绿之影 + 讨龙（Cliff 2026-10-27），不列备选：队里已有人带其中之一就不带砂糖
   - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, rank: 1, source: gacha_4star, note: 给下一个登场的主C加攻击}
-  - {id: hakushin_ring, zh: 白辰之环, rank: 3, source: event}
 artifact_sets:
   - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4}]
 main_stats: {sands: [em], goblet: [em], circlet: [em]}
