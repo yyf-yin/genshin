@@ -1,0 +1,27 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: faruzan
+zh: 珐露珊
+aliases:
+- Faruzan
+element: anemo
+weapon: bow
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: grouping
+    score: 0.4
+    evidence: 元素战技「非想风天」：该效果将在短暂延迟后移除，产生风涡造成风元素范围伤害，并牵引附近的物体与敌人；若未命中敌人或角色，则将在命中的位置施加「风压坍陷」效果。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 元素爆发「抟风秘道」：围的敌人施加「诡风之祸」效果：降低敌人的风元素抗性； ·烈风波释放时，将为附近的队伍中所有角色施加「祈风之赐」效果：获得风元素伤害加成。
+    source: hints
+  - tag: element_dmg_buff:anemo
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: shred:anemo
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+verified: false

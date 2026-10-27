@@ -1,0 +1,20 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: varesa
+zh: 瓦雷莎
+aliases:
+- Varesa
+element: electro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「夜虹逐跃」：施放后，瓦雷莎将获得20点夜魂值，并获得「逐击」效果：持续期间，瓦雷莎的抗打断能力提高，点按普通攻击时，瓦雷莎将快速进行重击，并且该次重击不会消耗体力；「逐击
+    source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

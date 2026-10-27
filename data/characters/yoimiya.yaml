@@ -1,0 +1,16 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: yoimiya
+zh: 宵宫
+aliases:
+- Yoimiya
+element: pyro
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

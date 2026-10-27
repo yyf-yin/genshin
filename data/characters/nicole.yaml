@@ -1,0 +1,20 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: nicole
+zh: 尼可
+aliases:
+- Nicole
+element: pyro
+weapon: catalyst
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「圣言默示·未现之光」：炽光护盾的伤害吸收量受益于尼可的攻击力，对火元素伤害有250%的吸收效果。
+    source: hints
+  - tag: buff:atk_flat
+    score: 1.0
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+verified: false

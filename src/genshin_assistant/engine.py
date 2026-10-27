@@ -477,7 +477,8 @@ class Engine:
 
     def carries_for(self, support_id: str, cons: int = 0, roster: Roster = None) -> tuple[list[dict], list[dict], bool]:
         """辅助可以搭配的主C。返回 (合适的, 不合适的及原因, 是否万用)。
-        合适 = 辅助自己的整队规则在「辅助 + 主C」两人时已经满足，且主C不排斥辅助的功能。
+        合适 = 主C的队伍模板候选里有这个辅助（模板已经按整队配好，优先于两人规则），
+        或者辅助自己的整队规则在「辅助 + 主C」两人时已经满足，且主C不排斥辅助的功能。
         万用 = 辅助没有整队规则（例如只要吃攻击力就行），这时只能请玩家直接选。"""
         kits = [k for pid in self.available_playstyles(support_id, cons) if (k := self.kit(support_id, pid, cons))]
         universal = not any(k.rules for k in kits)
@@ -487,9 +488,11 @@ class Engine:
             if c.id == support_id or not self._owns(c.id, roster):
                 continue
             ccons = self._cons(c.id, roster)
+            in_template = any(cand.char == support_id for t in self.kb.teams_for(c.id)
+                              for sl in t.slots for cand in sl.candidates)
             for pid in self.available_playstyles(c.id, ccons):
                 carry = self.kit(c.id, pid, ccons)
-                if carry is None or carry.has("main_dps") <= 0:
+                if carry is None or (carry.has("main_dps") <= 0 and not in_template):
                     continue
                 best: dict | None = None
                 for k in kits:
@@ -500,9 +503,9 @@ class Engine:
                     helps = [self._tag_zh(n.tag) for n in carry.needs if k.has(n.tag) > 0]
                     row = {"char": c.id, "zh": c.zh, "element": c.element.value, "support_playstyle": k.playstyle,
                            "meets_needs": helps, "has_team_template": bool(self.kb.teams_for(c.id)),
-                           "in_template": any(cand.char == support_id for t in self.kb.teams_for(c.id)
-                                              for sl in t.slots for cand in sl.candidates),
-                           "problems": broken + avoided}
+                           "in_template": in_template,
+                           # 模板里已有这个辅助：两人时的整队规则不作数，只留主C明确排斥的功能
+                           "problems": avoided if in_template else broken + avoided}
                     if best is None or len(row["problems"]) < len(best["problems"]):
                         best = row
                 if best is not None:

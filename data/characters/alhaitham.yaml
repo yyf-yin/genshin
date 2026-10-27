@@ -1,0 +1,22 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: alhaitham
+zh: 艾尔海森
+aliases:
+- Alhaitham
+element: dendro
+weapon: sword
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: buff:em
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「义贯」：会依据通过本次施放消耗与产生的琢光镜数量，产生如下效果： ·每消耗1枚琢光镜，使队伍中附近的其他角色元素精通提升30点，持续15秒；
+      ·每产生1枚琢光镜，使艾尔海森获得10%草元素伤害加成，持
+    source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

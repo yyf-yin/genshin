@@ -1,0 +1,31 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: ganyu
+zh: 甘雨
+aliases:
+- Ganyu
+element: cryo
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: buff:dmg_bonus
+    score: 0.4
+    evidence: 固有天赋「天地交泰」：降众天华领域内的队伍中当前场上角色获得20%冰元素伤害加成。
+    source: hints
+  - tag: shred:cryo
+    score: 0.4
+    when: cons >= 1
+    evidence: 1 命「饮露」：二段蓄力重击的霜华矢或霜华绽发命中敌人时，会使敌人的冰元素抗性降低15%，持续6秒； 此外，命中时会为甘雨恢复2点元素能量。
+    source: hints
+  - tag: application:cryo
+    score: 0.6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: sub_dps
+    score: 0.6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: main_dps
+    score: 0.7
+    source: '[常识] 2026-10-27 补'
+verified: false

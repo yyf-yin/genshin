@@ -1,0 +1,33 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: beidou
+zh: 北斗
+aliases:
+- Beidou
+element: electro
+weapon: claymore
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「捉浪」：长按 举起武器形成护盾，伤害吸收量受益于北斗的生命值上限。
+    source: hints
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「斫雷」：时，释放雷电之力，引来1道能在敌人之间跃动的闪雷，造成雷元素伤害； ·提高角色的抗打断能力，并降低受到的伤害。
+    source: hints
+  - tag: shred:electro
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「北斗祓幽孽」：斫雷持续期间，周围敌人的雷元素抗性降低15%。
+    source: hints
+  - tag: application:electro
+    score: 0.8
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+  - tag: shred:cryo
+    score: 0.7
+    when: cons >= 6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+verified: false
