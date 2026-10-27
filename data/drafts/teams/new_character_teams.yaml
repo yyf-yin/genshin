@@ -1,0 +1,256 @@
+# AI 草稿，未经审核：五个新角色（桑多涅、奥黛塔、阿罗夏、薇斯纳、沃雅妮莎）攻略里的队伍，按主 C 整理成队伍模板（2026-10-27）。
+# 来源：work/drafts/cores-20261026-1147.md（`bili cores` 汇总，46 个视频）和 2026-10-27 跑的 28 个队友的攻略。
+# 分数：1.0 = 多数视频推荐，0.7 = 常见替代，0.4~0.5 = 只有一两个视频提到或可能已过时。
+#
+# 为什么还在 drafts/：模板里的候选人必须已经在 characters/ 里，引擎才认。下面这些队友还只在 drafts/characters/
+# （标签是自动起草的），要先审核标签再把模板挪进 teams/：
+#   yaemiko diona qiqi beidou nicole xilonen lanyan fischl escoffier faruzan bennett iansan layla ineffa
+#   yumemizukimizuki cyno kamisatoayaka mona
+# 已在 characters/ 的：sandrone odette alyosha（阿罗夏）vesna vodyanitsa（沃雅妮莎）sucrose zhongli furina skirk wriothesley
+#
+# 增益装备不叠加（翠绿、讨龙、炉火、千岩、宗室……一队一件）由引擎按配装自动处理，模板不用写。
+
+id: sandrone_stellar_superconduct
+zh: 桑多涅 · 挂冰 · 挂雷 · 减抗/护盾
+core: {char: sandrone}
+verified: false
+source: 桑多涅 12 个视频、奥黛塔 / 阿罗夏攻略
+slots:
+  - {id: dps, zh: 主C, fixed: {char: sandrone}}
+  - id: electro
+    zh: 后台挂雷
+    functions:
+      - {tag: application:electro, level: core}
+      - {tag: sub_dps, level: minor, weight: 0.2}
+    candidates:
+      - {char: yaemiko, score: 1.0}    # 5 个视频；1 命加强后全队星超导 +50%
+      - {char: alyosha, score: 0.9}    # 0 命主线送，挂雷 + 治疗 + 加攻；神秘的芙「木偶奥黛塔阿罗夏砂糖」T0
+      - {char: beidou, score: 0.7}     # 3 个视频；6 命降冰雷抗
+      - {char: fischl, score: 0.5}     # 只有阿罗夏上线前的视频
+      - {char: ineffa, score: 0.4}     # 只有奥黛塔上线前的视频
+  - id: cryo
+    zh: 后台挂冰
+    functions:
+      - {tag: application:cryo, level: core}
+    candidates:
+      - {char: odette, score: 1.0}     # 奥黛塔上线后的视频都用她替七七
+      - {char: qiqi, score: 0.7}
+      - {char: diona, score: 0.7}      # 6 命给场上 40% 星超导增伤
+      - {char: escoffier, score: 0.5}
+      - {char: layla, score: 0.4}
+  - id: flex
+    zh: 减抗 / 护盾 / 加攻
+    functions:
+      - {tag: shred:cryo, level: major, weight: 0.3}
+      - {tag: shield, level: major, weight: 0.3}
+      - {tag: buff:*, level: minor, weight: 0.2}
+    candidates:
+      - {char: sucrose, score: 0.9}    # 6 个视频
+      - {char: xilonen, score: 0.8}    # 冰雷双减抗
+      - {char: nicole, score: 0.8}     # 护盾 + 加攻；队里就没有减抗了
+      - {char: zhongli, score: 0.6}
+      - {char: lanyan, score: 0.6}
+constraints:
+  - id: needs_cryo_and_electro
+    rule: "has_tag('application:cryo') and has_tag('application:electro')"
+    reason: 星超导要冰 + 雷，没雷队友开不了极星辉玉（多个视频「一定要有雷」）
+substitutions:
+  - original: odette
+    substitute: qiqi
+    reason: 奥黛塔上线前的主流挂冰位；6 命开大后星超导额外加七七攻击力 600%
+    source: 龙四爷攻略组 BV1S4Tr6nE8U 27:38
+---
+id: vesna_stellar_swirl
+zh: 薇斯纳 · 奥黛塔 · 沃雅妮莎 · 风辅助
+core: {char: vesna}
+verified: false
+source: 薇斯纳 12 个视频、奥黛塔 / 沃雅妮莎攻略
+slots:
+  - {id: dps, zh: 主C, fixed: {char: vesna}}
+  - id: cryo
+    zh: 后台挂冰
+    functions:
+      - {tag: application:cryo, level: core}
+    candidates:
+      - {char: odette, score: 1.0}     # 7 个视频
+      - {char: qiqi, score: 0.6}
+      - {char: diona, score: 0.6}
+  - id: sustain
+    zh: 生存 / 减抗
+    functions:
+      - {tag: healer, level: major, weight: 0.3}
+      - {tag: interruption_res, level: minor, weight: 0.2}
+    candidates:
+      - {char: vodyanitsa, score: 1.0} # 7 个视频；降水冰风抗、抗打断
+      - {char: escoffier, score: 0.5}
+  - id: anemo
+    zh: 风辅助
+    functions:
+      - {tag: buff:*, level: major, weight: 0.3}
+    candidates:
+      - {char: faruzan, score: 0.9}    # 6 个视频；有视频说要 6 命
+      - {char: sucrose, score: 0.6}
+      - {char: nicole, score: 0.5}
+      - {char: bennett, score: 0.4}
+      - {char: iansan, score: 0.4}
+constraints:
+  - id: needs_cryo
+    rule: "has_tag('application:cryo')"
+    reason: 只能先冰后风，没冰连领域都打不开；沃雅妮莎是水，补不上冰
+---
+id: cyno_stellar_superconduct
+zh: 赛诺 · 奥黛塔 · 阿罗夏/八重 · 减抗
+core: {char: cyno}
+verified: false
+source: 奥黛塔、阿罗夏攻略里的赛诺队（4 个视频）和赛诺攻略
+slots:
+  - {id: dps, zh: 主C, fixed: {char: cyno}}
+  - id: cryo
+    zh: 后台挂冰
+    functions:
+      - {tag: application:cryo, level: core}
+    candidates:
+      - {char: odette, score: 1.0}
+      - {char: qiqi, score: 0.6}
+      - {char: diona, score: 0.6}
+  - id: support
+    zh: 挂雷 / 治疗 / 加攻
+    functions:
+      - {tag: buff:*, level: major, weight: 0.3}
+      - {tag: healer, level: minor, weight: 0.2}
+    candidates:
+      - {char: alyosha, score: 0.9}
+      - {char: yaemiko, score: 0.7}
+      - {char: nicole, score: 0.7}
+  - id: flex
+    zh: 减抗 / 护盾
+    functions:
+      - {tag: shred:cryo, level: major, weight: 0.3}
+      - {tag: shield, level: minor, weight: 0.2}
+    candidates:
+      - {char: xilonen, score: 0.9}
+      - {char: zhongli, score: 0.6}
+      - {char: beidou, score: 0.5}
+---
+id: wriothesley_stellar_superconduct
+zh: 莱欧斯利 · 奥黛塔 · 挂雷 · 减抗
+core: {char: wriothesley}
+verified: false
+source: 奥黛塔攻略和莱欧斯利攻略（月之八加强后）
+slots:
+  - {id: dps, zh: 主C, fixed: {char: wriothesley}}
+  - id: cryo
+    zh: 后台挂冰
+    functions:
+      - {tag: application:cryo, level: core}
+    candidates:
+      - {char: odette, score: 1.0}
+  - id: electro
+    zh: 后台挂雷
+    functions:
+      - {tag: application:electro, level: core}
+    candidates:
+      - {char: fischl, score: 0.8}     # 奥黛塔攻略：千岩皇女
+      - {char: yaemiko, score: 0.7}
+  - id: flex
+    zh: 减抗
+    functions:
+      - {tag: shred:cryo, level: major, weight: 0.3}
+    candidates:
+      - {char: sucrose, score: 0.8}
+      - {char: xilonen, score: 0.7}
+constraints:
+  - id: no_alyosha
+    rule: "not has_char('alyosha')"
+    reason: 奥黛塔攻略：莱欧斯利别带阿罗夏，可以带千岩皇女 + 砂糖（视频没说原因，待核对）
+---
+id: mizuki_stellar_swirl
+zh: 梦见月瑞希 · 奥黛塔 · 沃雅妮莎 · 风辅助
+core: {char: yumemizukimizuki}
+verified: false
+source: 奥黛塔、沃雅妮莎攻略里的瑞希队（9 个视频）
+slots:
+  - {id: dps, zh: 主C, fixed: {char: yumemizukimizuki}}
+  - id: cryo
+    zh: 后台挂冰
+    functions:
+      - {tag: application:cryo, level: core}
+    candidates:
+      - {char: odette, score: 1.0}
+      - {char: qiqi, score: 0.6}
+      - {char: diona, score: 0.6}
+  - id: sustain
+    zh: 减抗 / 生存
+    functions:
+      - {tag: healer, level: minor, weight: 0.2}
+    candidates:
+      - {char: vodyanitsa, score: 1.0}
+  - id: anemo
+    zh: 风辅助
+    functions:
+      - {tag: buff:*, level: major, weight: 0.3}
+    candidates:
+      - {char: faruzan, score: 0.8}
+      - {char: sucrose, score: 0.6}
+constraints:
+  - id: needs_cryo
+    rule: "has_tag('application:cryo')"
+    reason: 星扩散要扩散冰
+---
+id: skirk_hydro_cryo_vodyanitsa
+zh: 丝柯克 · 沃雅妮莎 · 爱可菲 · 芙宁娜
+core: {char: skirk}
+verified: false
+source: 沃雅妮莎攻略里的丝柯克队（5 个视频）
+slots:
+  - {id: dps, zh: 主C, fixed: {char: skirk}}
+  - id: shred
+    zh: 降水冰抗
+    functions:
+      - {tag: shred:cryo, level: major, weight: 0.3}
+    candidates:
+      - {char: vodyanitsa, score: 1.0}
+  - id: cryo
+    zh: 冰辅助
+    functions:
+      - {tag: healer, level: minor, weight: 0.2}
+    candidates:
+      - {char: escoffier, score: 1.0}
+  - id: hydro
+    zh: 水辅助
+    functions:
+      - {tag: buff:*, level: major, weight: 0.3}
+    candidates:
+      - {char: furina, score: 1.0}
+constraints:
+  - id: all_hydro_cryo
+    rule: "count_any(['hydro', 'cryo']) == 4"
+    reason: 丝柯克要水冰队友叠「死河渡断」；全队水冰还有「诸武相授」
+---
+id: ayaka_freeze_vodyanitsa
+zh: 神里绫华 · 沃雅妮莎 · 水辅助 · 冰辅助
+core: {char: kamisatoayaka}
+verified: false
+source: 沃雅妮莎攻略里的绫华队（2 个视频）和绫华攻略
+slots:
+  - {id: dps, zh: 主C, fixed: {char: kamisatoayaka}}
+  - id: shred
+    zh: 降水冰抗、挂水
+    functions:
+      - {tag: shred:cryo, level: major, weight: 0.3}
+    candidates:
+      - {char: vodyanitsa, score: 1.0}
+  - id: hydro
+    zh: 水辅助
+    functions:
+      - {tag: buff:*, level: major, weight: 0.3}
+    candidates:
+      - {char: furina, score: 1.0}
+      - {char: mona, score: 0.7}
+  - id: cryo
+    zh: 冰辅助
+    functions:
+      - {tag: healer, level: minor, weight: 0.2}
+    candidates:
+      - {char: escoffier, score: 0.9}
+      - {char: nicole, score: 0.4}
