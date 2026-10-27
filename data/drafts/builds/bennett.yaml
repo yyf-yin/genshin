@@ -1,0 +1,27 @@
+# AI 草稿，未经审核：从 B 站班尼特攻略和薇斯纳、妮可等攻略里讲到他的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。加攻、治疗辅助，加攻吃武器白值。
+char: bennett
+cons: "0-6"
+zh: 加攻治疗辅助
+weapons:
+  - {id: skywardblade, zh: 天空之刃, rank: 1, source: standard_5star, note: "[攻略 3] 真建是：五星最推荐"}
+  - {id: aquilafavonia, zh: 风鹰剑, rank: 1, source: standard_5star, note: "[攻略 3] 高白值"}
+  - {id: favoniussword, zh: 西风剑, rank: 2, source: gacha_4star, note: "[攻略 3] 四星首选"}
+  - {id: sapwoodblade, zh: 原木刀, rank: 2, source: craftable, note: "[攻略 2] 锻造，充能"}
+  - {id: thealleyflash, zh: 暗巷闪光, rank: 3, source: gacha_4star, note: "[攻略 2] 白值高"}
+  - {id: sacrificialsword, zh: 祭礼剑, rank: 3, source: gacha_4star, note: "[攻略 1]"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 5] 首选；和队友的宗室不叠加"}]
+  - [{set: scrolloftheheroofcindercity, zh: 烬城勇者绘卷, pieces: 4, note: "[攻略 1] 宗室被占时；和队友的勇者不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 1]"}]
+  - [{set: maidenbeloved, zh: 被怜爱的少女, pieces: 4, note: "[攻略 1] 要更多治疗时"}]
+main_stats: {sands: [energy_recharge, hp%], goblet: [hp%], circlet: [healing_bonus, hp%]}  # [攻略 3]
+substats: [energy_recharge, hp%]
+energy_recharge: [200, 250]
+energy_recharge_notes: [视频里 220%~250%；教官风鹰约 223%（思曜SZJ）]
+talents: {level: [burst], skip: [normal]}  # [攻略 2] 大招拉满；战技想打伤害可以拉到 9 级
+evidence:
+  - 真建是 BV1bXMj6nEdQ 08:48「五星我最推荐的是天空之刃」；09:13 四星西风剑；07:55 充能沙生命杯；09:36 充能最少 250%
+  - --木尘-- BV1a3YC68Efj 00:35「圣遗物带宗室20%攻击力」；00:37「或者带勇者12元素增伤」
+  - 梦汐嘻兮 BV1pxfbBNE6x 00:27「优先把大招给拉满」
+verified: false

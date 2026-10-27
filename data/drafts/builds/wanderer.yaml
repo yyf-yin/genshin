@@ -1,0 +1,20 @@
+# AI 草稿，未经审核：流浪者的视频较少（沃雅妮莎攻略里提到流浪者队），按攻略加通用配装补（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。站场主C。
+char: wanderer
+cons: "0-6"
+zh: 站场主C
+weapons:
+  - {id: tulaytullahsremembrance, zh: 图莱杜拉的回忆, rank: 1, source: limited_5star, note: "[攻略 1] 专武"}
+  - {id: thewidsith, zh: 流浪乐章, rank: 3, source: gacha_4star, note: "[攻略 1]"}
+artifact_sets:
+  - [{set: desertpavilionchronicle, zh: 沙上楼阁史话, pieces: 4, note: "[攻略 3]"}]
+  - [{set: echoesofanoffering, zh: 来歆余响, pieces: 4, note: "[攻略 2] 偏竞速时带余响（SWAECHING）"}]
+main_stats: {sands: [atk%], goblet: [anemo_dmg, atk%], circlet: [crit_rate, crit_dmg]}  # [攻略 1] 也可以带攻击杯
+substats: [crit_rate, crit_dmg, atk%]
+energy_recharge: null
+stat_targets: [暴击率 80%、暴击伤害 200% 以上（_懒洋洋的懒羊羊_）]
+talents: {level: [normal, skill], skip: [burst]}  # [常识]
+evidence:
+  - _懒洋洋的懒羊羊_ BV1X2GR6rE8y 00:09「然后武器选择是流浪乐章」；00:31「圣遗物推荐四楼阁」
+  - SWAECHING BV1gWvXBnErL 10:53「偏竞速玩法一定是带余响」；06:23「伞兵完全可以携带攻击杯」
+verified: false

@@ -42,7 +42,8 @@ DeepSeek key 依次找：`--key-file`、环境变量 `DEEPSEEK_API_KEY`、仓库
 | `characters/` | 角色：元素、武器、玩法，每个玩法的 `provides`（提供的功能）和 `needs`（对队友的需求），都可以带 `when` 条件（如 `cons < 1`） |
 | `teams/` | 队伍模板：槽位、槽位功能分级（`core` / `major` / `minor`）、候选人、整队限制、攻略给出的替补结论 |
 | `builds/` | 养成方案：按角色 × 玩法 × 命座区间（如阿罗夏 `0` 和 `1-6` 两档），武器档次、圣遗物组合（`set: mixed` 表示散搭）、主副词条、充能区间和随队伍变化的说明（`energy_recharge_notes`）、面板目标、天赋（`talents: {level: [...], skip: [...]}`，只分要点和不用点，不排优先级）、出处（`evidence`：UP 主、BV 号、时间点、原话）。五个新角色的配装是从 B 站攻略草稿整理的，待审 |
-| `drafts/builds/` | 还在 `drafts/characters/` 的队友的配装草稿，引擎不读；逐项标了 `[攻略]`（视频里讲的）或 `[常识]`（AI 按通用配装补的），审核后和角色标签一起挪进 `builds/` |
+| `drafts/builds/` | 还在 `drafts/characters/` 的队友的配装草稿（一人一个文件，2026-10-27 从五个新角色队里 28 个队友的 B 站攻略整理），引擎不读；逐项标了 `[攻略]`（视频里讲的）或 `[常识]`（AI 按通用配装补的），审核后和角色标签一起挪进 `builds/` |
+| `drafts/teams/` | 队伍模板草稿（五个新角色攻略里的队伍，按主 C 整理），引擎不读：候选人里有还在 `drafts/characters/` 的队友，标签审核后连同模板挪进 `characters/`、`teams/` |
 | `equipment_buffs.yaml` | 会给队友加成的圣遗物套装和武器（翠绿之影、讨龙英杰谭、终末嗟叹之诗等）。角色配装首选了这些装备时，加成算到这个角色头上 |
 | `drafts/characters/` | `draft-tags` **自动起草**的角色标签（关键词匹配天赋原文，分数一律 0.4），不参与配队；审核后挪到 `characters/` |
 | `mvp_characters.yaml` | 第一版要覆盖的主C名单和录入进度 |

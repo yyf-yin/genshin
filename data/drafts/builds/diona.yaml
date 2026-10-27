@@ -1,0 +1,30 @@
+# AI 草稿，未经审核：从 B 站迪奥娜攻略和桑多涅等新角色攻略里讲到迪奥娜的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+char: diona
+cons: "0-6"
+zh: 护盾、治疗、挂冰辅助
+weapons:
+  - {id: favoniuswarbow, zh: 西风猎弓, rank: 1, source: gacha_4star, note: "[攻略 5] 呆雁__：要带西风才转得动"}
+  - {id: sacrificialbow, zh: 祭礼弓, rank: 1, source: gacha_4star, note: "[攻略 6] 带祭礼约需 200% 充能"}
+  - {id: elegyfortheend, zh: 终末嗟叹之诗, rank: 2, source: limited_5star, note: "[攻略 3] 给队友加精通和攻击；和队友的终末不叠加"}
+  - {id: breezebornerefrain, zh: 柔风游弦, rank: 2, source: gacha_4star, note: "[攻略 2] 约需 260% 充能"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 6] 队里没人带宗室时首选"}]
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 6] 宗室被占时；梦汐嘻兮、王先生把它和宗室并列首选"}]
+  - [{set: maidenbeloved, zh: 被怜爱的少女, pieces: 4, note: "[攻略 1] 前期过渡"}]
+main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [hp%, healing_bonus]}  # [攻略 4] 充能不够时用充能沙
+substats: [energy_recharge, hp%]
+energy_recharge: [180, 240]
+energy_recharge_notes:
+  - 1 命约 180%~220%，0 命要 240% 以上（蜜柚卷饼）
+  - 带祭礼约 200%，带柔风游弦约 260%（王先生的游戏日记）
+stat_targets: [生命值 25000 以上（探险家呜呜，2 个视频）]
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 2] 梦汐嘻兮「199」；战技至少 7 级护盾才有 12 秒
+notes:
+  - 6 命（加强后）大招领域里给场上角色 200 精通、40% 星超导伤害加成，生命上限 +25%（5 个以上视频）
+evidence:
+  - 探险家呜呜 BV1dFp86PEEY 01:42「四星有祭礼」；01:55「接着圣遗物宗室或者千岩都能给队友加攻击力」；03:04「生命25000以上」
+  - 龙四爷攻略组 BV1S4Tr6nE8U 22:21「我们可以考虑选择带西风烈弓」；23:16「优先会选择那个宗室」
+  - 梦汐嘻兮 BV1srN96kEpw 00:31「天赋加点推荐199」
+  - 蜜柚卷饼 BV1j2NL6REZH 05:27「大概需要240以上的充能」；05:33「大概需要180到220之间的充能」
+verified: false

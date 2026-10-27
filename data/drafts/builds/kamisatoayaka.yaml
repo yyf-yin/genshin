@@ -1,0 +1,22 @@
+# AI 草稿，未经审核：从 B 站神里绫华攻略和沃雅妮莎攻略里讲到绫华的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。冰水队站场主C。
+char: kamisatoayaka
+cons: "0-6"
+zh: 冰水站场主C
+weapons:
+  - {id: mistsplitterreforged, zh: 雾切之回光, rank: 1, source: limited_5star, note: "[攻略 2] 专武"}
+  - {id: azurelight, zh: 苍耀, rank: 1, source: limited_5star, note: "[攻略 1] 柒月月月_"}
+  - {id: finaleofthedeep, zh: 海渊终曲, rank: 3, source: craftable, note: "[攻略 1] 四星推荐"}
+artifact_sets:
+  - [{set: blizzardstrayer, zh: 冰风迷途的勇士, pieces: 4, note: "[攻略 3] 永冻队"}]
+  - [{set: marechausseehunter, zh: 逐影猎人, pieces: 4, note: "[攻略 2] 柒月月月_：目前版本首选（队里有芙宁娜）"}]
+  - [{set: emblemofseveredfate, zh: 绝缘之旗印, pieces: 4, note: "[攻略 1] 冰水流缺充能时"}]
+main_stats: {sands: [atk%], goblet: [cryo_dmg], circlet: [crit_dmg, crit_rate]}  # [攻略 2]
+substats: [crit_rate, crit_dmg, atk%, energy_recharge]
+energy_recharge: [120, 150]
+energy_recharge_notes: [柒月月月_ 约 120%；-我是kuku- 至少 150%]
+talents: {level: [normal, skill, burst], skip: []}  # [攻略 2] 「9/9/10」
+evidence:
+  - 柒月月月_ BV1cA8S6JE6h 04:07「五星推荐雾切苍耀」；04:27「猎人为目前版本的首选」；05:15「双爆大于攻击大于充能」
+  - 柯丝姬 BV1sznz6rEdq 02:01「甚至带个四冰套」；02:03「零命天赋九九十」
+verified: false

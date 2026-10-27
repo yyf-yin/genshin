@@ -1,0 +1,25 @@
+# AI 草稿，未经审核：从 B 站蓝砚攻略和桑多涅等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。护盾吃攻击力。
+char: lanyan
+cons: "0-6"
+zh: 风系护盾减抗辅助
+weapons:
+  - {id: thrillingtalesofdragonslayers, zh: 讨龙英杰谭, rank: 1, source: 3star, note: "[攻略 3] 和队友的讨龙不叠加"}
+  - {id: skywardatlas, zh: 天空之卷, rank: 1, source: standard_5star, note: "[攻略 2]"}
+  - {id: memoryofdust, zh: 尘世之锁, rank: 1, source: limited_5star, note: "[攻略 2]"}
+  - {id: flowingpurity, zh: 纯水流华, rank: 2, source: craftable, note: "[攻略 2]"}
+  - {id: prototypeamber, zh: 试作金珀, rank: 2, source: craftable, note: "[攻略 2]"}
+  - {id: sacrificialfragments, zh: 祭礼残章, rank: 2, source: gacha_4star, note: "[攻略 1] 每轮稳定双技能"}
+artifact_sets:
+  - [{set: viridescentvenerer, zh: 翠绿之影, pieces: 4, note: "[攻略 5] 和队友的翠绿不叠加"}]
+  - [{set: mixed, zh: 风元素伤害加成+15%, pieces: 2}, {set: mixed, zh: 攻击力+18%, pieces: 2, note: "[攻略 2] 翠绿被占时过渡"}]
+main_stats: {sands: [atk%], goblet: [atk%, anemo_dmg], circlet: [atk%]}  # [攻略 4] 「攻攻攻」
+substats: [atk%, energy_recharge]
+energy_recharge: [200, 220]  # [攻略 1] 探险家呜呜 220% 左右
+stat_targets: [攻击力 2500 左右（探险家呜呜）]
+talents: {level: [skill], skip: [normal]}  # [攻略 3] 「196」，战技 9~10 级
+evidence:
+  - 探险家呜呜 BV1Lvbg6cE82 01:48「接着圣遗物只有风套减抗增伤」；01:51「主词条正常是攻攻攻」；02:32「那就220左右的充能」
+  - 龙四爷攻略组 BV1S4Tr6nE8U 35:44「蓝砚是能够带翠绿套」
+  - 账号已注销 BV115xqzZEML 02:12「因此天赋加点196」
+verified: false

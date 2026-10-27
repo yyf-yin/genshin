@@ -71,3 +71,36 @@ characters:
     aliases: [木偶]       # 很多标题只写“木偶”
     since: 2026-06-25   # 月之八
     pilot: true
+
+  # 五个新角色（桑多涅、奥黛塔、阿罗夏、薇斯纳、沃雅妮莎）队伍里的队友（2026-10-27，名单取自 `bili cores` 汇总）。
+  # 不设 pilot，按名字跑：`bili run 砂糖 八重神子 ...`。since 不用上线日期：老角色攻略跨很多版本，
+  # 统一从月之一（2025-09-04）开始取；月之三魔导加强、月之八星反应加强的角色从加强那天开始取。
+  # 只在一个视频里顺带出现的老主 C（雷电、达达利亚、绫人、恰斯卡、菲林斯）和旅行者没加。
+  - {id: sucrose, zh: 砂糖, since: 2025-12-02}            # 月之三魔导加强
+  - {id: fischl, zh: 菲谢尔, aliases: [皇女], since: 2025-12-02}
+  - {id: mona, zh: 莫娜, since: 2025-12-02}
+  - {id: yae_miko, zh: 八重神子, aliases: [神子], since: 2026-07-01}   # 月之八星反应加强
+  - {id: diona, zh: 迪奥娜, since: 2026-07-01}
+  - {id: qiqi, zh: 七七, since: 2026-07-01}
+  - {id: beidou, zh: 北斗, since: 2026-07-01}
+  - {id: cyno, zh: 赛诺, since: 2026-07-01}
+  - {id: wriothesley, zh: 莱欧斯利, since: 2026-07-01}
+  - {id: yumemizuki_mizuki, zh: 梦见月瑞希, aliases: [瑞希], since: 2026-07-01}
+  - {id: nike, zh: 妮可, aliases: [尼可], since: 2026-05-14}
+  - {id: columbina, zh: 哥伦比娅, since: 2026-01-08}
+  - {id: ineffa, zh: 伊涅芙, since: 2025-09-04}
+  - {id: xilonen, zh: 希诺宁, since: 2025-09-04}
+  - {id: escoffier, zh: 爱可菲, since: 2025-09-04}
+  - {id: zhongli, zh: 钟离, since: 2025-09-04}
+  - {id: lan_yan, zh: 蓝砚, since: 2025-09-04}
+  - {id: shenhe, zh: 申鹤, since: 2025-09-04}
+  - {id: ganyu, zh: 甘雨, since: 2025-09-04}
+  - {id: layla, zh: 莱依拉, since: 2025-09-04}
+  - {id: faruzan, zh: 珐露珊, since: 2025-09-04}
+  - {id: amber, zh: 安柏, since: 2025-09-04}
+  - {id: bennett, zh: 班尼特, since: 2025-09-04}
+  - {id: iansan, zh: 伊安珊, since: 2025-09-04}
+  - {id: furina, zh: 芙宁娜, aliases: [水神], since: 2025-09-04}
+  - {id: skirk, zh: 丝柯克, since: 2025-09-04}
+  - {id: ayaka, zh: 神里绫华, aliases: [绫华], since: 2025-09-04}
+  - {id: wanderer, zh: 流浪者, aliases: [散兵], since: 2025-09-04}

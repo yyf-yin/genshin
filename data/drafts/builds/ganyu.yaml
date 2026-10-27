@@ -1,0 +1,24 @@
+# AI 草稿，未经审核：从 B 站甘雨攻略和桑多涅攻略里讲到甘雨的部分整理（2026-10-27），甘雨的视频较少。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 新角色队里甘雨是后台冰副C（桑多涅星超导队开大挂冰）；站场蓄力主C的配装见 notes。
+char: ganyu
+cons: "0-6"
+zh: 后台挂冰副C
+weapons:
+  - {id: elegyfortheend, zh: 终末嗟叹之诗, rank: 1, source: limited_5star, note: "[攻略 1] 副C玩法；和队友的终末不叠加"}
+  - {id: amosbow, zh: 阿莫斯之弓, rank: 1, source: standard_5star, note: "[常识]"}
+  - {id: favoniuswarbow, zh: 西风猎弓, rank: 2, source: gacha_4star, note: "[攻略 1] 副C玩法"}
+  - {id: hamayumi, zh: 破魔之弓, rank: 3, source: gacha_4star, note: "[攻略 1]"}
+artifact_sets:
+  - [{set: emblemofseveredfate, zh: 绝缘之旗印, pieces: 4, note: "[攻略 1] 副C首选"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[常识] 队里没人带宗室时"}]
+main_stats: {sands: [atk%, energy_recharge], goblet: [cryo_dmg, atk%], circlet: [crit_rate, crit_dmg]}  # [常识] 星烁队改攻击杯
+substats: [crit_rate, crit_dmg, atk%, energy_recharge]
+energy_recharge: [140, 180]  # [常识]
+talents: {level: [burst], skip: [normal]}  # [常识] 副C只靠大招
+notes:
+  - 站场蓄力主C：阿莫斯之弓、若水、「大魔术」等，圣遗物乐团最泛用，也可以冰风迷途的勇士、逐影猎人；副词条攻击和暴击伤害（高性能保温杯）
+evidence:
+  - 高性能保温杯 BV1zdeA6wE7A 09:15 副C带终末、西风猎弓；11:05 副C最好带绝缘套；09:32「乐团套是甘雨最泛用的一个」
+  - 贪欲九头蛇_ BV1JQKU6WEsK 02:17「甘雨开大」（桑多涅星超导队）
+verified: false

@@ -1,0 +1,30 @@
+# AI 草稿，未经审核：从 B 站赛诺攻略和阿罗夏等新角色攻略里讲到赛诺的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 月之八加强后赛诺主打星超导；星超导伤害吃精通、攻击，不吃雷伤，所以精通沙或攻击杯。
+char: cyno
+cons: "0-6"
+zh: 星超导站场主C
+weapons:
+  - {id: staffofthescarletsands, zh: 赤沙之杖, rank: 1, source: limited_5star, note: "[攻略 4] 专武"}
+  - {id: primordialjadewingedspear, zh: 和璞鸢, rank: 2, source: limited_5star, note: "[攻略 2]"}
+  - {id: staffofhoma, zh: 护摩之杖, rank: 2, source: limited_5star, note: "[攻略 1]"}
+  - {id: balladofthefjords, zh: 峡湾长歌, rank: 3, source: gacha_4star, note: "[攻略 2] 能触发时"}
+  - {id: deathmatch, zh: 决斗之枪, rank: 3, source: event, note: "[攻略 3]"}
+  - {id: dragonsbane, zh: 匣里灭辰, rank: 4, source: gacha_4star, note: "[攻略 1]"}
+artifact_sets:
+  - [{set: disenchantmentindeepshadow, zh: 影中沉凝的幻灭, pieces: 4, note: "[攻略 5] 星超导首选"}]
+  - [{set: gildeddreams, zh: 饰金之梦, pieces: 4, note: "[攻略 1] 没有星超导套时"}]
+  - [{set: thunderingfury, zh: 如雷的盛怒, pieces: 4, note: "[攻略 1] 超载队"}]
+  - [{set: mixed, zh: 元素精通+80, pieces: 2}, {set: mixed, zh: 元素精通+80, pieces: 2, note: "[攻略 2] 过渡"}]
+main_stats: {sands: [em, atk%], goblet: [atk%, em], circlet: [crit_rate, crit_dmg]}  # [攻略 4] 专武精精爆，非专武攻击杯
+substats: [crit_rate, crit_dmg, em, atk%]
+energy_recharge: [120, 140]  # [攻略 1] 凉夏喵
+talents: {level: [burst, skill], skip: [normal]}  # [攻略 1] 凉夏喵：优先大招、其次战技、普攻不点
+notes:
+  - 1 命（加强后）+200 精通，换人时传给下一名角色；可以在例行修远里兑换（凉歌二三）
+  - 4 命后基本不用管充能；6 命一次大招多打八次星超导，提升很大
+evidence:
+  - 凉夏喵 BV177u26DEBh 04:33「圣遗物武器首选依旧首推专武刺杀之杖」；04:52「带刺杀的赛诺推荐精通沙和攻击杯会比较好」；06:29 充能 120 多
+  - 凉歌二三 BV14w8y6yEwY 04:35「在当前这个版本最适合赛诺的圣遗物」；07:44「那肯定是和璞鸢护摩这种武器」
+  - 龙四爷攻略组 BV1bCT46VEgQ 04:46「专武呢是精精爆」
+verified: false

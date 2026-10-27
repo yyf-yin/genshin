@@ -1,0 +1,22 @@
+# AI 草稿，未经审核：安柏的视频多是站场主C玩法，新角色队（薇斯纳）里她是辅助，这里主要按通用配装补（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+char: amber
+cons: "0-6"
+zh: 后台辅助
+weapons:
+  - {id: favoniuswarbow, zh: 西风猎弓, rank: 1, source: gacha_4star, note: "[攻略 1] 木木-vc「辅助就用西风弓」"}
+  - {id: elegyfortheend, zh: 终末嗟叹之诗, rank: 2, source: limited_5star, note: "[常识] 和队友的终末不叠加"}
+  - {id: sacrificialbow, zh: 祭礼弓, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 1] 木木-vc：辅助用宗室；和队友的宗室不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[常识] 宗室被占时"}]
+main_stats: {sands: [energy_recharge, atk%], goblet: [atk%, pyro_dmg], circlet: [crit_rate, crit_dmg]}  # [常识]
+substats: [energy_recharge, crit_rate, crit_dmg, atk%]
+energy_recharge: [160, 200]  # [常识]
+talents: {level: [burst], skip: [normal]}  # [常识]
+notes:
+  - 站场玩法（重击、兔兔伯爵引爆）：天空之翼、「大魔术」、破魔之弓、冬极白星，圣遗物乐团或炽烈的炎之魔女，攻击沙火伤杯双爆头（洪渊一号）
+evidence:
+  - 木木-vc BV1kcVq65Ean 00:19「辅助就用西风弓」；00:57 辅助用宗室
+  - 洪渊一号 BV1gmHg6qExq 03:08「重击流圣遗物无脑选乐团就」；04:51「沙子选攻击双爆沙杯子火伤」
+verified: false

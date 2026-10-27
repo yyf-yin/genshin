@@ -1,0 +1,22 @@
+# AI 草稿，未经审核：莱依拉的视频很少，主要按通用配装补（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。护盾吃生命值；桑多涅攻略把她当护盾挂冰位。
+char: layla
+cons: "0-6"
+zh: 护盾、挂冰辅助
+weapons:
+  - {id: favoniussword, zh: 西风剑, rank: 1, source: gacha_4star, note: "[常识] 充能"}
+  - {id: freedomsworn, zh: 苍古自由之誓, rank: 2, source: limited_5star, note: "[攻略 1] 和队友的苍古不叠加"}
+  - {id: keyofkhajnisut, zh: 圣显之钥, rank: 2, source: limited_5star, note: "[常识] 吃生命值；和队友的圣显之钥不叠加"}
+  - {id: sapwoodblade, zh: 原木刀, rank: 3, source: craftable, note: "[常识]"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 1] 和队友的宗室不叠加"}]
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[常识] 和队友的千岩不叠加"}]
+  - [{set: goldentroupe, zh: 黄金剧团, pieces: 4, note: "[攻略 2] 纯冰、飞星打输出时"}]
+main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [hp%]}  # [常识]
+substats: [energy_recharge, hp%]
+energy_recharge: [140, 160]  # [常识]
+talents: {level: [skill], skip: [normal]}  # [常识] 护盾和飞星都在战技
+evidence:
+  - 原神视频专用号 BV1vtcGz1E5v 00:37「莱依拉带的是宗室套」
+  - 贪欲九头蛇_ BV1JQKU6WEsK 15:10「莱依拉及奶奶(护盾挂冰)」（桑多涅队）
+verified: false

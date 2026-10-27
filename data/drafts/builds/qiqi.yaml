@@ -1,0 +1,29 @@
+# AI 草稿，未经审核：从 B 站七七攻略和桑多涅等新角色攻略里讲到七七的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 月之八加强后七七在星超导队当后台挂冰、治疗；6 命的 600% 攻击力加成吃攻击力，所以带攻击沙、攻击杯。
+char: qiqi
+cons: "0-6"
+zh: 星超导队后台挂冰、治疗
+weapons:
+  - {id: skywardblade, zh: 天空之刃, rank: 1, source: standard_5star, note: "[攻略 1] 龙四爷「有天空带天空」"}
+  - {id: aquilafavonia, zh: 风鹰剑, rank: 1, source: standard_5star, note: "[攻略 1] 阿泽szxs：高攻击白值"}
+  - {id: favoniussword, zh: 西风剑, rank: 2, source: gacha_4star, note: "[攻略 2] 龙四爷「没天空带西风」"}
+  - {id: finaleofthedeep, zh: 海渊终曲, rank: 3, source: event, note: "[攻略 2]"}
+artifact_sets:
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 5] 多数视频首选"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 2] 千岩被队友占了时"}]
+  - [{set: oceanhuedclam, zh: 海染砗磲, pieces: 4, note: "[攻略 2] 要治疗量时"}]
+main_stats: {sands: [atk%, energy_recharge], goblet: [atk%], circlet: [crit_rate, atk%, healing_bonus]}  # [攻略 3] 「攻攻攻」或攻攻爆
+substats: [energy_recharge, atk%]
+energy_recharge: null
+energy_recharge_notes: [6 命约 180%（蜜柚卷饼）；0~5 命以攻击力 2000 以上为目标]
+stat_targets: [攻击力 2000 以上（蜜柚卷饼，0~5 命）]
+talents: {level: [burst], skip: [normal]}  # [常识] 阿泽szxs：天赋拉到 70 级突破解锁即可
+notes:
+  - 1 命（加强后）在极星辉玉领域里回能，缓解充能
+  - 6 命（加强后）开大后 4 层增益，队伍星超导伤害额外加七七攻击力 600%（3 个视频）
+evidence:
+  - 龙四爷攻略组 BV1S4Tr6nE8U 28:18「有天空带天空」；28:20 千岩；28:29「攻击杯子和暴击头啊」
+  - 阿泽szxs BV1zbHH6EEuZ 02:56「圣遗物的话推荐千岩套」；03:01「主词条选择攻攻攻」
+  - 蜜柚卷饼 BV1bZgy6BEod 08:46「萌新的话以2000攻击力以上为目标就可以了」
+verified: false

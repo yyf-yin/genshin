@@ -1,0 +1,27 @@
+# AI 草稿，未经审核：从 B 站北斗攻略和桑多涅等新角色攻略里讲到北斗的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+char: beidou
+cons: "0-6"
+zh: 星超导队后台雷、护盾
+weapons:
+  - {id: favoniusgreatsword, zh: 西风大剑, rank: 1, source: gacha_4star, note: "[攻略 4] 龙四爷「把西风大剑搂满」"}
+  - {id: songofbrokenpines, zh: 松籁响起之时, rank: 2, source: limited_5star, note: "[攻略 1] 约专武 84%；和队友的松籁不叠加"}
+  - {id: skywardpride, zh: 天空之傲, rank: 2, source: standard_5star, note: "[攻略 1]"}
+  - {id: ultimateoverlordsmegamagicsword, zh: 「究极霸王超级魔剑」, rank: 3, source: event, note: "[攻略 1] 约专武 74%"}
+  - {id: lithicblade, zh: 千岩古剑, rank: 3, source: gacha_4star, note: "[攻略 1] 队里有两名璃月角色时"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 4] 多数视频首选"}]
+  - [{set: thunderingfury, zh: 如雷的盛怒, pieces: 4, note: "[攻略 3]"}]
+  - [{set: mixed, zh: 元素充能效率+20%, pieces: 2}, {set: mixed, zh: 元素充能效率+20%, pieces: 2, note: "[攻略 1] 散搭过渡"}]
+main_stats: {sands: [energy_recharge, atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [攻略 1] 王先生「充攻爆」
+substats: [energy_recharge, crit_rate, crit_dmg, atk%]
+energy_recharge: [200, 250]
+energy_recharge_notes: [视频里 170%~278% 都有；两把西风的队约 240% 能稳定开大（探险家呜呜）]
+talents: {level: [burst, skill], skip: [normal]}  # [攻略 1] 探险家呜呜「199 或 1/9/10」
+notes:
+  - 6 命（加强后）大招期间降冰、雷抗 15%，给场上角色 200 精通（4 个视频）
+evidence:
+  - 龙四爷攻略组 BV1S4Tr6nE8U 24:53「所以我们会选择呢把西风大剑搂满」；25:00「那他就带个宗室呗」
+  - 探险家呜呜 BV1i7YS6SEMg 03:27「接着圣遗物四宗室能给队友加攻击力」；04:44「那就是充能240加能稳定开出大」
+  - 贪欲九头蛇_ BV1JQKU6WEsK 13:55「6命还多了15%冰雷双减抗」
+verified: false
