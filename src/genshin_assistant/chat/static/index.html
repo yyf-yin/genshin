@@ -144,6 +144,14 @@ async function ask(question) {
     const note = data.explained_by_llm ? "" : `<span class="tag">大模型解释失败，下面是引擎原始结果</span>`;
     pending.innerHTML = md(data.answer) + note +
       `<details><summary>引擎结果</summary><pre>${esc(JSON.stringify({query: data.query, facts: data.facts}, null, 1))}</pre></details>`;
+    if (data.facts.status === "need_carry") {  // 问辅助：候选主C做成按钮，点一下就是回答
+      const box = document.createElement("div"); box.className = "chips"; box.style.marginTop = "8px";
+      for (const c of data.facts.candidates) {
+        const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = "搭配" + c.zh;
+        b.onclick = () => ask(b.textContent); box.appendChild(b);
+      }
+      pending.insertBefore(box, pending.querySelector("details"));
+    }
   } catch (e) {
     pending.className = "msg bot err"; pending.textContent = "出错了：" + e.message;
   } finally {
