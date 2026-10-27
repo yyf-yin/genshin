@@ -143,3 +143,11 @@ def test_web_endpoints(kb, tmp_path):
         assert a.roster.load() is None
     finally:
         server.shutdown()
+
+
+def test_switching_character_drops_stale_missing(kb):
+    a = make(kb, {"intent": "build", "character": "阿罗夏", "missing": ["芙宁娜"]})
+    r = a.ask("阿罗夏 1 命怎么养成", Query("team", "那维莱特", 0, ["芙宁娜"]))
+    assert r.query.missing == []
+    a.model.parsed = {"intent": "team", "character": "那维莱特", "missing": ["芙宁娜", "枫原万叶"]}
+    assert a.ask("那万叶也没有呢", Query("team", "那维莱特", 0, ["芙宁娜"])).query.missing == ["芙宁娜", "枫原万叶"]

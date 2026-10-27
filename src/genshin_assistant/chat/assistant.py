@@ -25,6 +25,7 @@ PARSE_SYSTEM = """你是原神配队助手的问题解析器。把玩家的问�
 - own：只有玩家完整列出「我只有这些角色」时才填，否则是 []
 - playstyle：玩家指定的玩法 id，一般是 null
 追问（如「那没有芙宁娜呢」）时，沿用上一轮的 character、cons，并把上一轮的 missing 合并进来。
+换了角色时，不要沿用上一轮的 cons 和 missing，除非本轮又说了。
 已知角色（正式名：别名）：
 {names}
 只输出 JSON 对象。"""
@@ -33,10 +34,13 @@ EXPLAIN_SYSTEM = """你是原神配队与养成助手，用中文回答玩家。
 下面的「引擎结果」是推荐引擎按知识库算出来的，是你唯一的依据：
 - 只推荐引擎结果里出现的角色、武器、圣遗物，不要凭记忆添加或改动；引擎没给的就直说知识库里还没有
 - 队伍按引擎的顺序讲，先给结论（队伍成员），再讲为什么：每个位置起什么作用、满足了谁的需求、扣分项
-- 有替补时，讲清替补保留了什么、失去了什么，攻略结论（override_reason）优先
+- 有替补时，讲清替补保留了什么、失去了什么，有攻略结论（override_reason）时优先讲它，没有就不提
 - 数据标了未审核（verified=false 或 draft）时，在结尾提醒一句「这部分数据还是草稿，未审核」
 - 命座会改变结论时要点出来
 - status 是 no_team_template 时，说明还没有现成队伍，再按 kit（这个角色提供的功能、对队友的需求、整队规则）讲适合什么样的队友，但不要点名具体角色，除非 appears_in 里有
+- 理由只能来自引擎结果：保留/失去的功能照 kept、lost 原样讲，扣分只讲 needs、conflicts 里的，不要自己补强度评价或扣分原因
+- 武器按 rank 讲，rank 相同的写成并列
+- 不要在回答里出现英文字段名（如 override_reason、kept、verified）
 - 简洁，用短段落和列表，不要寒暄
 输出 JSON：{{"answer": "Markdown 格式的回答"}}"""
 
@@ -122,7 +126,11 @@ class Assistant:
     def parse(self, question: str, last: Query | None = None) -> Query:
         names = "\n".join(f"{c.zh}：{'、'.join(c.aliases)}" if c.aliases else c.zh for c in self.kb.characters.values())
         user = question if last is None else f"上一轮解析结果：{json.dumps(asdict(last), ensure_ascii=False)}\n本轮问题：{question}"
-        return Query.from_llm(self.model.complete_json(PARSE_SYSTEM.format(names=names), user))
+        q = Query.from_llm(self.model.complete_json(PARSE_SYSTEM.format(names=names), user))
+        if last and q.character != last.character:
+            # 换了角色：上一轮的「没有谁」只在本轮又提到时才算（模型偶尔会照搬）
+            q.missing = [n for n in q.missing if n in question]
+        return q
 
     def explain(self, question: str, facts: dict) -> str:
         user = f"玩家问题：{question}\n\n引擎结果：\n{json.dumps(facts, ensure_ascii=False)}"
