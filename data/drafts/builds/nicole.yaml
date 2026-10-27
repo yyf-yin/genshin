@@ -1,0 +1,29 @@
+# AI 草稿，未经审核：从 B 站妮可（游戏数据叫尼可）攻略和桑多涅等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。护盾和加攻都吃攻击力，所以全攻击。
+char: nicole
+cons: "0-6"
+zh: 护盾、加攻辅助
+weapons:
+  - {id: angelosheptades, zh: 尘光七谕, rank: 1, source: limited_5star, note: "[攻略 5] 专武；和队友的尘光七谕不叠加"}
+  - {id: skywardatlas, zh: 天空之卷, rank: 2, source: standard_5star, note: "[攻略 5] 贪欲九头蛇_：常驻里最好"}
+  - {id: memoryofdust, zh: 尘世之锁, rank: 2, source: limited_5star, note: "[攻略 2] 卡特亚：约专武 90%"}
+  - {id: hakushinring, zh: 白辰之环, rank: 3, source: limited_5star, note: "[攻略 2]"}
+  - {id: thrillingtalesofdragonslayers, zh: 讨龙英杰谭, rank: 3, source: 3star, note: "[攻略 3] 和队友的讨龙不叠加"}
+  - {id: oathsworneye, zh: 证誓之明瞳, rank: 3, source: craftable, note: "[攻略 2] 四星"}
+  - {id: wineandsong, zh: 暗巷的酒与诗, rank: 4, source: gacha_4star, note: "[攻略 2]"}
+artifact_sets:
+  - [{set: celestialgift, zh: 天之美赐, pieces: 4, note: "[攻略 7] 魔导套，贪欲九头蛇_「只推荐美赐套」"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 1] 龙四爷：队里有人带美赐时"}]
+main_stats: {sands: [atk%, energy_recharge], goblet: [atk%], circlet: [atk%]}  # [攻略 4] 「攻攻攻」，缺充能时充能沙
+substats: [atk%, energy_recharge]
+energy_recharge: [130, 180]
+energy_recharge_notes:
+  - 带专武约 120%~140%，不带专武 170%~180%（卡特亚、梦轩dada）
+  - 双火队约 160%（贪欲九头蛇_，4 个视频）
+stat_targets: [攻击力 4000（白叶の散风，毕业面板）]
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 5] 战技点满，大招其次，普攻不点
+evidence:
+  - 贪欲九头蛇_ BV19ELB6BE52 07:26「首选同期限定：尘光七谕」；09:54「天空赢在一手是常驻武器」；10:17「圣遗物,只推荐美赐套」；10:35「主词条选择：攻攻攻」
+  - 卡特亚 BV1S65b6BEQq 04:41「然后咸鱼专武也能到90%」；03:51 双火有专武吃温迪约 120%
+  - 梦轩dada BV1y5L26VEN9 07:33「充能建议带专武时 130」；04:01「优先点E副点 Q普攻 不」
+verified: false

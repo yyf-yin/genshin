@@ -1,0 +1,24 @@
+# AI 草稿，未经审核：从 B 站钟离攻略和桑多涅等新角色攻略里讲到他的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。新角色队里钟离都是护盾减抗位，这里只写辅助配装。
+char: zhongli
+cons: "0-6"
+zh: 护盾减抗辅助
+weapons:
+  - {id: blacktassel, zh: 黑缨枪, rank: 1, source: 3star, note: "[攻略 4] 吃生命值"}
+  - {id: favoniuslance, zh: 西风长枪, rank: 1, source: gacha_4star, note: "[攻略 3] 缺充能时"}
+  - {id: staffofhoma, zh: 护摩之杖, rank: 2, source: limited_5star, note: "[攻略 2] 有就带"}
+artifact_sets:
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 3] 辅助首选；和队友的千岩不叠加"}]
+  - [{set: archaicpetra, zh: 悠古的磐岩, pieces: 4, note: "[攻略 2] 千岩被占时；和队友的磐岩不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 1]"}]
+main_stats: {sands: [hp%], goblet: [hp%], circlet: [hp%]}  # [攻略 3] 全生命
+substats: [hp%, energy_recharge]
+energy_recharge: null
+stat_targets: [生命值 4 万（AJ游戏频道）]
+talents: {level: [skill], skip: [normal]}  # [攻略 2] 战技（护盾）升满
+notes: [视频也讲了天星流、下落流等站场玩法，那些是另外的配装，新角色队里用不到]
+evidence:
+  - 空格空空格z BV1vPkUBAEvu 06:52「抽卡赠送的毕业武器黑缨枪」；07:30「辅助圣遗物首选还是千岩」；08:43「副词条大生命小生命充能」
+  - 男巫30 BV1AY4bzBE9E 02:15「圣遗物首选就是千岩套了」
+  - AJ游戏频道 BV1dMkrBjEQd 09:39「总之就是E技能全升满就行」；26:43「4万生命值就毕业啊」
+verified: false

@@ -1,0 +1,25 @@
+# AI 草稿，未经审核：从 B 站希诺宁攻略和桑多涅等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。减抗辅助，吃防御力。
+char: xilonen
+cons: "0-6"
+zh: 减抗、治疗辅助
+weapons:
+  - {id: peakpatrolsong, zh: 岩峰巡歌, rank: 1, source: limited_5star, note: "[攻略 2] 专武；和队友的岩峰巡歌不叠加"}
+  - {id: freedomsworn, zh: 苍古自由之誓, rank: 2, source: limited_5star, note: "[攻略 2] 凉夏喵次选；和队友的苍古不叠加"}
+  - {id: favoniussword, zh: 西风剑, rank: 2, source: gacha_4star, note: "[攻略 3] 凉歌二三「给他一个西风就完全够用了」"}
+  - {id: sacrificialsword, zh: 祭礼剑, rank: 3, source: gacha_4star, note: "[攻略 1]"}
+artifact_sets:
+  - [{set: scrolloftheheroofcindercity, zh: 烬城勇者绘卷, pieces: 4, note: "[攻略 4] 没人带勇者时首选；和队友的勇者不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 4] 龙四爷「希诺宁带教官哦」（星超导队）"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 1]"}]
+  - [{set: silkenmoonsserenade, zh: 纺月的夜歌, pieces: 4, note: "[攻略 1] 月曜队"}]
+main_stats: {sands: [energy_recharge, def%], goblet: [def%], circlet: [healing_bonus, def%]}  # [攻略 2] 非西风时防御沙
+substats: [energy_recharge, def%]
+energy_recharge: [160, 180]  # [攻略 1] 凉夏喵 180%
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 1] 战技优先升满，大招 8 级以上
+notes: [拾柒酱紫吖：副词条可以不用管；带西风时暴击 30%~40% 以上（凉夏喵）]
+evidence:
+  - 凉夏喵 BV1vcBHB1EQi 03:59「首选专武岩风寻歌」；05:01「没有其他角色带勇者首选勇者」；05:48「沙漏选择充能或者防御」
+  - 龙四爷攻略组 BV1S4Tr6nE8U 33:08「希诺宁带教官哦」
+  - 凉歌二三 BV1Z3BXBuEDu 09:13「给他一个西风就完全够用了」
+verified: false

@@ -1,0 +1,25 @@
+# AI 草稿，未经审核：从 B 站爱可菲攻略和桑多涅、沃雅妮莎等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。冰水队后台减抗、治疗、副C。
+char: escoffier
+cons: "0-6"
+zh: 冰队后台减抗、治疗
+weapons:
+  - {id: symphonistofscents, zh: 香韵奏者, rank: 1, source: limited_5star, note: "[攻略 5] 专武；和队友的香韵奏者不叠加"}
+  - {id: favoniuslance, zh: 西风长枪, rank: 2, source: gacha_4star, note: "[攻略 4] 凉夏喵「本体带个西风枪就非常够用」"}
+artifact_sets:
+  - [{set: scrolloftheheroofcindercity, zh: 烬城勇者绘卷, pieces: 4, note: "[攻略 6] 柯丝姬、梦轩dada；和队友的勇者不叠加"}]
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 4] 凉夏喵「4000岩或者四勇者都可」"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 2] 龙四爷：没人穿宗室时（星烁队）"}]
+  - [{set: goldentroupe, zh: 黄金剧团, pieces: 4, note: "[攻略 2] 偏输出"}]
+main_stats: {sands: [energy_recharge, atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [攻略 3]；2 命后改攻击杯攻击头（龙四爷）
+substats: [energy_recharge, crit_rate, crit_dmg, atk%]
+energy_recharge: [160, 200]
+energy_recharge_notes:
+  - 单西风约 135%（柒月月月_）；千鹤DD、泪眼执笔墨成花 180%~200%
+  - 打难度高的战斗约 220%（凉夏喵）
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 4] 战技、大招对点，「1-10-10」
+evidence:
+  - 凉夏喵 BV1HTbw67EJ1 04:42「首选专武」；05:31「4000岩或者四勇者都可」；03:17 战技、大招对点
+  - 龙四爷攻略组 BV1kjwXzuEB5 08:53「没人穿宗室了」；09:20「这里可以考虑带充能沙」
+  - 柯丝姬 BV1sznz6rEdq 02:20「四勇者零命天赋599」
+verified: false

@@ -1,0 +1,28 @@
+# AI 草稿，未经审核：从 B 站哥伦比娅攻略和桑多涅等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。月感电、月绽放队的后台水，吃生命值。
+char: columbina
+cons: "0-6"
+zh: 月曜队后台水
+weapons:
+  - {id: nocturnescurtaincall, zh: 帷间夜曲, rank: 1, source: limited_5star, note: "[攻略 3] 专武，龙四爷：很关键"}
+  - {id: tomeoftheeternalflow, zh: 万世流涌大典, rank: 2, source: limited_5star, note: "[攻略 1]"}
+  - {id: favoniuscodex, zh: 西风秘典, rank: 3, source: gacha_4star, note: "[攻略 4] 龙四爷：约专武 54%"}
+  - {id: etherlightspindlelute, zh: 天光的纺琴, rank: 3, source: gacha_4star, note: "[攻略 1] 月感电"}
+artifact_sets:
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 3] 月感电队常用；和队友的千岩不叠加"}]
+  - [{set: aubadeofmorningstarandmoon, zh: 晨星与月的晓歌, pieces: 4, note: "[攻略 2] 贪欲九头蛇_：追伤害时"}]
+  - [{set: silkenmoonsserenade, zh: 纺月的夜歌, pieces: 4, note: "[攻略 2] 队里没人带时；和队友的纺月不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 1] 开荒"}]
+main_stats: {sands: [energy_recharge, hp%], goblet: [hp%], circlet: [crit_dmg, crit_rate, hp%]}  # [攻略 5] 「充生爆」
+substats: [energy_recharge, crit_rate, crit_dmg, hp%]
+energy_recharge: [140, 170]
+energy_recharge_notes:
+  - 双水约 130%~140%，单水约 170%（卡特亚）；0 命单水约 180%（粥粥的终极理解）
+  - 4 命加专武约 110%（柴布Howii）
+stat_targets: [生命值 3 万 5（柴布Howii）]
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 5] 战技、大招 9 级以上
+evidence:
+  - 龙四爷攻略组 BV1RvrfBZEDN 10:04「他的专武确实很关键」；25:36「然后西风相当于专武的54」；18:51「优先把E点满啊」
+  - 贪欲九头蛇_ BV1Ywr6BBEei 15:05「追伤害带新圣遗物晓歌」；15:18「人伍1轮1Q，选择充生爆」
+  - 卡特亚 BV1XjrABYEc9 10:22「单水的话推荐170」
+verified: false
