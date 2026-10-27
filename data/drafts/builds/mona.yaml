@@ -1,0 +1,30 @@
+# AI 草稿，未经审核：从 B 站莫娜攻略和沃雅妮莎等新角色攻略里讲到莫娜的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 第一档是后台辅助（绫华、沃雅妮莎等冰水队）；6 命可以站场重击，另见 notes。
+char: mona
+cons: "0-6"
+zh: 后台增伤辅助
+weapons:
+  - {id: thrillingtalesofdragonslayers, zh: 讨龙英杰谭, rank: 1, source: 3star, note: "[攻略 7] 最多视频推荐；和队友的讨龙不叠加"}
+  - {id: favoniuscodex, zh: 西风秘典, rank: 2, source: gacha_4star, note: "[攻略 4]"}
+  - {id: prototypeamber, zh: 试作金珀, rank: 2, source: craftable, note: "[攻略 3]"}
+  - {id: tomeoftheeternalflow, zh: 万世流涌大典, rank: 2, source: limited_5star, note: "[攻略 1] 凉夏喵：五星首选之一"}
+  - {id: cashflowsupervision, zh: 金流监督, rank: 2, source: limited_5star, note: "[攻略 1] 同上"}
+  - {id: thewidsith, zh: 流浪乐章, rank: 3, source: gacha_4star, note: "[攻略 2] 大招核爆或 6 命站场时"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 4] 首选"}]
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 3] 宗室被占时"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 3] 凉夏喵：西风武器加四教官"}]
+main_stats: {sands: [energy_recharge], goblet: [hydro_dmg, atk%], circlet: [crit_rate, crit_dmg]}  # [攻略 4] 辅助固定充能沙
+substats: [energy_recharge, crit_rate, crit_dmg]
+energy_recharge: [200, 250]
+energy_recharge_notes: [保底 210%~220%（凉歌二三），赫箩的苹果建议 250% 以上；带西风时圣遗物自带 20% 充能就够（冰封icyseal）]
+talents: {level: [burst], skip: [normal]}  # [攻略 2] 大招点到 10 级
+notes:
+  - 6 命对星异状态敌人重击伤害大幅提升，可以带逐影猎人、水仙之梦或乐团站场重击（凉歌二三、猫冬MT），那是另一套配装
+  - 1 命后台也生效、2 命大招后自动重击（加强后，多个视频）
+evidence:
+  - 凉夏喵 BV1ZHSKBKER3 06:44「也可以选择讨龙加4000岩更好嗯」；08:30「教官千岩宗室根据配队的不同去选择就可以了」；08:45「辅助固定选择充能」
+  - 龙四爷攻略组 BV15KwSzJEBi 21:50「然后莫娜带宗室加讨龙」
+  - 凉歌二三 BV1XkqpBkE4g 08:06「保底要在二百一二百二这样的一个情况」；04:56「然后大招点到十就够了」
+verified: false

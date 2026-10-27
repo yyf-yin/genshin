@@ -1,0 +1,32 @@
+# AI 草稿，未经审核：从 B 站砂糖攻略和五个新角色攻略里讲到砂糖的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+char: sucrose
+cons: "0-6"
+zh: 扩散减抗、精通辅助
+weapons:
+  - {id: sacrificialfragments, zh: 祭礼残章, rank: 1, source: gacha_4star, note: "[攻略 3] 梦汐嘻兮「最推荐的还是这本祭礼残章」；1 命配祭礼只放战技就能连续扩散"}
+  - {id: thrillingtalesofdragonslayers, zh: 讨龙英杰谭, rank: 1, source: 3star, note: "[攻略 5] 星烁队、月感电队常用；和队友的讨龙不叠加，一队只带一把"}
+  - {id: athousandfloatingdreams, zh: 千夜浮梦, rank: 2, source: limited_5star, note: "[攻略 1] 原神代肝-Yoo：单风进队时"}
+  - {id: favoniuscodex, zh: 西风秘典, rank: 3, source: gacha_4star, note: "[攻略 1]"}
+  - {id: prototypeamber, zh: 试作金珀, rank: 3, source: craftable, note: "[攻略 1] 开大回能回血"}
+artifact_sets:
+  - [{set: viridescentvenerer, zh: 翠绿之影, pieces: 4, note: "[攻略 8] 几乎所有视频首选；队里已有人带翠绿时换下面的"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 3] 翠绿被队友占了时；月绽放队（柴布Howii）"}]
+  - [{set: deepwoodmemories, zh: 深林的记忆, pieces: 4, note: "[攻略 1] 绽放队需要减草抗时"}]
+main_stats: {sands: [em, energy_recharge], goblet: [em], circlet: [em]}  # [攻略 3] 全精通
+substats: [em, energy_recharge]
+energy_recharge: [160, 200]
+energy_recharge_notes:
+  - 风套讨龙约 162%（思曜SZJ）
+  - 单人循环 180% 以上（探险家呜呜），有的建议 200% 以上（原神代肝-Yoo）
+talents: {level: [], skip: [normal, skill, burst]}
+notes:
+  - 天赋不用点，「111」（梦汐嘻兮）；扩散伤害和精通分享都不吃天赋等级
+  - 1 命战技两次，星扩散队里三秒左右能触发六次星扩散（王先生的游戏日记）；多个视频说砂糖最好有 1 命
+  - 6 命大招转化后全队对应元素伤害 +20%
+evidence:
+  - 梦汐嘻兮 BV1N7PxzrEKD 05:56「圣遗物极推荐风套四件套」；06:16「最推荐的还是这本祭礼残章」；00:35「天赋加点推荐111」
+  - 探险家呜呜 BV1Pfti6mEKN 01:43「都没有就选讨龙」；02:32「180以上的充能保证循环」
+  - 神秘的芙 BV1C6tU67ECx 02:01「砂糖凑一个风套就行」；02:06「武器选择三星武器讨龙英杰谭」（桑多涅队）
+  - 王先生的游戏日记 BV1FF8P6REy1 02:46「依然沿用之前的全精通风套和祭礼书」（星扩散）
+verified: false

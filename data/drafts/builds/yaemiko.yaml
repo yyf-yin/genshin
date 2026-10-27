@@ -1,0 +1,29 @@
+# AI 草稿，未经审核：从 B 站八重神子攻略和桑多涅等新角色攻略里讲到八重的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 月之八加强后八重主要在星超导队当后台雷；星烁反应伤害吃攻击力、不吃元素伤害加成，所以带攻击杯。
+char: yaemiko
+cons: "0-6"
+zh: 星超导队后台雷副C
+weapons:
+  - {id: kagurasverity, zh: 神乐之真意, rank: 1, source: limited_5star, note: "[攻略 1] 凉歌二三：专武"}
+  - {id: cranesechoingcall, zh: 鹤鸣余音, rank: 2, source: limited_5star, note: "[攻略 1] 鲱鱼丸不是绯狱丸 1 命实测排第二"}
+  - {id: tomeoftheeternalflow, zh: 万世流涌大典, rank: 2, source: limited_5star, note: "[攻略 1] 同上，和鹤鸣接近"}
+  - {id: skywardatlas, zh: 天空之卷, rank: 3, source: standard_5star, note: "[攻略 1]"}
+  - {id: lostprayertothesacredwinds, zh: 四风原典, rank: 3, source: standard_5star, note: "[攻略 1] 柯丝姬"}
+  - {id: thewidsith, zh: 流浪乐章, rank: 3, source: gacha_4star, note: "[攻略 2] 龙四爷、凉歌二三：四星首选"}
+artifact_sets:
+  - [{set: gildeddreams, zh: 饰金之梦, pieces: 4, note: "[攻略 3] 龙四爷、薛定谔的喵_bz：星超导套打不过饰金"}]
+  - [{set: disenchantmentindeepshadow, zh: 影中沉凝的幻灭, pieces: 4, note: "[攻略 2] 凉歌二三首选；龙四爷：也行"}]
+  - [{set: heartofthefurnace, zh: 炉火融炼之心, pieces: 4, note: "[攻略 1] 队里没人带炉火时，八重可以带（C神-原神幽战第一入）"}]
+main_stats: {sands: [atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [攻略 2] 龙四爷、凉歌二三「一定是选择攻击杯」
+substats: [crit_rate, crit_dmg, atk%, em]
+energy_recharge: [115, 130]  # [常识]
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
+notes:
+  - 1 命（加强后）全队雷伤 +50%、星超导伤害 +50%，多个视频说对星超导队提升非常大
+  - 2 命给场上角色 200 精通；6 命星超导暴击伤害 +200%
+evidence:
+  - 龙四爷攻略组 BV1S4Tr6nE8U 31:52「流浪乐章直接走起四星的」；31:54「然后带试金套啊」；32:14「这样大攻击杯子」
+  - 凉歌二三 BV1jmNw62E5m 07:30「就是影中沉凝的幻灭」；09:37「所以说我们在这个位置一定是选择攻击杯」
+  - 贪欲九头蛇_ BV1JQKU6WEsK 13:38「1命：50%星超导伤害提升」
+verified: false
