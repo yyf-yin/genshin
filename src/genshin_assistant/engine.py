@@ -468,6 +468,49 @@ class Engine:
             ))
         return diffs
 
+    # ---------- 辅助找主C ----------
+
+    def is_support(self, char_id: str, cons: int = 0) -> bool:
+        """这个命座下没有任何玩法提供主C。"""
+        return not any((k := self.kit(char_id, pid, cons)) and k.has("main_dps") > 0
+                       for pid in self.available_playstyles(char_id, cons))
+
+    def carries_for(self, support_id: str, cons: int = 0, roster: Roster = None) -> tuple[list[dict], list[dict], bool]:
+        """辅助可以搭配的主C。返回 (合适的, 不合适的及原因, 是否万用)。
+        合适 = 辅助自己的整队规则在「辅助 + 主C」两人时已经满足，且主C不排斥辅助的功能。
+        万用 = 辅助没有整队规则（例如只要吃攻击力就行），这时只能请玩家直接选。"""
+        kits = [k for pid in self.available_playstyles(support_id, cons) if (k := self.kit(support_id, pid, cons))]
+        universal = not any(k.rules for k in kits)
+        fit: list[dict] = []
+        unfit: list[dict] = []
+        for c in self.kb.characters.values():
+            if c.id == support_id or not self._owns(c.id, roster):
+                continue
+            ccons = self._cons(c.id, roster)
+            for pid in self.available_playstyles(c.id, ccons):
+                carry = self.kit(c.id, pid, ccons)
+                if carry is None or carry.has("main_dps") <= 0:
+                    continue
+                best: dict | None = None
+                for k in kits:
+                    pair = [k, carry]
+                    funcs = self._team_funcs(pair)
+                    broken = [r.reason for r in k.rules if not evaluate(r.rule, {}, funcs)]
+                    avoided = [f"{c.zh}排斥{self._tag_zh(a.tag)}：{a.reason}" for a in carry.avoids if k.has(a.tag) > 0]
+                    helps = [self._tag_zh(n.tag) for n in carry.needs if k.has(n.tag) > 0]
+                    row = {"char": c.id, "zh": c.zh, "element": c.element.value, "support_playstyle": k.playstyle,
+                           "meets_needs": helps, "has_team_template": bool(self.kb.teams_for(c.id)),
+                           "in_template": any(cand.char == support_id for t in self.kb.teams_for(c.id)
+                                              for sl in t.slots for cand in sl.candidates),
+                           "problems": broken + avoided}
+                    if best is None or len(row["problems"]) < len(best["problems"]):
+                        best = row
+                if best is not None:
+                    (unfit if best["problems"] else fit).append(best)
+                break  # 一个主C只算一次
+        fit.sort(key=lambda r: (not r["in_template"], -len(r["meets_needs"]), not r["has_team_template"], r["zh"]))
+        return fit, unfit, universal
+
     # ---------- 养成方案 ----------
 
     def build(self, char_id: str, playstyle: str, cons: int, owned_weapons: set[str] | None = None,

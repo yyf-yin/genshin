@@ -83,11 +83,49 @@ def test_cons_from_roster_and_question(kb, tmp_path):
 
 
 def test_core_without_team_template_still_gets_build(kb):
-    r = make(kb, {"intent": "team", "character": "沃雅妮莎"}).ask("我有沃雅妮莎，怎么配队")
+    r = make(kb, {"intent": "team", "character": "桑多涅"}).ask("桑多涅怎么配队")
     assert r.facts["status"] == "no_team_template"
     assert r.facts["build"]["weapons"]
     assert isinstance(r.facts["appears_in"], list)
-    assert "元素减抗：水" in r.facts["kit"][0]["provides"]
+    assert "主C" in r.facts["kit"][0]["provides"]
+
+
+def test_support_asks_for_carry_first(kb):
+    a = make(kb, {"intent": "team", "character": "沃雅妮莎"})
+    r = a.ask("我有沃雅妮莎，怎么配队")
+    assert r.facts["status"] == "need_carry" and r.facts["universal"] is False
+    names = [c["zh"] for c in r.facts["candidates"]]
+    assert "薇斯纳" in names and "那维莱特" in names  # 星扩散 / 水冰主C
+    assert "法尔伽" not in names
+    assert any(c["zh"] == "莱欧斯利" and "排斥治疗" in c["problems"][0] for c in r.facts["unfit"])
+    assert r.query.awaiting_carry
+
+
+def test_universal_support_just_asks(kb):
+    r = make(kb, {"intent": "team", "character": "枫原万叶"}).ask("万叶怎么配队")
+    assert r.facts["status"] == "need_carry" and r.facts["universal"] is True
+
+
+def test_support_with_carry_returns_teams_containing_support(kb):
+    a = make(kb, {"intent": "team", "character": "沃雅妮莎", "carry": "那维莱特"})
+    r = a.ask("搭配那维莱特")
+    assert r.facts["status"] == "team" and r.facts["carry"] == "那维莱特"
+    assert r.facts["teams"] and all("沃雅妮莎" in m for m in members(r.facts))
+    assert not r.query.awaiting_carry
+
+
+def test_carry_answer_moved_out_of_character(kb):
+    # 上一轮在问主C，模型把主C写进了 character：程序挪到 carry
+    a = make(kb, {"intent": "team", "character": "那维莱特"})
+    r = a.ask("那维莱特", Query("team", "沃雅妮莎", awaiting_carry=True))
+    assert (r.query.character, r.query.carry) == ("沃雅妮莎", "那维莱特")
+    assert r.facts["carry"] == "那维莱特"
+
+
+def test_carry_without_template(kb):
+    r = make(kb, {"intent": "team", "character": "沃雅妮莎", "carry": "薇斯纳"}).ask("配薇斯纳")
+    assert r.facts["status"] == "carry_no_template"
+    assert r.facts["carry_kit"] and r.facts["support_kit"] and r.facts["build"]
 
 
 def test_character_outside_kb_uses_draft_build(kb):
