@@ -1,6 +1,6 @@
 @echo off
-rem 一键启动网页问答：双击运行。第一次会建 .venv 并安装依赖。
-rem DeepSeek key 放在本目录或上一级目录的 ds_key.txt（或设环境变量 DEEPSEEK_API_KEY）。
+rem One-click launcher for the web Q&A. First run creates .venv and installs dependencies.
+rem DeepSeek key: ds_key.txt in this folder or its parent, or env var DEEPSEEK_API_KEY.
 chcp 65001 >nul
 cd /d "%~dp0"
 
