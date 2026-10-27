@@ -1,0 +1,21 @@
+# AI 草稿，未经审核：申鹤专门的攻略这次没取到几个，主要来自爱可菲、桑多涅等攻略里顺带讲到的部分（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。冰元素增伤辅助，冰翎吃攻击力。
+char: shenhe
+cons: "0-6"
+zh: 冰队增伤辅助
+weapons:
+  - {id: calamityqueller, zh: 息灾, rank: 1, source: limited_5star, note: "[攻略 1] 柒月月月_"}
+  - {id: skywardspine, zh: 天空之脊, rank: 2, source: standard_5star, note: "[攻略 1]"}
+  - {id: favoniuslance, zh: 西风长枪, rank: 2, source: gacha_4star, note: "[攻略 1] 缺充能时"}
+  - {id: thecatch, zh: 「渔获」, rank: 3, source: event, note: "[常识] 充能"}
+artifact_sets:
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 2] 和队友的宗室不叠加"}]
+  - [{set: mixed, zh: 攻击力+18%, pieces: 2}, {set: mixed, zh: 攻击力+18%, pieces: 2, note: "[攻略 1] 宗室被占时"}]
+main_stats: {sands: [atk%, energy_recharge], goblet: [atk%], circlet: [atk%]}  # [常识] 冰翎吃攻击力
+substats: [atk%, energy_recharge]
+energy_recharge: [160, 180]  # [攻略 1] 不带西风时保证 180%（柒月月月_）
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
+evidence:
+  - 柒月月月_ BV1cA8S6JE6h 07:42「五星息灾贯虹剃刀天空和璞」；07:52「圣遗物方面携带宗室套」；08:05 不带西风保证 180%
+  - 梦轩dada BV1JTpB6aEBi 03:34 冰队里申鹤带宗室
+verified: false

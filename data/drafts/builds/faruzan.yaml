@@ -1,0 +1,29 @@
+# AI 草稿，未经审核：从 B 站珐露珊攻略和薇斯纳、沃雅妮莎等新角色攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。风队、星扩散队的增伤减抗辅助，充能需求很高。
+char: faruzan
+cons: "0-6"
+zh: 风元素增伤、减抗辅助
+weapons:
+  - {id: favoniuswarbow, zh: 西风猎弓, rank: 1, source: gacha_4star, note: "[攻略 7] 多数玩家首选；阿泽szxs：最好精三以上"}
+  - {id: elegyfortheend, zh: 终末嗟叹之诗, rank: 1, source: limited_5star, note: "[攻略 5] 和队友的终末不叠加"}
+  - {id: breezebornerefrain, zh: 柔风游弦, rank: 2, source: gacha_4star, note: "[攻略 2] 7.1 新四星；和队友的柔风游弦不叠加"}
+  - {id: sacrificialbow, zh: 祭礼弓, rank: 3, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: viridescentvenerer, zh: 翠绿之影, pieces: 4, note: "[攻略 6] 队里没人带翠绿时（瑞希、星扩散队）"}]
+  - [{set: tenacityofthemillelith, zh: 千岩牢固, pieces: 4, note: "[攻略 5] 翠绿被占时；凉歌二三觉得更好用"}]
+  - [{set: scrolloftheheroofcindercity, zh: 烬城勇者绘卷, pieces: 4, note: "[攻略 3] 非满命时（幻影ゾロア）"}]
+  - [{set: noblesseoblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 2]"}]
+  - [{set: mixed, zh: 元素充能效率+20%, pieces: 2}, {set: mixed, zh: 元素充能效率+20%, pieces: 2, note: "[攻略 2] 散搭"}]
+main_stats: {sands: [energy_recharge], goblet: [anemo_dmg, atk%], circlet: [crit_rate]}  # [攻略 3] 带西风时暴击头
+substats: [energy_recharge, crit_rate]
+energy_recharge: [240, 280]
+energy_recharge_notes:
+  - 配薇斯纳 260% 以上，配梦见月瑞希 270% 以上（凉夏喵）；凉歌二三 255%~260%
+  - 没有西风要 300%（叶叶子子叶）
+stat_targets: [带精五西风时暴击率至少 60%（阿泽szxs）]
+talents: {level: [burst], skip: [normal]}  # [攻略 3] 只升大招，至少 9 级
+evidence:
+  - 凉夏喵 BV1YNHv6GE9G 03:42「天赋加点上只需要升级大招」；04:39 多数玩家西风猎弓；04:44 配薇斯纳 260% 以上；07:59 翠绿
+  - 王先生的游戏日记 BV1LWhX6xEXw 01:17「武器首选西风弓」；01:44「次选千岩套或者宗室套」；01:55「推荐堆到240%以上」
+  - 凉歌二三 BV1Kwm5BNEVD 07:56「千岩我个人觉得用起来是更好的」；04:07 大招至少 9 级
+verified: false
