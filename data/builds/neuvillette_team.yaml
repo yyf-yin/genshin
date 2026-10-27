@@ -11,17 +11,33 @@ substats: [crit_rate, crit_dmg, hp%, energy_recharge]
 energy_recharge: [100, 130]
 talents: {level: [normal, burst, skill], skip: []}
 ---
+# 2026-10-27 按 B 站攻略补（芙宁娜攻略和沃雅妮莎、丝柯克等攻略里讲到她的部分）。[攻略 N] = N 个视频讲到。
+# 冰水队（绫华、丝柯克、沃雅妮莎）里多数视频让她带西风剑千岩，充能稳；追伤害再换专武剧团。
 char: furina
 cons: "0-6"
 weapons:
-  - {id: splendor_of_tranquil_waters, zh: 静水流涌之辉, rank: 1, source: limited_5star}
+  - {id: splendor_of_tranquil_waters, zh: 静水流涌之辉, rank: 1, source: limited_5star, note: "[攻略 2] 专武"}
+  - {id: favonius_sword, zh: 西风剑, rank: 1, source: gacha_4star, note: "[攻略 7] 只是醋栗「一定要带西风剑千岩套」"}
+  - {id: key_of_khaj_nisut, zh: 圣显之钥, rank: 2, source: limited_5star, note: "[攻略 1] 6 命；和队友的圣显之钥不叠加"}
   - {id: fleuve_cendre_ferryman, zh: 船坞长剑, rank: 4, source: craftable, note: 平民选择}
 artifact_sets:
-  - [{set: golden_troupe, zh: 黄金剧团, pieces: 4}]
-main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [crit_rate, crit_dmg]}
-substats: [crit_rate, crit_dmg, hp%, energy_recharge]
-energy_recharge: [160, 200]
-talents: {level: [skill, burst], skip: [normal]}
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: "[攻略 7] 和队友的千岩不叠加"}]
+  - [{set: golden_troupe, zh: 黄金剧团, pieces: 4, note: "[攻略 2] 追伤害时"}]
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略 2]"}]
+  - [{set: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, pieces: 4, note: "[攻略 1] 凉夏喵"}]
+main_stats: {sands: [energy_recharge, hp%], goblet: [hp%, hydro_dmg], circlet: [crit_rate, crit_dmg, hp%]}
+substats: [crit_rate, crit_dmg, energy_recharge, hp%]
+energy_recharge: [200, 250]
+energy_recharge_notes:
+  - 3 命及以下单水约 250%、双水约 210%；4 命以上单水约 210%、双水约 180%（肝肝好BL）
+  - 千岩西风约 210%（柒月月月_）；凉夏喵 230% 以上
+stat_targets: [暴击率 75% 以上（凉夏喵）]
+talents: {level: [skill, burst], skip: [normal]}  # [攻略 3] 战技、大招对点；6 命后普攻也要点
+evidence:
+  - 只是醋栗 BV1jQD6BqEho 00:19「他也一定要带西风剑千岩套」
+  - 柒月月月_ BV1cA8S6JE6h 09:28「武器只推荐西风」；09:31 千岩保证充能 210%
+  - 肝肝好BL BV1DfszzkE76 01:05 充能按命座和单双水分档
+  - 凉夏喵 BV1ktnb6uEov 03:44「大招和战技对点即可」；05:01「充能推荐230或者以上」
 ---
 char: kazuha
 cons: "0-6"
@@ -42,20 +58,38 @@ weapons:
   - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, rank: 1, source: gacha_4star, note: 给下一个登场的主C加攻击}
 artifact_sets:
   - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4}]
-main_stats: {sands: [em], goblet: [em], circlet: [em]}
+main_stats: {sands: [em, energy_recharge], goblet: [em], circlet: [em]}  # [攻略 3] 全精通
 substats: [em, energy_recharge]
-energy_recharge: [140, 180]
+energy_recharge: [160, 200]
+energy_recharge_notes:
+  - 风套讨龙约 162%（思曜SZJ）；单人循环 180% 以上（探险家呜呜）
 talents: {level: [skill, burst], skip: [normal]}
+notes:
+  - 2026-10-27 B 站攻略：多个视频说砂糖最好有 1 命（战技两次，星扩散队三秒左右能触发六次星扩散）
+  - 视频里也有带祭礼残章、教官的，按上面的锁定规则不列
+  - 梦汐嘻兮说天赋可以都不点（「111」），扩散伤害和精通分享不吃天赋等级
+evidence:
+  - 梦汐嘻兮 BV1N7PxzrEKD 05:56「圣遗物极推荐风套四件套」；00:35「天赋加点推荐111」
+  - 探险家呜呜 BV1Pfti6mEKN 01:43「都没有就选讨龙」；02:32「180以上的充能保证循环」
+  - 神秘的芙 BV1C6tU67ECx 02:01「砂糖凑一个风套就行」；02:06「武器选择三星武器讨龙英杰谭」（桑多涅队）
 ---
-# AI 草稿（常识补全，未按攻略核对）：桑多涅、阿罗夏攻略里钟离作为护盾位出现（3 个视频），视频没讲配装。
+# 2026-10-27 按 B 站钟离攻略补。[攻略 N] = N 个视频讲到。新角色队里钟离都是护盾减抗位，这里只写辅助配装。
 char: zhongli
 cons: "0-6"
 zh: 护盾减抗辅助
 weapons:
-  - {id: black_tassel, zh: 黑缨枪, rank: 1, source: 3star, note: 堆生命值}
-  - {id: favonius_lance, zh: 西风长枪, rank: 2, source: gacha_4star}
+  - {id: black_tassel, zh: 黑缨枪, rank: 1, source: 3star, note: "[攻略 4] 堆生命值"}
+  - {id: favonius_lance, zh: 西风长枪, rank: 1, source: gacha_4star, note: "[攻略 3] 缺充能时"}
+  - {id: staff_of_homa, zh: 护摩之杖, rank: 2, source: limited_5star, note: "[攻略 2] 有就带"}
 artifact_sets:
-  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4}]
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: "[攻略 3] 辅助首选；和队友的千岩不叠加"}]
+  - [{set: archaic_petra, zh: 悠古的磐岩, pieces: 4, note: "[攻略 2] 千岩被占时；和队友的磐岩不叠加"}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略 1]"}]
 main_stats: {sands: [hp%], goblet: [hp%], circlet: [hp%]}
 substats: [hp%, energy_recharge]
-talents: {level: [skill], skip: [normal]}
+stat_targets: [生命值 4 万（AJ游戏频道）]
+talents: {level: [skill], skip: [normal]}  # [攻略 2] 战技（护盾）升满
+evidence:
+  - 空格空空格z BV1vPkUBAEvu 06:52「抽卡赠送的毕业武器黑缨枪」；07:30「辅助圣遗物首选还是千岩」
+  - 男巫30 BV1AY4bzBE9E 02:15「圣遗物首选就是千岩套了」
+  - AJ游戏频道 BV1dMkrBjEQd 09:39「总之就是E技能全升满就行」；26:43「4万生命值就毕业啊」

@@ -1,0 +1,29 @@
+# AI 草稿，未经审核：从 B 站梦见月瑞希攻略和奥黛塔、沃雅妮莎、薇斯纳等攻略里讲到她的部分整理（2026-10-27）。
+# [攻略 N] = N 个视频讲到；[常识] = 视频没讲、按通用配装补的。
+# 月之八加强后瑞希在星扩散队站场扩散；扩散、星扩散伤害吃精通，所以全精通。
+char: yumemizukimizuki
+cons: "0-6"
+zh: 星扩散队站场扩散
+weapons:
+  - {id: sunnymorningsleepin, zh: 寝正月初晴, rank: 1, source: limited_5star, note: "[攻略 3] 专武"}
+  - {id: athousandfloatingdreams, zh: 千夜浮梦, rank: 2, source: limited_5star, note: "[攻略 1] 凉夏喵；和队友的千夜浮梦不叠加"}
+  - {id: skywardatlas, zh: 天空之卷, rank: 2, source: standard_5star, note: "[攻略 2] 有充能"}
+  - {id: sacrificialfragments, zh: 祭礼残章, rank: 3, source: gacha_4star, note: "[攻略 6] 平民首选"}
+  - {id: wanderingevenstar, zh: 流浪的晚星, rank: 3, source: gacha_4star, note: "[攻略 2] 和队友的流浪的晚星不叠加"}
+  - {id: magicguide, zh: 魔导绪论, rank: 4, source: 3star, note: "[攻略 2] 王晓疯丶"}
+artifact_sets:
+  - [{set: scarletproof, zh: 血红之证, pieces: 4, note: "[攻略 4] 星扩散套，凉歌二三「我只推荐一个就是血红之证」"}]
+  - [{set: gildeddreams, zh: 饰金之梦, pieces: 4, note: "[攻略 3] 王晓疯丶：最优"}]
+  - [{set: viridescentvenerer, zh: 翠绿之影, pieces: 4, note: "[攻略 3] 队里没人带翠绿时；和队友的翠绿不叠加"}]
+  - [{set: mixed, zh: 元素精通+80, pieces: 2}, {set: mixed, zh: 元素精通+80, pieces: 2, note: "[攻略 4] 呆雁__：收益大于血红套；凉歌二三：过渡"}]
+main_stats: {sands: [em], goblet: [em], circlet: [crit_rate, crit_dmg, em]}  # [攻略 5]
+substats: [crit_rate, crit_dmg, em]
+energy_recharge: null
+energy_recharge_notes: [4 命以前约 140%（凉歌二三）]
+stat_targets: [双爆时暴击 75% 以上（凉夏喵）]
+talents: {level: [skill], skip: [normal]}  # [攻略 5] 战技 9~10 级；大招看治疗需求，可点可不点
+evidence:
+  - 凉歌二三 BV1enbe6ZEvp 05:03「我只推荐一个就是血红之证」；07:15 沙杯精通；01:34 E 点满；02:56 大招可点可不点
+  - 凉夏喵 BV1BQuH6JEpu 03:58 首选专武；04:55 平民四星选祭礼；05:23 精通沙精通杯
+  - 呆雁__ BV1RSh964E7K 00:18「2+2精通带来的词条收益是大于新的星扩散套」
+verified: false
