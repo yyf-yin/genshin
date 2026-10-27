@@ -32,21 +32,24 @@ PARSE_SYSTEM = """你是原神配队助手的问题解析器。把玩家的问�
 {names}
 只输出 JSON 对象。"""
 
-EXPLAIN_SYSTEM = """你是原神配队与养成助手，用中文回答玩家。
-下面的「引擎结果」是推荐引擎按知识库算出来的，是你唯一的依据：
-- 只推荐引擎结果里出现的角色、武器、圣遗物，不要凭记忆添加或改动；引擎没给的就直说知识库里还没有
-- 队伍按引擎的顺序讲，先给结论（队伍成员），再讲为什么：每个位置起什么作用、满足了谁的需求、扣分项
-- 有替补时，讲清替补保留了什么、失去了什么，有攻略结论（override_reason）时优先讲它，没有就不提
-- 数据标了未审核（verified=false 或 draft）时，在结尾提醒一句「这部分数据还是草稿，未审核」
+EXPLAIN_SYSTEM = """你是一名资深原神攻略作者，正在用中文直接回答玩家的配队和养成问题。
+语气：像攻略作者给结论一样笃定、干脆。先给结论，再讲理由。不要说「可能」「大概」「仅供参考」「建议核对」这类含糊的话，
+不要提「引擎」「知识库」「数据」「模板」「草稿」「未审核」「得分」这些幕后的东西，也不要说「根据提供的信息」。
+
+下面的「攻略要点」是你的全部依据（玩家看不到它，不要提到它的存在）：
+- 只推荐要点里出现的角色、武器、圣遗物，不要凭记忆添加或改动；要点里没有的内容就不展开，也不要编
+- 队伍按给出的顺序讲：第一套是首选，后面是备选。先报阵容，再讲每个位置干什么、解决了谁的需求、有什么短板
+- 有替补时，讲清换上的人保留了什么、少了什么；有 override_reason 时用它作为理由
 - 命座会改变结论时要点出来
-- status 是 need_carry 时，问的是辅助角色，先不要给队伍：问玩家想搭配哪个主C。universal 为 false 时列出 candidates 里的主C和一句理由（meets_needs、in_template、元素），unfit 里的可以简短说为什么不合适；universal 为 true 时说明这个辅助几乎哪个队都能用，直接问想搭配哪个主C，candidates 只作为可选举例
-- 有 carry 时，队伍是以 carry 为核心、包含所问辅助的队伍，先说明这一点；support_missing_reason 有值时说明这个主C的现有队伍里放不进该辅助及原因
-- status 是 no_team_template 时，说明还没有现成队伍，再按 kit（这个角色提供的功能、对队友的需求、整队规则）讲适合什么样的队友，但不要点名具体角色，除非 appears_in 里有
-- 理由只能来自引擎结果：保留/失去的功能照 kept、lost 原样讲，扣分只讲 needs、conflicts 里的，不要自己补强度评价或扣分原因
+- status 是 need_carry 时，问的是辅助：先别给队伍，反问玩家想把他带进哪个主C的队伍。universal 为 false 时列出 candidates 里的主C并各给一句理由（meets_needs、in_template、元素），unfit 里的简短说为什么不推荐；universal 为 true 时直接说这个辅助几乎哪个队都能用，问想配哪个主C，candidates 只当举例
+- 有 carry 时，开头说明这是以 carry 为核心、带上所问辅助的阵容；support_missing_reason 有值时直接说明这个主C的队伍里放不下该辅助、原因是什么
+- status 是 no_team_template 或 carry_no_template 时，不给具体阵容，改讲这个角色在队里干什么、需要什么样的队友（kit、carry_kit、support_kit 里的功能、需求和整队规则），只点名 appears_in 里出现的角色；把配装讲完整
+- status 是 not_in_kb 时，只讲配装，配队一句话带过：这个角色的配队攻略还没出
+- 理由只能来自要点：保留/失去的功能照 kept、lost 讲，短板只讲 needs、conflicts 里的，不要自己补强度评价
 - 武器按 rank 讲，rank 相同的写成并列
-- 队员 gear_swapped 为 true 表示首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已由队友带着，同一件一队只生效一次，所以他换成了列出的次选，要点明
-- 不要在回答里出现英文字段名（如 override_reason、kept、verified）
-- 简洁，用短段落和列表，不要寒暄
+- 队员 gear_swapped 为 true 时点明：首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已经由队友带了，同一件一队只生效一次，所以他换成列出的次选
+- 不要在回答里出现英文字段名
+- 简洁，用短段落和列表，不要寒暄，不要结尾客套
 输出 JSON：{{"answer": "Markdown 格式的回答"}}"""
 
 
@@ -159,7 +162,7 @@ class Assistant:
 
     def facts(self, q: Query) -> dict:
         if q.intent == "other" or not q.character:
-            return {"status": "unsupported", "note": "目前只回答某个角色的配队和养成，问题里要带上角色名"}
+            return {"status": "unsupported", "note": "我只解答角色的配队和养成，问的时候带上角色名，比如「那维莱特怎么配队」"}
         try:
             core = self.kb.resolve(q.character)
         except KeyError:
@@ -175,7 +178,7 @@ class Assistant:
             return {**out, **self._support_facts(q, core, roster, cons)}
         if not self.kb.teams_for(core.id):
             return {**out, "status": "no_team_template",
-                    "note": f"知识库里还没有以{core.zh}为核心的队伍模板",
+                    "note": f"{core.zh}的成套阵容攻略还没出，先讲清楚{core.zh}在队里的作用和需要什么队友",
                     "appears_in": self._appears_in(core.id),
                     "kit": self._kit(core.id, q.playstyle, cons),
                     "build": _trim_build(self.engine.build(core.id, q.playstyle or "default", cons))}
@@ -188,17 +191,17 @@ class Assistant:
             fit, unfit, universal = self.engine.carries_for(support.id, cons, roster)
             return {"status": "need_carry", "universal": universal,
                     "candidates": [_carry_row(r) for r in fit], "unfit": [_carry_row(r) for r in unfit],
-                    "note": f"{support.zh}是辅助，先确定搭配哪个主C"}
+                    "note": f"{support.zh}是辅助，得先定下带进哪个主C的队伍"}
         try:
             carry = self.kb.resolve(q.carry)
         except KeyError:
-            return {"status": "unknown_character", "name": q.carry, "note": "找不到这个主C，或者还没录入知识库"}
+            return {"status": "unknown_character", "name": q.carry, "note": "没认出这个主C，换个叫法再问一次"}
         saved = self.roster.load() or {}
         roster = {**roster, carry.id: roster.get(carry.id) or Owned(cons=saved.get(carry.zh, 0))}  # 选的主C当作拥有
         out = {"status": "team", "support": support.zh, "carry": carry.zh, "missing": q.missing}
         if not self.kb.teams_for(carry.id):
             return {**out, "status": "carry_no_template",
-                    "note": f"知识库里还没有以{carry.zh}为核心的队伍模板",
+                    "note": f"{carry.zh}的成套阵容攻略还没出，先讲两人各自的作用",
                     "carry_kit": self._kit(carry.id, None, roster[carry.id].cons),
                     "support_kit": self._kit(support.id, q.playstyle, cons),
                     "build": _trim_build(self.engine.build(support.id, q.playstyle or "default", cons))}
@@ -271,11 +274,11 @@ class Assistant:
             row = self.game.character(q.character)
         except KeyError:
             return {"status": "unknown_character", "name": q.character,
-                    "note": "知识库和游戏数据里都找不到这个角色，可能是名字写错了"}
+                    "note": "没认出这个角色，检查一下名字再问"}
         drafts = KnowledgeBase(builds=[b for b in load_draft_builds(self.data_dir) if b.char == row["id"]])
         b = Engine(drafts).build(row["id"], q.playstyle or "default", q.cons or 0)
         out = {"status": "not_in_kb", "character": row["zh"], "cons": q.cons or 0,
-               "note": f"{row['zh']}还没有录入知识库，没有配队数据"}
+               "note": f"{row['zh']}的配队攻略还没出，先看养成"}
         if b:
             out["build"] = {**_trim_build(b), "draft": True}
         return out
@@ -331,8 +334,7 @@ def render_plain(facts: dict) -> str:
     if st == "team":
         lines.append(f"**{facts['character']}（{facts['cons']} 命）**")
         for i, t in enumerate(facts["teams"], 1):
-            lines.append(f"\n{i}. {'、'.join(m['zh'] for m in t['members'])}（{t['template']}，得分 {t['score']}"
-                         f"{'' if t['verified'] else '，草稿未审核'}）")
+            lines.append(f"\n{i}. {'、'.join(m['zh'] for m in t['members'])}{'（首选）' if i == 1 else ''}")
             for d in t["substitutions"]:
                 why = d["override_reason"] or f"保留 {'、'.join(d['kept']) or '无'}；失去 {'、'.join(d['lost']) or '无'}"
                 lines.append(f"   - {d['chosen']} 替 {d['preferred']}：{why}")
@@ -357,12 +359,12 @@ def render_plain(facts: dict) -> str:
         lines.append(f"- 可以在「{a['team']}」里当{a['slot']}")
     b = facts.get("build")
     if b:
-        lines.append(f"\n**养成：{b['zh']}（{b['cons']} 命）**{'' if b['verified'] and not b.get('draft') else '（草稿，未审核）'}")
+        lines.append(f"\n**养成：{b['zh']}（{b['cons']} 命）**")
         lines.append("武器：" + "；".join(f"{w['rank']}. {w['zh']}" for w in b["weapons"]))
         lines.append("圣遗物：" + "；".join(b["artifact_sets"]))
         if b["energy_recharge"]:
             lines.append(f"充能：{b['energy_recharge'][0]}%~{b['energy_recharge'][1]}%")
         lines.extend(f"备注：{n}" for n in b["notes"])
     elif st in ("build", "no_team_template"):
-        lines.append("知识库里还没有这个角色在这个命座下的配装。")
+        lines.append("这个命座的养成攻略还没出。")
     return "\n".join(lines)
