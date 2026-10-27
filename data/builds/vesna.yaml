@@ -1,0 +1,45 @@
+# AI 草稿，未经审核：从 B 站 8 个薇斯纳攻略视频的抽取结果整理（2026-10-26，work/drafts/vesna-20261026-1147）。
+# 视频：卡特亚 BV1w9eN63EMT、贪欲九头蛇_ BV1ynew6KEok、龙四爷攻略组 BV1otaP6HEwo / BV1M4at63ESw、梦轩dada BV11ihW69EBC、
+#       赫箩的苹果 BV18Neu68EBP、莉法sama BV18uhf6FEde、凉夏喵 BV1j7ec6JEiv。
+char: vesna
+cons: "0-6"
+zh: 巡风列装站场星扩散主C
+weapons:
+  - {id: beyond_the_chrysalis, zh: 蝶变, rank: 1, source: limited_5star, note: 专武，自带回能，充能需求约少 30%}
+  - {id: whitelake_frostfeather, zh: 白湖冬羽, rank: 2, source: limited_5star, note: 奥黛塔专武，多个视频称最好的下位替代}
+  - {id: azurelight, zh: 苍耀, rank: 3, source: limited_5star}
+  - {id: absolution, zh: 赦罪, rank: 3, source: limited_5star}
+  - {id: primordial_jade_cutter, zh: 磐岩结绿, rank: 3, source: standard_5star, note: 龙四爷：和赦罪、苍耀差约 11%}
+  - {id: light_of_foliar_incision, zh: 裁叶萃光, rank: 4, source: limited_5star}
+  - {id: new_bough, zh: 新枝, rank: 4, source: gacha_4star, note: 7.1 限定四星，四星首选（贪欲九头蛇_、赫箩的苹果、凉夏喵）}
+  - {id: emberwell, zh: 引火之源, rank: 5, source: craftable, note: 至冬锻造；龙四爷：银釭不要给薇斯纳，直接选引火之源}
+  - {id: silverlight, zh: 银釭, rank: 6, source: event}
+  - {id: heretics_molten_blade, zh: 熔猎异端之刃, rank: 6, source: bp}
+  - {id: the_black_sword, zh: 黑剑, rank: 6, source: bp}
+artifact_sets:
+  - [{set: scarletproof, zh: 血红之证, pieces: 4}]
+  - [{set: gilded_dreams, zh: 饰金之梦, pieces: 4, note: 过渡（赫箩的苹果）}]
+  - [{set: a_day_carved_from_rising_winds, zh: 风起之日, pieces: 4, note: 过渡（赫箩的苹果）}]
+  - [{set: mixed, zh: 攻击力+18%, pieces: 2}, {set: mixed, zh: 攻击力+18%, pieces: 2, note: 散搭过渡}]
+main_stats:
+  sands: [atk%, em]  # 精通沙也可以（龙四爷、莉法sama、赫箩的苹果；梦轩dada：精通沙比攻击沙高 1%）
+  goblet: [atk%]
+  circlet: [crit_dmg, crit_rate]
+substats: [crit_rate, crit_dmg, atk%, energy_recharge, em]
+energy_recharge: [115, 145]
+energy_recharge_notes:
+  - 双风队有专武约 115%~125%（赫箩的苹果、卡特亚），没专武约 140%~145%（卡特亚、贪欲九头蛇_）
+  - 单风约 170%（贪欲九头蛇_）
+  - 梦轩dada 算出 113.48% 就能每轮开大（有专武）
+stat_targets: [暴击率 69%~74%（赫箩的苹果）, 攻击力 2000 以上（贪欲九头蛇_）]
+talents: {level: [skill, burst], skip: [normal]}
+notes:
+  - 普攻可点可不点，算作不用点（贪欲九头蛇_、梦轩dada、赫箩的苹果、凉夏喵）
+  - 2 命开 E 直接满层，攻击力提升约 40%，二命比零命总伤约 +35%（梦轩dada、龙四爷）；配装不变
+evidence:
+  - 贪欲九头蛇_ BV1ynew6KEok 11:26「首推同期限定，蝶变溢彩流光的长剑」；12:26「次选武器：白湖冬雨」；13:44「圣遗物毫无疑问选择新套装血红之证」；13:59「双爆>攻击力%>充能%>精通>其他」；11:10「常规的双风队，需要140%充能」
+  - 卡特亚 BV1w9eN63EMT 04:18「最好的下位替代是我们的小天鹅欧黛塔的武器」；「双风队伍有专武约125%充能效率」「双风队伍无专武约145%充能效率」
+  - 赫箩的苹果 BV18Neu68EBP 10:53「套装只推荐血红四」；10:54「过度选择试精四」；10:58「只推荐爆伤头」；11:02 暴击「建议保持在69%至74%之间」；12:02 有专武「推荐堆之115」
+  - 龙四爷攻略组 BV1otaP6HEwo 01:27「然后银钢这把武器也不要给薇斯纳直接选萤火之源就可以了」；13:15「然后我们带攻击的杯子」；15:21「再往下边是赦罪苍药和绿箭11%的变化」
+  - 梦轩dada BV11ihW69EBC 11:17「精通攻击沙高了1%」；07:23「113.48%充能就能每轮开大」
+verified: false

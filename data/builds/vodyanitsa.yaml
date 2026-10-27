@@ -1,0 +1,37 @@
+# AI 草稿，未经审核：从 B 站 8 个沃雅妮莎攻略视频的抽取结果整理（2026-10-26，work/drafts/woyanisha-20261026-1147）。
+# 视频：卡特亚 BV13aeN6xEYu、贪欲九头蛇_ BV1C3hC6kEQY、龙四爷攻略组 BV1cEaP6bEVb、凉夏喵 BV1YUh46VEwp、小万桑 BV1kEeC6UEYe、
+#       Leah莉娅又迟到啦 BV1HDeA6vEZ2、粥粥的终极理解 BV1Mxeh6xEXQ、荧岁镇太辰 BV1K2hE6kEJ6。
+# 武器：专武排第一，但“值不值得抽”有争议；讨龙英杰谭 8 个视频都提到，是实际最常用的选择。
+char: vodyanitsa
+cons: "0-6"
+zh: 后台堆生命减抗辅助
+weapons:
+  - {id: hymn_of_the_maelstrom, zh: 漩流颂歌, rank: 1, source: limited_5star, note: 专武，给场上角色加攻击；龙四爷认为可以不抽}
+  - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, rank: 2, source: 3star, note: 8 个视频都推荐；给下一个登场的角色加攻击，要沃雅妮莎放完技能切主C}
+  - {id: sacrificial_jade, zh: 遗祀玉珑, rank: 3, source: gacha_4star, note: 加生命值，贪欲九头蛇_：某些情况下更稳妥}
+  - {id: favonius_codex, zh: 西风秘典, rank: 4, source: gacha_4star, note: 充能不够时（粥粥的终极理解）}
+artifact_sets:
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: 8 个视频里 7 个首选}]
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: 队里已有人带千岩时（贪欲九头蛇_）}]
+  - [{set: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, pieces: 4, note: 视频里叫“勇者套”}]
+  - [{set: instructor, zh: 教官, pieces: 4, note: 队里已有人带千岩时（Leah莉娅又迟到啦）}]
+  - [{set: ocean_hued_clam, zh: 海染砗磲, pieces: 4, note: 辅助梦见月瑞希、那维莱特这类不吃攻击力的主C时（粥粥的终极理解）}]
+main_stats:
+  sands: [hp%]
+  goblet: [hp%]
+  circlet: [hp%]
+substats: [hp%, hp]
+energy_recharge: null
+energy_recharge_notes:
+  - 主要靠战技，实战里不放大招也可以（卡特亚），不用刻意堆充能
+stat_targets: [生命值越高越好；领唱/重唱从 40000 生命值以上的部分开始算]
+talents: {level: [skill], skip: [normal, burst]}
+notes:
+  - 1 命：治疗时全队攻击力 + 生命上限的 0.8%，6 个视频提到 1 命，卡特亚等认为提升比专武还大
+evidence:
+  - 贪欲九头蛇_ BV1C3hC6kEQY 08:58「首推同期限定，漩流颂歌」；11:11「比如勇者套，或者昔时套」；11:20「主词条选择：沙杯头统一生生生」；11:23「副词条选择：生命值%>小生命>其他」；11:27「主力技能元素战技给皇冠」
+  - 卡特亚 BV13aeN6xEYu 04:38「唯一比较特殊的就是这把讨龙」；09:46「可以带千岩套」；03:20「实战中不放大也是可以的」
+  - 龙四爷攻略组 BV1cEaP6bEVb 14:21「我们会选择千岩套装」；16:07 专武「但是个人觉得可以不抽哈」；16:37「就是讨龙」
+  - Leah莉娅又迟到啦 BV1HDeA6vEZ2 04:41「圣遗物首选千岩套」；04:43「生命沙生命杯生命头」；04:49「如果其他队友带了也可以换成教官或者勇者套」
+  - 粥粥的终极理解 BV1Mxeh6xEXQ 09:14「主要选择千岩套」；09:20「辅助梦天月或者龙王这样的非攻击C时呢，还可以选择海染套」；10:03「充能西风也不失为一种办法」
+verified: false

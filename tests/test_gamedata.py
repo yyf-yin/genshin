@@ -147,3 +147,33 @@ def test_drafts_use_valid_tags():
         assert c.zh not in {k.zh for k in kb.characters.values()}, f"{path.name} 已在知识库里，删掉草稿"
         for g in c.playstyles[0].provides:
             assert kb.tag_error(g.tag) is None, (path.name, g.tag)
+
+
+@needs_data
+def test_build_names_and_weapon_types_are_checked():
+    from genshin_assistant.kb import check_build_names
+    from genshin_assistant.models import Build
+
+    gd = load_gamedata()
+    ok = Build(char="vesna", weapons=[{"id": "x", "zh": "蝶变", "rank": 1}],
+               artifact_sets=[[{"set": "mixed", "zh": "攻击力+18%", "pieces": 2},
+                               {"set": "mixed", "zh": "攻击力+18%", "pieces": 2}]],
+               main_stats={}, substats=[])
+    assert check_build_names([ok], gd) == []
+    bad = Build(**{**ok.model_dump(), "weapons": [{"id": "x", "zh": "超越之匙", "rank": 1}]})
+    assert "claymore" in check_build_names([bad], gd)[0]
+    too_many = Build(**{**ok.model_dump(), "artifact_sets": [[{"set": "a", "zh": "血红之证", "pieces": 4},
+                                                              {"set": "b", "zh": "风起之日", "pieces": 2}]]})
+    assert "超过 5 件" in check_build_names([too_many], gd)[0]
+
+
+@needs_data
+def test_draft_builds_use_official_names():
+    from genshin_assistant.kb import check_build_names, load_draft_builds
+
+    kb = load()
+    drafts = load_draft_builds()
+    assert drafts
+    assert check_build_names(drafts, load_gamedata()) == []
+    for b in drafts:
+        assert b.char not in kb.characters, f"{b.char} 已在知识库里，配装挪到 builds/"

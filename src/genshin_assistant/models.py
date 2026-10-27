@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class Element(str, Enum):
@@ -186,21 +186,43 @@ class WeaponOption(BaseModel):
 
 
 class ArtifactSet(BaseModel):
-    set: str
+    set: str  # mixed = 散搭（任意两件套），zh 写成「攻击力+18%」这样的效果
     zh: str
     pieces: int
+    note: str = ""
+
+
+class Talents(BaseModel):
+    """天赋只分要点、不用点，不排优先级。都没写的看 notes（例如“点到 6~8 级即可”）。值：normal / skill / burst。"""
+
+    level: list[str] = []
+    skip: list[str] = []
+
+    @model_validator(mode="after")
+    def _check(self):
+        bad = set(self.level + self.skip) - {"normal", "skill", "burst"}
+        if bad:
+            raise ValueError(f"未知天赋：{sorted(bad)}（只能写 normal / skill / burst）")
+        if set(self.level) & set(self.skip):
+            raise ValueError(f"同一个天赋既要点又不用点：{sorted(set(self.level) & set(self.skip))}")
+        return self
 
 
 class Build(BaseModel):
     char: str
     playstyle: str = "default"
     cons: str = "0-6"
+    zh: str = ""  # 方案名，例如「星超导主C」
     weapons: list[WeaponOption]
     artifact_sets: list[list[ArtifactSet]]  # 每个内层列表是一种组合，按优先级排列
-    main_stats: dict[str, list[str]]  # sands / goblet / circlet
-    substats: list[str]
-    energy_recharge: tuple[int, int] | None = None
-    talents: list[str] = []
+    main_stats: dict[str, list[str]]  # sands / goblet / circlet，按优先级排列
+    substats: list[str]  # 按优先级排列
+    energy_recharge: tuple[int, int] | None = None  # 常规队伍的充能区间（%）
+    energy_recharge_notes: list[str] = []  # 充能随队伍、武器、命座的变化
+    stat_targets: list[str] = []  # 面板目标，例如「暴击率 70%~75%」
+    talents: Talents = Talents()
+    notes: list[str] = []
+    evidence: list[str] = []  # 出处：UP 主、BV 号、时间点、原话
     verified: bool = False
 
     def cons_range(self) -> tuple[int, int]:

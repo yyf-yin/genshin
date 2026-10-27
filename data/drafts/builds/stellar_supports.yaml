@@ -1,0 +1,146 @@
+# 星烁队常用队友的配装草稿，引擎不读（这些角色还在 drafts/characters/，审核后连同角色标签一起挪进 builds/）。
+# 角色 id 用游戏数据的 id（drafts/characters/ 也是）。
+# 来源分两类，逐项标出：
+#   [攻略] 桑多涅/奥黛塔/阿罗夏/薇斯纳/沃雅妮莎的攻略视频里讲到的，多半只有 1 个视频，审核时优先看；
+#   [常识] 视频没讲、按这些老角色的通用配装补的（AI 补全，未按攻略核对）。
+# 星烁反应伤害吃攻击力、不吃元素伤害加成，所以星烁队里一些辅助改带攻击杯（七七、八重神子）。
+char: yaemiko
+cons: "0-6"
+zh: 星超导队后台雷挂件
+weapons:
+  - {id: kaguras_verity, zh: 神乐之真意, rank: 1, source: limited_5star, note: "[常识] 专武"}
+  - {id: the_widsith, zh: 流浪乐章, rank: 2, source: gacha_4star, note: "[攻略] 龙四爷：四星直接带流浪乐章"}
+  - {id: skyward_atlas, zh: 天空之卷, rank: 2, source: standard_5star, note: "[常识]"}
+  - {id: oathsworn_eye, zh: 证誓之明瞳, rank: 3, source: craftable, note: "[常识] 充能不够时"}
+artifact_sets:
+  - [{set: gilded_dreams, zh: 饰金之梦, pieces: 4, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 31:54「然后带试金套啊」"}]
+  - [{set: disenchantment_in_deep_shadow, zh: 影中沉凝的幻灭, pieces: 4, note: "[攻略] 龙四爷 41:00「有些朋友们问这个超导套行不行行行」"}]
+main_stats: {sands: [atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [攻略] 龙四爷 32:14「这样大攻击杯子」
+substats: [crit_rate, crit_dmg, atk%, energy_recharge]
+energy_recharge: [115, 130]  # [常识]
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
+evidence: [龙四爷攻略组 BV1S4Tr6nE8U 31:52「流浪乐章直接走起四星的」；32:21「攻击沙漏」；32:23「然后暴击爆伤头」]
+verified: false
+---
+char: diona
+cons: "0-6"
+zh: 星超导/星扩散队护盾、治疗、挂冰
+weapons:
+  - {id: favonius_warbow, zh: 西风猎弓, rank: 1, source: gacha_4star, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 22:21「我们可以考虑选择带西风烈弓」"}
+  - {id: sacrificial_bow, zh: 祭礼弓, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略] 龙四爷 23:16「优先会选择那个宗室」"}]
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: "[攻略] 龙四爷 23:30「那你就选择带千岩」；凉夏喵「七七或者迪奥娜可以选择4000岩」"}]
+main_stats: {sands: [energy_recharge, hp%], goblet: [hp%], circlet: [hp%, healing_bonus]}  # [常识]
+substats: [energy_recharge, hp%]  # [常识]
+energy_recharge: [160, 200]  # [常识] 带宗室要每轮开大
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
+notes: ["6 命给场上角色 200 精通、40% 星超导增伤（2 个视频）"]
+verified: false
+---
+char: qiqi
+cons: "0-6"
+zh: 星超导队后台挂冰、治疗
+weapons:
+  - {id: skyward_blade, zh: 天空之刃, rank: 1, source: standard_5star, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 28:18「有天空带天空」"}
+  - {id: favonius_sword, zh: 西风剑, rank: 2, source: gacha_4star, note: "[攻略] 龙四爷 28:19「没天空带西风」"}
+artifact_sets:
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4, note: "[攻略] 龙四爷 28:20、凉夏喵 08:25"}]
+main_stats: {sands: [atk%], goblet: [atk%], circlet: [crit_rate]}  # [攻略] 龙四爷 28:26「然后玩命上充能选择攻击沙」、28:29「攻击杯子和暴击头啊」
+substats: [energy_recharge, atk%, crit_rate]  # [攻略] 龙四爷「玩命上充能」
+energy_recharge: null
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
+notes: ["6 命大招后 4 层增益，队伍星超导伤害额外加相当于七七攻击力 600% 的伤害（1 个视频），所以吃攻击力"]
+verified: false
+---
+char: beidou
+cons: "0-6"
+zh: 星超导队后台雷
+weapons:
+  - {id: favonius_greatsword, zh: 西风大剑, rank: 1, source: gacha_4star, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 24:53「所以我们会选择呢把西风大剑搂满」"}
+  - {id: serpent_spine, zh: 螭骨剑, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略] 龙四爷 25:00「那他就带个宗室呗」"}]
+  - [{set: emblem_of_severed_fate, zh: 绝缘之旗印, pieces: 4, note: "[常识]"}]
+main_stats: {sands: [energy_recharge, atk%], goblet: [atk%], circlet: [crit_rate, crit_dmg]}  # [常识]
+substats: [energy_recharge, crit_rate, crit_dmg, atk%]  # [常识]
+energy_recharge: [180, 220]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
+notes: ["6 命（加强后）大招期间降冰、雷抗 15%，给场上角色 200 精通（3 个视频）"]
+verified: false
+---
+char: faruzan
+cons: "0-6"
+zh: 星扩散队风辅助
+weapons:
+  - {id: favonius_warbow, zh: 西风猎弓, rank: 1, source: gacha_4star, note: "[攻略] 龙四爷 12:28「珐露珊带西风弓的情况下」"}
+  - {id: sacrificial_bow, zh: 祭礼弓, rank: 2, source: gacha_4star, note: "[常识]"}
+  - {id: elegy_for_the_end, zh: 终末嗟叹之诗, rank: 2, source: limited_5star, note: "[常识]"}
+artifact_sets:
+  - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4, note: "[攻略] 龙四爷 BV1otaP6HEwo 23:01「珐露珊呢可以选择带翠绿」"}]
+  - [{set: heart_of_the_furnace, zh: 炉火融炼之心, pieces: 4, note: "[攻略] 凉夏喵 08:21；队里没人带炉火时"}]
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略] 龙四爷 20:05「翠绿和宗室其实差距不是很大」"}]
+main_stats: {sands: [energy_recharge], goblet: [atk%, anemo_dmg], circlet: [crit_rate]}  # [常识]
+substats: [energy_recharge, crit_rate, crit_dmg]  # [常识]
+energy_recharge: [200, 250]  # [常识]
+talents: {level: [burst, skill], skip: [normal]}  # [常识]
+verified: false
+---
+char: escoffier
+cons: "0-6"
+zh: 冰队后台减抗治疗
+weapons:
+  - {id: symphonist_of_scents, zh: 香韵奏者, rank: 1, source: limited_5star, note: "[常识] 专武"}
+  - {id: favonius_lance, zh: 西风长枪, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: noblesse_oblige, zh: 昔日宗室之仪, pieces: 4, note: "[攻略] 龙四爷 BV1cEaP6bEVb 20:54「带宗室套装啊」（星烁队）"}]
+  - [{set: golden_troupe, zh: 黄金剧团, pieces: 4, note: "[常识] 冰水队常规"}]
+main_stats: {sands: [atk%, energy_recharge], goblet: [atk%, cryo_dmg], circlet: [crit_rate, crit_dmg]}  # [常识]
+substats: [crit_rate, crit_dmg, atk%, energy_recharge]  # [常识]
+energy_recharge: [120, 160]  # [常识]
+talents: {level: [skill, burst], skip: [normal]}  # [常识]
+verified: false
+---
+char: xilonen
+cons: "0-6"
+zh: 星烁队减抗辅助
+weapons:
+  - {id: peak_patrol_song, zh: 岩峰巡歌, rank: 1, source: limited_5star, note: "[常识] 专武"}
+  - {id: favonius_sword, zh: 西风剑, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: instructor, zh: 教官, pieces: 4, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 33:08「希诺宁带教官哦」"}]
+  - [{set: scroll_of_the_hero_of_cinder_city, zh: 烬城勇者绘卷, pieces: 4, note: "[常识] 常规"}]
+main_stats: {sands: [def%, energy_recharge], goblet: [def%], circlet: [def%, healing_bonus]}  # [常识]
+substats: [energy_recharge, def%]  # [常识]
+energy_recharge: [140, 180]  # [常识]
+talents: {level: [skill], skip: [normal]}  # [常识]
+verified: false
+---
+char: lanyan
+cons: "0-6"
+zh: 风系护盾辅助
+weapons:
+  - {id: thrilling_tales_of_dragon_slayers, zh: 讨龙英杰谭, rank: 1, source: 3star, note: "[常识]"}
+  - {id: favonius_codex, zh: 西风秘典, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4, note: "[攻略] 龙四爷 BV1S4Tr6nE8U 35:44「蓝月是能够带翠绿套」"}]
+main_stats: {sands: [atk%], goblet: [atk%], circlet: [atk%]}  # [常识] 护盾吃攻击力
+substats: [atk%, energy_recharge]  # [常识]
+energy_recharge: null
+talents: {level: [skill], skip: [normal]}  # [常识]
+verified: false
+---
+char: yumemizukimizuki
+cons: "0-6"
+zh: 星扩散队站场扩散
+weapons:
+  - {id: a_thousand_floating_dreams, zh: 千夜浮梦, rank: 1, source: limited_5star, note: "[常识] 吃精通"}
+  - {id: wandering_evenstar, zh: 流浪的晚星, rank: 2, source: gacha_4star, note: "[常识]"}
+artifact_sets:
+  - [{set: scarletproof, zh: 血红之证, pieces: 4, note: "[攻略] 凉夏喵 12:11「梦见月推荐携带新出的…」、龙四爷 23:10「新的那个星扩散的那套」"}]
+  - [{set: viridescent_venerer, zh: 翠绿之影, pieces: 4, note: "[攻略] 凉夏喵 12:04「圣遗物携带风套就可以了」"}]
+main_stats: {sands: [em], goblet: [em], circlet: [em, crit_rate]}  # [常识]
+substats: [crit_rate, crit_dmg, em]  # [攻略] 凉夏喵 12:25「然后双爆精通尽量堆高就可以了」
+energy_recharge: null
+talents: {level: [skill], skip: [normal]}  # [攻略] 阿尘杂货铺「资源优先给梦见月的E和精通」
+verified: false

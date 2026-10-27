@@ -141,3 +141,18 @@ equipment:
     provides:
       - {tag: buff:atk_flat, score: 0.4}
     note: 按装备者精通给其他角色加攻击力，数值小
+  - kind: weapon
+    zh: 漩流颂歌
+    provides:
+      - {tag: buff:atk_pct, score: 0.7, value: 0.24}
+    note: 只给当前场上角色，需要装备者治疗、生命值上限 40000 以上，3 层至多 24%；附近触发冻结或星扩散后 5 秒内再提高 75%
+  - kind: weapon
+    zh: 香韵奏者
+    provides:
+      - {tag: buff:atk_pct, score: 0.7, value: 0.32}
+    note: 装备者进行治疗后，受到治疗的角色攻击力 +32%，持续 3 秒；装备者自己的攻击力加成不写
+  - kind: weapon
+    zh: 寒息
+    provides:
+      - {tag: energy_battery, score: 0.4, value: 6}
+    note: 触发冰、水相关反应后给其他队友回 6 点能量，每 16 秒一次；精 5 为 12 点

@@ -4,6 +4,7 @@
     python -m genshin_assistant recommend 水龙 --cons 0
     python -m genshin_assistant recommend 那维莱特 --own 芙宁娜,砂糖,白术 --json
     python -m genshin_assistant validate
+    python -m genshin_assistant build 阿罗夏 --cons 1      # 养成方案
     python -m genshin_assistant bili run 那维莱特        # B 站取材 + DeepSeek 抽取 → work/drafts/
     python -m genshin_assistant game 桑多涅
 游戏数据相关的命令见 gamedata/cli.py。
@@ -18,7 +19,7 @@ from pathlib import Path
 
 from .engine import Engine, Owned, Recommendation
 from .gamedata import cli as gamedata_cli
-from .kb import DEFAULT_DATA_DIR, load
+from .kb import DEFAULT_DATA_DIR, KnowledgeBase, load
 
 
 def _roster(kb, own: str | None, missing: str | None, core: str, cons: int):
@@ -51,12 +52,71 @@ def _print(rec: Recommendation) -> None:
         for m in t.members:
             if m.build and m.build["recommended_weapon"]:
                 w = m.build["recommended_weapon"]["zh"]
-                sets = " / ".join("+".join(f"{a['zh']}{a['pieces']}" for a in combo) for combo in m.build["artifact_sets"])
+                sets = " / ".join("+".join(_piece(a) for a in combo) for combo in m.build["artifact_sets"])
                 print(f"   养成：{m.zh} 武器 {w}，圣遗物 {sets}")
     for x in rec.invalid:
         print(f"\n不成立：{x.template_zh}：{x.reason}")
     for e in rec.excluded:
         print(f"排除：{e.char}（槽位 {e.slot}）：{e.reason}")
+
+
+def _show_build(kb, args) -> None:
+    from .kb import load_draft_builds
+
+    try:
+        c = kb.resolve(args.character)
+        b = Engine(kb).build(c.id, args.playstyle, args.cons)
+        name, draft = c.zh, False
+    except KeyError:
+        from .gamedata import load_gamedata
+
+        row = load_gamedata(args.data).character(args.character)  # 不在知识库里：去 drafts/builds/ 找
+        name, draft = row["zh"], True
+        kb2 = KnowledgeBase(builds=[x for x in load_draft_builds(args.data) if x.char == row["id"]])
+        b = Engine(kb2).build(row["id"], args.playstyle, args.cons)
+    if b is None:
+        sys.exit(f"{name} 在 {args.cons} 命、玩法 {args.playstyle} 下还没有配装")
+    if args.json:
+        print(json.dumps(b, ensure_ascii=False, indent=2))
+        return
+    flag = "  [待审草稿，drafts/builds/]" if draft else ("" if b["verified"] else "  [草稿，未审核]")
+    print(f"{name}  {b['zh']}（{b['cons']} 命）{flag}")
+    ranks: dict[int, list[str]] = {}
+    for w in b["weapons"]:
+        ranks.setdefault(w["rank"], []).append(w["zh"] + (f"（{w['note']}）" if w["note"] else ""))
+    print("武器：")
+    for r, ws in sorted(ranks.items()):
+        print(f"  {r}. " + "；".join(ws))
+    print("圣遗物：")
+    for i, combo in enumerate(b["artifact_sets"], 1):
+        notes = "；".join(a["note"] for a in combo if a.get("note"))
+        print(f"  {i}. " + " + ".join(_piece(a) for a in combo) + (f"（{notes}）" if notes else ""))
+    ms = b["main_stats"]
+    print("主词条：" + "，".join(f"{_SLOT_ZH.get(k, k)} {' / '.join(_STAT_ZH.get(x, x) for x in v)}" for k, v in ms.items()))
+    print("副词条：" + " > ".join(_STAT_ZH.get(x, x) for x in b["substats"]))
+    if b["energy_recharge"]:
+        print(f"充能：{b['energy_recharge'][0]}%~{b['energy_recharge'][1]}%")
+    for n in b["energy_recharge_notes"]:
+        print(f"  - {n}")
+    if b["stat_targets"]:
+        print("面板目标：" + "；".join(b["stat_targets"]))
+    t = b["talents"]
+    if t["level"]:
+        print("天赋要点：" + "、".join(_TALENT_ZH.get(x, x) for x in t["level"]))
+    if t["skip"]:
+        print("天赋不用点：" + "、".join(_TALENT_ZH.get(x, x) for x in t["skip"]))
+    for n in b["notes"]:
+        print(f"备注：{n}")
+
+
+def _piece(a: dict) -> str:
+    return f"{a['zh']}（散件 {a['pieces']}）" if a["set"] == "mixed" else f"{a['zh']}{a['pieces']}"
+
+
+_SLOT_ZH = {"sands": "沙漏", "goblet": "杯", "circlet": "头"}
+_STAT_ZH = {"atk%": "攻击力%", "hp%": "生命值%", "def%": "防御力%", "hp": "小生命", "em": "元素精通",
+            "energy_recharge": "充能", "crit_rate": "暴击率", "crit_dmg": "暴击伤害", "healing_bonus": "治疗加成"}
+_TALENT_ZH = {"normal": "普攻", "skill": "元素战技", "burst": "元素爆发"}
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -71,6 +131,11 @@ def main(argv: list[str] | None = None) -> None:
     r.add_argument("--playstyle")
     r.add_argument("--json", action="store_true")
     sub.add_parser("validate", help="校验知识库")
+    b = sub.add_parser("build", help="查看一个角色的养成方案（武器、圣遗物、词条、充能、天赋）")
+    b.add_argument("character")
+    b.add_argument("--cons", type=int, default=0)
+    b.add_argument("--playstyle", default="default")
+    b.add_argument("--json", action="store_true")
     _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
     args = p.parse_args(argv)
@@ -86,7 +151,18 @@ def main(argv: list[str] | None = None) -> None:
         gamedata_cli.run(args, kb)
         return
     if args.cmd == "validate":
-        print(f"知识库校验通过：{len(kb.characters)} 个角色，{len(kb.teams)} 个队伍模板，{len(kb.builds)} 套配装")
+        from .gamedata import load_gamedata
+        from .kb import check_build_names, load_draft_builds
+
+        drafts = load_draft_builds(args.data)
+        errors = check_build_names(drafts, load_gamedata(args.data))
+        if errors:
+            sys.exit("drafts/builds 校验失败：\n" + "\n".join(errors))
+        print(f"知识库校验通过：{len(kb.characters)} 个角色，{len(kb.teams)} 个队伍模板，{len(kb.builds)} 套配装"
+              f"（另有 {len(drafts)} 套待审配装在 drafts/builds/）")
+        return
+    if args.cmd == "build":
+        _show_build(kb, args)
         return
     roster = _roster(kb, args.own, args.missing, args.character, args.cons)
     rec = Engine(kb).recommend(args.character, roster, args.playstyle)

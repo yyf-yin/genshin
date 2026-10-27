@@ -9,7 +9,7 @@ artifact_sets:
 main_stats: {sands: [hp%], goblet: [hydro_dmg], circlet: [crit_rate, crit_dmg]}
 substats: [crit_rate, crit_dmg, hp%, energy_recharge]
 energy_recharge: [100, 130]
-talents: [normal, burst, skill]
+talents: {level: [normal, burst, skill], skip: []}
 ---
 char: furina
 cons: "0-6"
@@ -21,7 +21,7 @@ artifact_sets:
 main_stats: {sands: [hp%, energy_recharge], goblet: [hp%], circlet: [crit_rate, crit_dmg]}
 substats: [crit_rate, crit_dmg, hp%, energy_recharge]
 energy_recharge: [160, 200]
-talents: [skill, burst, normal]
+talents: {level: [skill, burst], skip: [normal]}
 ---
 char: kazuha
 cons: "0-6"
@@ -33,7 +33,7 @@ artifact_sets:
 main_stats: {sands: [em], goblet: [em], circlet: [em]}
 substats: [em, energy_recharge]
 energy_recharge: [140, 180]
-talents: [burst, skill]
+talents: {level: [skill, burst], skip: [normal]}
 ---
 char: sucrose
 cons: "0-6"
@@ -45,4 +45,17 @@ artifact_sets:
 main_stats: {sands: [em], goblet: [em], circlet: [em]}
 substats: [em, energy_recharge]
 energy_recharge: [140, 180]
-talents: [skill, burst]
+talents: {level: [skill, burst], skip: [normal]}
+---
+# AI 草稿（常识补全，未按攻略核对）：桑多涅、阿罗夏攻略里钟离作为护盾位出现（3 个视频），视频没讲配装。
+char: zhongli
+cons: "0-6"
+zh: 护盾减抗辅助
+weapons:
+  - {id: black_tassel, zh: 黑缨枪, rank: 1, source: 3star, note: 堆生命值}
+  - {id: favonius_lance, zh: 西风长枪, rank: 2, source: gacha_4star}
+artifact_sets:
+  - [{set: tenacity_of_the_millelith, zh: 千岩牢固, pieces: 4}]
+main_stats: {sands: [hp%], goblet: [hp%], circlet: [hp%]}
+substats: [hp%, energy_recharge]
+talents: {level: [skill], skip: [normal]}

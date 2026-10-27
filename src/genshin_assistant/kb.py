@@ -156,15 +156,39 @@ def _check_game_names(kb: KnowledgeBase, game) -> list[str]:
     for c in kb.characters.values():
         if c.zh not in char_names:
             errors.append(f"角色 {c.id}：中文名「{c.zh}」不是游戏里的正式名")
-    for b in kb.builds:
+    weapon_type = {cid: c.weapon for cid, c in kb.characters.items()}
+    return errors + check_build_names(kb.builds, game, weapon_type)
+
+
+def check_build_names(builds, game, weapon_type: dict[str, str] | None = None) -> list[str]:
+    """配装里的武器、圣遗物套装是不是游戏里的正式名，武器类型对不对得上角色。
+    weapon_type：角色 id → 武器类型；没给的按游戏数据的角色 id 查（drafts/ 里的角色用游戏 id）。"""
+    errors = []
+    weapons = {w["zh"]: w for w in game.weapons.values()}
+    set_names = {a["zh"] for a in game.artifact_sets.values()}
+    weapon_type = {**{c["id"]: c.get("weapon") for c in game.characters.values()}, **(weapon_type or {})}
+    for b in builds:
+        where = f"配装 {b.char}/{b.playstyle}（{b.cons} 命）"
         for w in b.weapons:
-            if w.zh not in weapon_names:
-                errors.append(f"配装 {b.char}：武器「{w.zh}」不是游戏里的正式名")
+            if w.zh not in weapons:
+                errors.append(f"{where}：武器「{w.zh}」不是游戏里的正式名")
+            elif weapon_type.get(b.char) and weapons[w.zh].get("type") != weapon_type[b.char]:
+                errors.append(f"{where}：武器「{w.zh}」是{weapons[w.zh].get('type')}，角色用{weapon_type[b.char]}")
         for combo in b.artifact_sets:
+            if sum(a.pieces for a in combo) > 5:
+                errors.append(f"{where}：圣遗物组合超过 5 件")
             for a in combo:
-                if a.zh not in set_names:
-                    errors.append(f"配装 {b.char}：圣遗物「{a.zh}」不是游戏里的正式名")
+                if a.set != "mixed" and a.zh not in set_names:
+                    errors.append(f"{where}：圣遗物「{a.zh}」不是游戏里的正式名")
     return errors
+
+
+def load_draft_builds(data_dir: Path | str = DEFAULT_DATA_DIR) -> list[Build]:
+    """drafts/builds/ 里还没审核的配装（角色还在 drafts/characters/），引擎不读，只给人看、做名字校验。"""
+    out = []
+    for path in sorted((Path(data_dir) / "drafts" / "builds").glob("*.yaml")):
+        out.extend(Build(**raw) for raw in _load_yaml_docs(path))
+    return out
 
 
 def _load_yaml_docs(path: Path) -> list[dict]:
