@@ -156,7 +156,8 @@ def main(argv: list[str] | None = None) -> None:
     for name, helptext in (("web", "打开本机网页，用中文提问配队和养成"), ("chat", "命令行里用中文提问配队和养成")):
         x = sub.add_parser(name, help=helptext)
         x.add_argument("--key-file", help="DeepSeek key 文件（默认先看 DEEPSEEK_API_KEY，再找仓库和上一级目录的 ds_key.txt）")
-        x.add_argument("--roster", help="「我的角色」存哪（默认 work/roster.json）")
+        if name == "chat":
+            x.add_argument("--roster", help="「我的角色」存哪（默认 work/roster.json）")
         if name == "web":
             x.add_argument("--port", type=int, default=8765)
             x.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
@@ -226,7 +227,10 @@ def _chat(args, kb) -> None:
         model = DeepSeek(api_key=_deepseek_key(args.key_file, data_dir), cache_dir=work / "llm-cache" / "chat")
     except LLMError as e:
         sys.exit(f"{e}，或者把 key 放进仓库上一级目录的 ds_key.txt，或用 --key-file 指定")
-    roster = Roster(Path(args.roster) if args.roster else work / "roster.json")
+    if args.cmd == "web":  # 网页没有「我的角色」，旧的 roster.json 也不读：按全都有算
+        roster = Roster(None)
+    else:
+        roster = Roster(Path(args.roster) if args.roster else work / "roster.json")
     assistant = Assistant(kb, model, data_dir, roster)
     if args.cmd == "web":
         from .chat.web import serve
