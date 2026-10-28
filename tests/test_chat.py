@@ -2,6 +2,7 @@
 
 import json
 import threading
+import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
 
@@ -187,13 +188,14 @@ def test_web_endpoints(kb, tmp_path):
         page = urllib.request.urlopen(base + "/").read().decode()
         assert "原神配队助手" in page
         state = json.loads(urllib.request.urlopen(base + "/api/state").read())
-        assert state["owned"] is None and any(c["zh"] == "芙宁娜" and c["in_kb"] for c in state["characters"])
-        post("/api/roster", {"owned": {"芙宁娜": 1}})
-        assert a.roster.load() == {"芙宁娜": 1}
+        assert set(state) == {"model"} and "我的角色" not in page
         reply = post("/api/ask", {"question": "水龙怎么配", "last": {"intent": "team", "character": "那维莱特", "junk": 1}})
         assert reply["facts"]["status"] == "team" and reply["query"]["character"] == "那维莱特"
-        post("/api/roster", {"owned": None})
-        assert a.roster.load() is None
+        try:
+            post("/api/roster", {"owned": {"芙宁娜": 1}})
+            raise AssertionError("/api/roster should be gone")
+        except urllib.error.HTTPError as e:
+            assert e.code == 404
     finally:
         server.shutdown()
 

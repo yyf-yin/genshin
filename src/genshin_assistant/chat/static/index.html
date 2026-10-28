@@ -5,105 +5,174 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>原神配队助手</title>
 <style>
+/* 配色取自游戏界面：夜空蓝底、金色描边、羊皮纸色文字和按钮 */
 :root {
-  --bg: #f6f5f1; --panel: #ffffff; --text: #1f2328; --muted: #6b6f76; --line: #e3e1da;
-  --accent: #3b6ea8; --accent-soft: #e7eef7; --user: #3b6ea8; --user-text: #fff; --warn: #9a6400;
-  --pyro: #d9534f; --hydro: #3b82c4; --electro: #8e5bc4; --cryo: #4aa8c0; --anemo: #3fa58c; --geo: #b58a2a; --dendro: #6aa23a;
+  --sky-1: #11131f; --sky-2: #1d2135; --sky-3: #2e3450;
+  --gold: #d3bc8e; --gold-hi: #f0dca8; --gold-dim: rgba(211, 188, 142, .35);
+  --paper: #ece5d8; --ink: #3b4255; --ink-soft: #6c7489;
+  --text: #ece5d8; --muted: #a9a59c;
+  --box: rgba(18, 20, 32, .78); --box-edge: rgba(211, 188, 142, .28);
+  --opt: rgba(28, 31, 48, .82); --opt-hover: rgba(52, 57, 84, .92);
+  --me-bg: #ece5d8; --me-fg: #3b4255;
+  --err: #ff8f7a;
+  --serif: "HYWenHei 85W", "HYWenHei", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #17191c; --panel: #202327; --text: #e6e6e3; --muted: #9a9ea5; --line: #33373c;
-    --accent: #7fa8d8; --accent-soft: #263443; --user: #34557c; --user-text: #f2f4f7; --warn: #e0b04c;
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --sky-1: #d8cfbd; --sky-2: #e9e2d3; --sky-3: #f4efe4;
+    --gold: #a6834a; --gold-hi: #8a6a35; --gold-dim: rgba(166, 131, 74, .35);
+    --text: #3b4255; --muted: #7a7466;
+    --box: rgba(250, 247, 240, .9); --box-edge: rgba(166, 131, 74, .35);
+    --opt: rgba(250, 247, 240, .85); --opt-hover: #fffdf7;
+    --me-bg: #4a5269; --me-fg: #f3eee3;
+    --err: #b8432e;
   }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
-.app { display: grid; grid-template-columns: 1fr 320px; height: 100vh; }
-main { display: flex; flex-direction: column; min-width: 0; }
-header { padding: 12px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 12px; }
-header h1 { font-size: 17px; margin: 0; }
-header .meta { color: var(--muted); font-size: 13px; }
-#roster-toggle { margin-left: auto; display: none; }
-#log { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-.msg { max-width: 760px; padding: 10px 14px; border-radius: 10px; }
-.msg.user { align-self: flex-end; background: var(--user); color: var(--user-text); white-space: pre-wrap; }
-.msg.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
-.msg.bot p { margin: 0 0 8px; } .msg.bot p:last-child { margin-bottom: 0; }
-.msg.bot ul, .msg.bot ol { margin: 4px 0 8px; padding-left: 22px; }
-.msg.bot h3, .msg.bot h4 { margin: 10px 0 4px; font-size: 15px; }
-.msg.err { border-color: var(--pyro); color: var(--pyro); }
-.msg .tag { display: inline-block; font-size: 12px; color: var(--muted); margin-top: 6px; }
-details { margin-top: 8px; font-size: 13px; color: var(--muted); }
-details pre { white-space: pre-wrap; word-break: break-all; max-height: 360px; overflow: auto; background: var(--bg); padding: 8px; border-radius: 6px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 16px; padding: 4px 12px; cursor: pointer; font: inherit; font-size: 13px; }
-.chip:hover { border-color: var(--accent); }
-form#ask { display: flex; gap: 8px; padding: 12px 20px 16px; border-top: 1px solid var(--line); }
-textarea { flex: 1; resize: none; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); height: 44px; }
-button.primary { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 0 18px; font: inherit; cursor: pointer; }
-button.primary:disabled { opacity: .5; cursor: default; }
-aside { border-left: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
-aside h2 { font-size: 15px; margin: 0; padding: 12px 14px 4px; }
-aside .hint { color: var(--muted); font-size: 12px; padding: 0 14px 8px; }
-aside .bar { display: flex; gap: 6px; padding: 0 14px 8px; flex-wrap: wrap; }
-aside input[type=search] { width: 100%; font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); }
-#chars { overflow-y: auto; flex: 1; padding: 0 8px 12px; }
-.el { font-size: 12px; color: var(--muted); padding: 8px 6px 2px; }
-.row { display: flex; align-items: center; gap: 6px; padding: 2px 6px; border-radius: 6px; }
-.row:hover { background: var(--bg); }
-.row label { flex: 1; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-.row .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.row .kb { font-size: 11px; color: var(--accent); }
-.row select { font: inherit; font-size: 12px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 4px; }
-.small { font-size: 12px; padding: 3px 8px; }
-#saved { font-size: 12px; color: var(--muted); padding: 0 14px 10px; min-height: 18px; }
-@media (max-width: 820px) {
-  .app { grid-template-columns: 1fr; }
-  aside { display: none; position: fixed; inset: 0; z-index: 10; }
-  aside.open { display: flex; }
-  #roster-toggle { display: inline-block; }
-  #log, form#ask { padding-left: 16px; padding-right: 16px; }
+html, body { height: 100%; }
+body {
+  margin: 0; color: var(--text); background: var(--sky-1);
+  font: 15px/1.75 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+/* 夜空：渐变 + 几颗星 */
+.sky {
+  position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(1px 1px at 28% 62%, rgba(255,255,255,.45), transparent 60%),
+    radial-gradient(1.5px 1.5px at 47% 12%, rgba(255,240,200,.8), transparent 60%),
+    radial-gradient(1px 1px at 66% 38%, rgba(255,255,255,.5), transparent 60%),
+    radial-gradient(1px 1px at 82% 22%, rgba(255,255,255,.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 90% 70%, rgba(255,240,200,.6), transparent 60%),
+    radial-gradient(1px 1px at 8% 84%, rgba(255,255,255,.4), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, var(--sky-3), transparent 70%),
+    linear-gradient(180deg, var(--sky-2), var(--sky-1));
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .sky {
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 0%, #fffaf0, transparent 70%),
+      repeating-linear-gradient(45deg, rgba(166,131,74,.035) 0 2px, transparent 2px 14px),
+      linear-gradient(180deg, var(--sky-3), var(--sky-1));
+  }
+}
+
+.app { display: flex; flex-direction: column; height: 100vh; max-width: 880px; margin: 0 auto; padding: 0 16px; }
+
+header { text-align: center; padding: 22px 0 10px; }
+header h1 {
+  margin: 0; font: 600 22px/1.3 var(--serif); letter-spacing: .18em; color: var(--gold-hi);
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+}
+header h1::before, header h1::after {
+  content: ""; width: 72px; height: 1px; flex: none;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+header h1::after { transform: scaleX(-1); }
+.diamond { width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); display: inline-block; flex: none; }
+header .meta { color: var(--muted); font-size: 12px; margin-top: 2px; letter-spacing: .05em; }
+
+#log { flex: 1; overflow-y: auto; padding: 12px 2px 20px; display: flex; flex-direction: column; gap: 18px; scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
+
+/* 向导的话：游戏里的对话框，上下金线向两边淡出 */
+.npc { align-self: stretch; position: relative; padding: 14px 22px 16px; background: var(--box); border-radius: 4px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.npc::before, .npc::after { content: ""; position: absolute; left: 6%; right: 6%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--box-edge), var(--gold), var(--box-edge), transparent); }
+.npc::before { top: 0; } .npc::after { bottom: 0; }
+.npc .name { font: 600 15px/1 var(--serif); color: var(--gold); letter-spacing: .12em; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.npc .name .star { width: 14px; height: 14px; fill: var(--gold); }
+.npc .body p { margin: 0 0 10px; } .npc .body p:last-child { margin-bottom: 0; }
+.npc .body ul, .npc .body ol { margin: 4px 0 10px; padding-left: 22px; }
+.npc .body h4 { margin: 12px 0 4px; font: 600 15px var(--serif); color: var(--gold-hi); }
+.npc .body strong { color: var(--gold-hi); font-weight: 600; }
+.npc .body > * { animation: reveal .45s ease both; }
+@keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.npc.err .body { color: var(--err); }
+.npc .tag { display: block; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.npc details { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.npc details summary { cursor: pointer; width: fit-content; list-style: none; }
+.npc details summary::before { content: "◇ "; color: var(--gold); }
+.npc details[open] summary::before { content: "◆ "; }
+.npc details pre { white-space: pre-wrap; word-break: break-all; max-height: 360px; overflow: auto; background: rgba(0,0,0,.18); padding: 8px 10px; border-radius: 4px; margin: 6px 0 0; }
+.dots { font-size: 22px; line-height: 1; color: var(--gold); letter-spacing: .15em; }
+.dots span { display: inline-block; animation: blink 1.2s infinite both; }
+.dots span:nth-child(2) { animation-delay: .2s; } .dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .2; } 40% { opacity: 1; } }
+
+/* 旅行者说的话：右侧的羊皮纸气泡 */
+.me { align-self: flex-end; margin-top: 10px; max-width: 78%; background: var(--me-bg); color: var(--me-fg); padding: 8px 18px;
+  border-radius: 20px; white-space: pre-wrap; box-shadow: 0 2px 10px rgba(0,0,0,.2); position: relative; }
+.me::after { content: "旅行者"; position: absolute; right: 16px; top: -20px; font: 12px var(--serif); color: var(--muted); letter-spacing: .1em; }
+
+/* 对话选项：游戏里右侧那一列可点的选项 */
+.options { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 14px; }
+.opt {
+  display: flex; align-items: center; gap: 10px; width: min(360px, 100%);
+  background: var(--opt); color: var(--text); border: 1px solid var(--gold-dim); border-radius: 22px;
+  padding: 7px 20px 7px 10px; font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.opt span:last-child { flex: 1; }
+.opt:hover, .opt:focus-visible { background: var(--opt-hover); border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-dim); outline: none; }
+.opt .icon { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; background: rgba(211,188,142,.15); }
+.opt .icon svg { width: 13px; height: 13px; fill: var(--gold); }
+.opt:disabled { opacity: .5; cursor: default; }
+
+/* 输入区 */
+form#ask { display: flex; gap: 10px; align-items: center; padding: 12px 0 18px; }
+.field { flex: 1; display: flex; }
+textarea {
+  display: block; width: 100%; resize: none; font: inherit; padding: 10px 18px; border-radius: 22px; height: 46px; max-height: 160px;
+  border: 1px solid var(--gold-dim); background: var(--box); color: var(--text); outline: none;
+}
+textarea::placeholder { color: var(--muted); }
+textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-dim); }
+button.send {
+  display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px 0 8px; border: 0; border-radius: 23px;
+  background: var(--paper); color: var(--ink); font: 600 15px var(--serif); letter-spacing: .1em; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25); transition: filter .15s;
+}
+button.send .ring { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #f2c34e; display: grid; place-items: center; }
+button.send .ring::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #f2c34e; }
+button.send:hover { filter: brightness(1.05); }
+button.send:disabled { opacity: .55; cursor: default; }
+
+@media (max-width: 640px) {
+  header { padding-top: 14px; }
+  header h1 { font-size: 18px; gap: 10px; }
+  header h1::before, header h1::after { width: 36px; }
+  .npc { padding: 12px 16px 14px; }
+  .opt { min-width: 0; width: 100%; }
+  .me { max-width: 90%; }
+  button.send { padding: 0 8px; }
+  button.send .label { display: none; }
 }
 </style>
 </head>
 <body>
+<div class="sky"></div>
 <div class="app">
-  <main>
-    <header>
-      <h1>原神配队助手</h1><span class="meta" id="meta"></span>
-      <button class="chip" id="roster-toggle">我的角色</button>
-    </header>
-    <div id="log">
-      <div class="msg bot">
-        <p>问我某个角色怎么配队、怎么养成。没有的角色直接说，例如「我没有芙宁娜」。在「我的角色」里勾上你拥有的角色和命座，推荐会只用你有的人。</p>
-        <div class="chips" id="examples"></div>
-      </div>
+  <header>
+    <h1><span class="diamond"></span>原神配队助手<span class="diamond"></span></h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div id="log"></div>
+  <form id="ask">
+    <div class="field">
+      <textarea id="q" rows="1" placeholder="想问谁怎么配队、怎么养成？" title="Enter 发送，Shift+Enter 换行"></textarea>
     </div>
-    <form id="ask">
-      <textarea id="q" placeholder="例如：我有沃雅妮莎，怎么配队？（Enter 发送，Shift+Enter 换行）"></textarea>
-      <button class="primary" id="send">发送</button>
-    </form>
-  </main>
-  <aside id="roster">
-    <h2>我的角色</h2>
-    <div class="hint" id="mode-hint"></div>
-    <div class="bar">
-      <input type="search" id="filter" placeholder="搜角色">
-    </div>
-    <div class="bar">
-      <button class="chip small" id="save">保存</button>
-      <button class="chip small" id="clear">不限制（全都有）</button>
-      <button class="chip small" id="close" style="display:none">关闭</button>
-    </div>
-    <div id="saved"></div>
-    <div id="chars"></div>
-  </aside>
+    <button class="send" id="send"><span class="ring"></span><span class="label">发送</span></button>
+  </form>
 </div>
 <script>
-const EL = {pyro: "火", hydro: "水", electro: "雷", cryo: "冰", anemo: "风", geo: "岩", dendro: "草"};
+const NPC = "攻略向导";
+const GREETING = "旅行者，想问哪位角色？配队、配装、天赋我都能帮你理一理。要是缺了谁，直接告诉我「我没有芙宁娜」，我换个搭法给你。四星队友我会把 0 命和 6 命的打法都讲到。";
 const EXAMPLES = ["我有沃雅妮莎，怎么配队？", "那维莱特 0 命怎么配队", "我没有芙宁娜和万叶，水龙怎么配", "阿罗夏 1 命怎么养成"];
+const STAR = '<svg class="star" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>';
+const BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>';
 const $ = s => document.querySelector(s);
-let last = null, chars = [], owned = null, busy = false;
+let last = null, busy = false;
 
 function esc(s) { return s.replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
 function inline(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`(.+?)`/g, "<code>$1</code>"); }
@@ -124,87 +193,73 @@ function md(text) {
   return out.join("");
 }
 
-function add(cls, html) {
+function scrollDown() { $("#log").scrollTop = $("#log").scrollHeight; }
+function npc(html) {
   const d = document.createElement("div");
-  d.className = "msg " + cls; d.innerHTML = html;
-  $("#log").appendChild(d); $("#log").scrollTop = $("#log").scrollHeight;
+  d.className = "npc";
+  d.innerHTML = `<div class="name">${STAR}${NPC}</div><div class="body">${html}</div>`;
+  $("#log").appendChild(d); scrollDown();
   return d;
 }
+function me(text) {
+  const d = document.createElement("div");
+  d.className = "me"; d.textContent = text;
+  $("#log").appendChild(d); scrollDown();
+}
+// 一组对话选项，点了就当作玩家说的话
+function options(parent, items) {
+  const box = document.createElement("div"); box.className = "options";
+  for (const text of items) {
+    const b = document.createElement("button"); b.className = "opt"; b.type = "button";
+    b.innerHTML = `<span class="icon">${BUBBLE}</span><span></span>`;
+    b.lastChild.textContent = text;
+    b.onclick = () => ask(text);
+    box.appendChild(b);
+  }
+  parent.appendChild(box);
+  return box;
+}
+// 段落依次浮现，像游戏里一句一句出来
+function stagger(body) { [...body.children].forEach((el, i) => el.style.animationDelay = `${Math.min(i, 12) * 0.12}s`); }
 
 async function ask(question) {
   if (busy || !question.trim()) return;
   busy = true; $("#send").disabled = true;
-  add("user", esc(question));
-  const pending = add("bot", "<p>思考中…</p>");
+  document.querySelectorAll(".opt").forEach(b => b.disabled = true);
+  me(question);
+  const reply = npc('<p class="dots"><span>·</span><span>·</span><span>·</span></p>');
+  const body = reply.querySelector(".body");
   try {
     const r = await fetch("/api/ask", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({question, last})});
     const data = await r.json();
     if (data.error) throw new Error(data.error);
     last = data.query;
-    const note = data.explained_by_llm ? "" : `<span class="tag">大模型解释失败，下面是引擎原始结果</span>`;
-    pending.innerHTML = md(data.answer) + note +
-      `<details><summary>引擎结果</summary><pre>${esc(JSON.stringify({query: data.query, facts: data.facts}, null, 1))}</pre></details>`;
-    if (data.facts.status === "need_carry") {  // 问辅助：候选主C做成按钮，点一下就是回答
-      const box = document.createElement("div"); box.className = "chips"; box.style.marginTop = "8px";
-      for (const c of data.facts.candidates) {
-        const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = "搭配" + c.zh;
-        b.onclick = () => ask(b.textContent); box.appendChild(b);
-      }
-      pending.insertBefore(box, pending.querySelector("details"));
-    }
+    body.innerHTML = md(data.answer);
+    stagger(body);
+    if (!data.explained_by_llm) body.insertAdjacentHTML("beforeend", `<span class="tag">大模型解释失败，下面是引擎原始结果</span>`);
+    if (data.facts.status === "need_carry")  // 问辅助：候选主C做成对话选项
+      options(reply, data.facts.candidates.map(c => "搭配" + c.zh));
+    reply.insertAdjacentHTML("beforeend",
+      `<details><summary>详细数据</summary><pre>${esc(JSON.stringify({query: data.query, facts: data.facts}, null, 1))}</pre></details>`);
   } catch (e) {
-    pending.className = "msg bot err"; pending.textContent = "出错了：" + e.message;
+    reply.classList.add("err"); body.textContent = "出了点岔子：" + e.message;
   } finally {
-    busy = false; $("#send").disabled = false; $("#log").scrollTop = $("#log").scrollHeight;
+    busy = false; $("#send").disabled = false;
+    document.querySelectorAll(".opt").forEach(b => b.disabled = false);
+    scrollDown();
   }
 }
 
-function renderChars() {
-  const f = $("#filter").value.trim();
-  const box = $("#chars"); box.innerHTML = "";
-  let group = null;
-  for (const c of chars) {
-    if (f && !c.zh.includes(f)) continue;
-    const g = c.in_kb ? "已录入知识库" : (EL[c.element] || "其他");
-    if (g !== group) { group = g; box.insertAdjacentHTML("beforeend", `<div class="el">${g}</div>`); }
-    const have = owned ? c.zh in owned : false;
-    const row = document.createElement("div"); row.className = "row";
-    row.innerHTML = `<label><input type="checkbox" ${have ? "checked" : ""}><span class="dot" style="background:var(--${c.element})"></span>${esc(c.zh)}${c.rarity === 5 ? " ★" : ""}</label>` +
-      `<select>${[0,1,2,3,4,5,6].map(n => `<option value="${n}">${n} 命</option>`).join("")}</select>`;
-    const [cb, sel] = [row.querySelector("input"), row.querySelector("select")];
-    sel.value = have ? owned[c.zh] : 0; sel.disabled = !have;
-    cb.onchange = () => { owned = owned || {}; if (cb.checked) owned[c.zh] = +sel.value; else delete owned[c.zh]; sel.disabled = !cb.checked; dirty(); };
-    sel.onchange = () => { if (owned && c.zh in owned) { owned[c.zh] = +sel.value; dirty(); } };
-    box.appendChild(row);
-  }
-  hint();
-}
-function hint() {
-  $("#mode-hint").textContent = owned === null
-    ? "现在按「全都有、0 命」推荐。勾上你有的角色后保存，就只用你有的人。"
-    : `已勾 ${Object.keys(owned).length} 个角色，推荐只用这些人（问到的角色当作有）。`;
-}
-function dirty() { $("#saved").textContent = "有改动，记得保存"; hint(); }
-async function saveRoster(value) {
-  await fetch("/api/roster", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({owned: value})});
-  $("#saved").textContent = "已保存";
-}
+const q = $("#q");
+function fit() { q.style.height = "46px"; q.style.height = Math.min(q.scrollHeight + 2, 160) + "px"; }
+q.oninput = fit;
+q.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#ask").requestSubmit(); } };
+$("#ask").onsubmit = e => { e.preventDefault(); const v = q.value; q.value = ""; fit(); ask(v); };
 
-$("#ask").onsubmit = e => { e.preventDefault(); const q = $("#q").value; $("#q").value = ""; ask(q); };
-$("#q").onkeydown = e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#ask").requestSubmit(); } };
-$("#filter").oninput = renderChars;
-$("#save").onclick = () => saveRoster(owned);
-$("#clear").onclick = () => { owned = null; renderChars(); saveRoster(null); };
-$("#roster-toggle").onclick = () => { $("#roster").classList.add("open"); $("#close").style.display = ""; };
-$("#close").onclick = () => $("#roster").classList.remove("open");
-for (const q of EXAMPLES) {
-  const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = q;
-  b.onclick = () => ask(q); $("#examples").appendChild(b);
-}
-fetch("/api/state").then(r => r.json()).then(s => {
-  chars = s.characters; owned = s.owned; $("#meta").textContent = s.model ? `模型 ${s.model}` : "";
-  renderChars();
-});
+const hello = npc(`<p>${esc(GREETING)}</p>`);
+options(hello, EXAMPLES);
+q.focus();
+fetch("/api/state").then(r => r.json()).then(s => { $("#meta").textContent = s.model ? `由 ${s.model} 解读` : ""; }).catch(() => {});
 </script>
 </body>
 </html>
