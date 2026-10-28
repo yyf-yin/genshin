@@ -1,0 +1,24 @@
+# AI 草稿：大招启途誓使约 18 秒，期间普攻连段 + 3 次冥祭（2 次带裁定），未经实测核对。
+# 专项调整（游戏解包 upgrades）：辉映·星超导时裁定的 3 道渡荒之雷转为渡荒之雷·星偕
+#   （200% 攻击力 + 600% 精通，视为星超导伤害）；没有星超导时是 100% 攻击力 + 250% 精通的雷伤。
+char: cyno
+on_field_seconds: 18
+hits:
+  - {talent: 爆发:一段伤害, count: 4}
+  - {talent: 爆发:二段伤害, count: 4}
+  - {talent: 爆发:三段伤害, count: 4}
+  - {talent: 爆发:四段伤害, count: 4}
+  - {talent: 爆发:五段伤害, count: 4}
+  - {talent: 战技:冥祭伤害, count: 1}
+  - {talent: 战技:冥祭伤害, base_multiplier: 1.35, count: 2}
+  - {name: 渡荒之雷, slot: skill, scaling: {atk: 1.0, em: 2.5}, element: electro, count: 6,
+     when: "not reaction('stellar_superconduct')"}
+  - {name: 渡荒之雷·星偕, slot: skill, scaling: {atk: 2.0, em: 6.0}, stellar: 星超导, count: 6,
+     when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 九弓的执命（启途誓使普攻 +150% 精通）
+    from_stat: {stat: em, ratio: 1.5, key: 普攻固定伤害}
+  - source: 立仪·俯览昼冥（1 命，辉映·星超导：偕日共升 精通 +200）
+    stats: {元素精通: 200}
+    when: "cons >= 1 and reaction('stellar_superconduct')"
+verified: false

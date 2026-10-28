@@ -173,7 +173,8 @@ def test_draft_builds_use_official_names():
 
     kb = load()
     drafts = load_draft_builds()
-    assert drafts
+    if not drafts:
+        pytest.skip("drafts/builds/ 是空的（2026-10-27 全部挪进 builds/）")
     assert check_build_names(drafts, load_gamedata()) == []
     for b in drafts:
         assert b.char not in kb.characters, f"{b.char} 已在知识库里，配装挪到 builds/"

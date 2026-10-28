@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: layla
+zh: 莱依拉
+aliases:
+- Layla
+element: cryo
+weapon: sword
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: shield
+    score: 0.4
+    evidence: 元素战技「垂裳端凝之夜」：安眠帷幕护盾的伤害吸收量受益于莱依拉的生命值上限，并对冰元素伤害有250%的吸收效果。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「星示昭明」：垂裳端凝之夜开始发射一轮飞星时，将为附近的队伍中所有角色赋予「启明」效果，使普通攻击与重击造成的伤害提升，提升值相当于莱依拉生命值上限的5%。
+    source: hints
+  - tag: application:cryo
+    score: 0.6
+    source: '[攻略] 2026-10-27 B 站攻略抽取'
+verified: false

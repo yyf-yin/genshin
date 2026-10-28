@@ -1,0 +1,23 @@
+# AI 草稿：后台挂冰。点按战技 + 大招领域（12 秒，每 2 秒一跳），未经实测核对。
+# 任务天赋「珍选秘藏」（专项调整）：战技后 20 秒内，队伍触发超导/星超导/冰扩散/星扩散时协同发射 3 枚猫爪，每 3.5 秒一次。
+char: diona
+on_field_seconds: 3
+hits:
+  - {talent: 战技:猫爪伤害, count: 2}
+  - {talent: 战技:猫爪伤害, count: 15, when: "reaction('superconduct') or reaction('swirl')"}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:领域持续伤害, count: 6}
+buffs:
+  - {source: 猫爪冰摇（2 命：猫爪伤害 +15%）, stats: {战技增伤: 15}, when: "cons >= 2"}
+  - {source: 猫尾打烊之时（6 命，领域内精通 +200）, to: on_field, stats: {元素精通: 200}, uptime: 0.6, when: "cons >= 6"}
+  - source: 猫尾打烊之时（6 命，辉映·星超导）
+    to: on_field
+    stats: {星超导加成: 40}
+    uptime: 0.6
+    when: "cons >= 6 and reaction('stellar_superconduct')"
+  - source: 猫尾打烊之时（6 命，辉映·星扩散）
+    to: on_field
+    stats: {星扩散加成: 40}
+    uptime: 0.6
+    when: "cons >= 6 and reaction('stellar_swirl')"
+verified: false

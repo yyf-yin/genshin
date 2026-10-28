@@ -1,0 +1,37 @@
+# 伤害计算场景示例：那维莱特 0 命，专武，逐影猎人 4 件套，芙宁娜满气氛值。
+# 运行：python -m genshin_assistant damage examples/damage/neuvillette.yaml
+# 百分比属性直接写数字（20 表示 20%），也可以写 "20%"。属性名的中文写法见 src/genshin_assistant/damage/stats.py 的 ALIASES。
+
+character: 那维莱特
+level: 90
+talents: {普攻: 10, 战技: 9, 爆发: 9}   # 命座加的 3 级要自己加上
+
+weapon: 万世流涌大典   # 白值和副属性自动算；特效写进 buffs
+
+artifacts:
+  sets: [{name: 逐影猎人, pieces: 4}]   # 能直接算的 2 件套自动加；4 件套写进 buffs
+  sands: 生命值%
+  goblet: 水伤
+  circlet: 暴击伤害
+  substat_rolls: {暴击率: 10, 暴击伤害: 6, 生命值%: 4}   # 按副词条平均档位估算；也可以用 substats 直接写合计
+
+buffs:   # 对所有 hits 生效。写清来源，输出里会列出来方便核对
+  - source: 万世流涌大典 R1（3 层）
+    stats: {生命值%: 16, 重击增伤: 42}
+  - source: 逐影猎人 4 件套（3 层）
+    stats: {暴击率: 36}
+  - source: 那维莱特固有天赋「至高仲裁的纪律」（满层）
+    stats: {水伤: 30}
+  - source: 芙宁娜大招（满气氛值，10 级）
+    stats: {增伤: 124}
+
+enemy:
+  level: 100
+  res: 10          # 也可以按元素写：{水: 10, 冰: 50}
+
+hits:
+  - talent: 衡平推裁            # 天赋名可以只写一部分；重名时加槽位前缀，如「爆发:技能伤害」
+    base_multiplier: 1.6        # 3 层「遗龙之荣」：造成原本 160% 的伤害
+    times: 15                   # 一次 3 秒衡平推裁约 15 跳
+  - talent: 爆发:技能伤害
+  - talent: 战技:技能伤害

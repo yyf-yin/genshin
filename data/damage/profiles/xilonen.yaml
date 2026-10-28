@@ -1,0 +1,13 @@
+# AI 草稿：战技突进 + 大招，源音采样转化成队里的元素，对这些元素都减抗（10 级战技 36%）。未经实测核对。
+char: xilonen
+on_field_seconds: 3
+hits:
+  - {talent: 战技:突进伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1, uses: healer}   # 大招带治疗；队里有人排斥治疗时不放
+buffs:
+  - {source: 音火锻淬（源音采样，岩）, to: all, stats: {岩减抗: 36}, uptime: 0.9}
+  - {source: 音火锻淬（源音采样，冰）, to: all, stats: {冰减抗: 36}, uptime: 0.9, when: "count('cryo') > 0"}
+  - {source: 音火锻淬（源音采样，雷）, to: all, stats: {雷减抗: 36}, uptime: 0.9, when: "count('electro') > 0"}
+  - {source: 音火锻淬（源音采样，水）, to: all, stats: {水减抗: 36}, uptime: 0.9, when: "count('hydro') > 0"}
+  - {source: 音火锻淬（源音采样，火）, to: all, stats: {火减抗: 36}, uptime: 0.9, when: "count('pyro') > 0"}
+verified: false

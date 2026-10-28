@@ -1,0 +1,14 @@
+# AI 草稿：护盾位，后台挂冰。战技飞星 + 大招星光弹，未经实测核对。4 命的「启明」（普攻、重击加 5% 生命值）没算。
+char: layla
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:飞星伤害, count: 8, when: "cons < 6"}
+  - {talent: 爆发:星光弹伤害, count: 10, when: "cons < 6"}
+  # 曜光灵炬（6 命）：飞星、星光弹伤害 +40%，晚星间隔 -20%
+  - {talent: 战技:飞星伤害, base_multiplier: 1.4, count: 10, when: "cons >= 6"}
+  - {talent: 爆发:星光弹伤害, base_multiplier: 1.4, count: 10, when: "cons >= 6"}
+buffs:
+  - source: 勿扰沉眠（飞星伤害值 +1.5% 生命值上限）
+    from_stat: {stat: hp, ratio: 0.015, key: 战技固定伤害}
+verified: false

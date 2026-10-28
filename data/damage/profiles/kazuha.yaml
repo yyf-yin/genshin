@@ -1,0 +1,20 @@
+# AI 草稿：战技（带元素转化的乱岚拨止）+ 大招，未经实测核对。
+# 风物之诗咏：每点精通给全队 0.04% 被扩散元素的伤害加成；扩散哪种元素（group: swirl）由引擎挑全队总伤害最高的。
+char: kazuha
+on_field_seconds: 3
+hits:
+  - {talent: 战技:点按技能伤害, count: 1}
+  - {name: 乱岚拨止（元素转化）, slot: normal_attack, category: plunge, scaling: {atk: 2.0}, element: hydro, count: 1,
+     when: "count('hydro') > 0"}
+  - {talent: 爆发:斩击伤害, count: 1}
+  - {talent: 爆发:持续伤害, count: 4}
+  - {talent: 爆发:附加元素伤害, count: 4, element: hydro, when: "count('hydro') > 0"}
+reactions:
+  - {reaction: 扩散, element: hydro, count: 5, when: "count('hydro') > 0"}
+  - {reaction: 扩散, element: electro, count: 5, when: "count('hydro') == 0 and count('electro') > 0"}
+buffs:
+  - {source: 风物之诗咏, to: all, group: swirl, option: hydro, from_stat: {stat: em, ratio: 0.0004, key: 水伤}, uptime: 0.6}
+  - {source: 风物之诗咏, to: all, group: swirl, option: cryo, from_stat: {stat: em, ratio: 0.0004, key: 冰伤}, uptime: 0.6}
+  - {source: 风物之诗咏, to: all, group: swirl, option: electro, from_stat: {stat: em, ratio: 0.0004, key: 雷伤}, uptime: 0.6}
+  - {source: 风物之诗咏, to: all, group: swirl, option: pyro, from_stat: {stat: em, ratio: 0.0004, key: 火伤}, uptime: 0.6}
+verified: false

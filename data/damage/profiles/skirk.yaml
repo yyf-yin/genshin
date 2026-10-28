@@ -1,0 +1,30 @@
+# AI 草稿：20 秒循环（点按战技进七相一闪 → 约 3 轮五段普攻 → 极恶技·尽；隔一轮放一次极恶技·灭），未经实测核对。
+# 万流归寂：每名水、冰队友（冰要是别人）给一层死河渡断，1/2/3 层时七相一闪普攻原本 110%/120%/170%、
+#   极恶技·灭原本 105%/115%/160%。极恶技·尽的普攻增伤按汲取 3 枚裂隙（+20%）估；诸武相授的战技 +1 级没算。
+char: skirk
+on_field_seconds: 16
+hits:
+  - {talent: 战技:一段伤害, base_multiplier: 1.7, count: 3, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 战技:二段伤害, base_multiplier: 1.7, count: 3, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 战技:三段伤害, base_multiplier: 1.7, count: 3, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 战技:四段伤害, base_multiplier: 1.7, count: 3, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 战技:五段伤害, base_multiplier: 1.7, count: 3, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 战技:一段伤害, base_multiplier: 1.2, count: 3, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 战技:二段伤害, base_multiplier: 1.2, count: 3, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 战技:三段伤害, base_multiplier: 1.2, count: 3, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 战技:四段伤害, base_multiplier: 1.2, count: 3, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 战技:五段伤害, base_multiplier: 1.2, count: 3, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 战技:一段伤害, base_multiplier: 1.1, count: 3, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 战技:二段伤害, base_multiplier: 1.1, count: 3, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 战技:三段伤害, base_multiplier: 1.1, count: 3, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 战技:四段伤害, base_multiplier: 1.1, count: 3, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 战技:五段伤害, base_multiplier: 1.1, count: 3, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 爆发:斩击伤害, base_multiplier: 1.6, count: 0.5, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 爆发:斩击最终段伤害, base_multiplier: 1.6, count: 0.5, when: "count_any(['hydro', 'cryo']) == 4"}
+  - {talent: 爆发:斩击伤害, base_multiplier: 1.15, count: 0.5, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 爆发:斩击最终段伤害, base_multiplier: 1.15, count: 0.5, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {talent: 爆发:斩击伤害, base_multiplier: 1.05, count: 0.5, when: "count_any(['hydro', 'cryo']) <= 2"}
+  - {talent: 爆发:斩击最终段伤害, base_multiplier: 1.05, count: 0.5, when: "count_any(['hydro', 'cryo']) <= 2"}
+buffs:
+  - {source: 极恶技·尽「凋尽」（汲取 3 枚裂隙）, stats: {普攻增伤: 20}, uptime: 0.9}
+verified: false

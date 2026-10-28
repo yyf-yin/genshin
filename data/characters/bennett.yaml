@@ -1,0 +1,27 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: bennett
+zh: 班尼特
+aliases:
+- Bennett
+element: pyro
+weapon: sword
+rarity: 4
+playstyles:
+- id: default
+  zh: 待定
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「美妙旅程」：鼓舞领域 ·领域内的角色如果生命值低于或等于70%，会持续恢复生命值，回复量受益于班尼特的最大生命值； ·领域内的角色如果生命值高于70%，会基于班尼特的基础攻击力，以一定比例获得
+    source: hints
+  - tag: buff:atk_flat
+    score: 0.4
+    evidence: 元素爆发「美妙旅程」：生命值，回复量受益于班尼特的最大生命值； ·领域内的角色如果生命值高于70%，会基于班尼特的基础攻击力，以一定比例获得攻击力加成；
+      ·为其中的角色施加火元素附着。
+    source: hints
+  - tag: buff:dmg_bonus
+    score: 0.4
+    when: cons >= 6
+    evidence: 6 命「烈火与勇气」：处在美妙旅程领域内的队伍中当前场上单手剑、双手剑、长柄武器角色获得15%火元素伤害加成，并获得火元素附魔。
+    source: hints
+verified: false

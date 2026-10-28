@@ -21,11 +21,11 @@ FIELD_CONFLICT_PENALTY = 0.3
 
 @dataclass
 class Owned:
-    cons: int = 0
+    cons: int | None = None  # None：有这个角色，命座不知道（当 0 命算；四星 0 命、6 命各算一份）
     weapons: set[str] | None = None  # None 表示不限制武器
 
 
-# 角色 id → 拥有情况；roster 为 None 表示假定拥有全部角色（0 命）
+# 角色 id → 拥有情况；roster 为 None 表示假定拥有全部角色（命座不知道）
 Roster = dict[str, Owned] | None
 
 
@@ -51,6 +51,7 @@ class Kit:
     weapon_options: list[tuple[WeaponOption, EquipmentBuff | None]] = field(default_factory=list)  # 按档次
     artifact_choice: int = 0
     weapon_choice: str | None = None
+    optional: set[str] = field(default_factory=set)  # 能在流程上不触发的功能（TagGrant.optional）
 
     def has(self, tag: str) -> float:
         """功能强度。「buff:*」这种通配写法取同类标签里最高的，槽位可以写「任何增益」。"""
@@ -124,6 +125,12 @@ class TeamResult:
     substitutions: list[SubstitutionDiff]
     verified: bool
     conflicts: list[Conflict] = field(default_factory=list)
+    # 有伤害数据时：score = 总伤害 / 本次最高总伤害 - penalty；tag_score 是只看标签时的分数
+    tag_score: float = 0.0
+    penalty: float = 0.0
+    damage: dict | None = None
+    # 同一队人换一种算法（四星 0 命 / 6 命、四星武器精 1 / 精 5）：[{"label": "砂糖 0 命", "total": ..., "score": ...}]
+    variants: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -161,9 +168,12 @@ class Engine:
             return None
         # 元素是每个角色都有的「功能」，让 needs 可以写 element:hydro
         provides: dict[str, float] = {f"element:{c.element.value}": 1.0}
+        optional: set[str] = set()
         for g in p.provides:
             if check(g.when, ctx):
                 provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
+                if g.optional:
+                    optional.add(g.tag)
         needs = [n for n in p.needs if check(n.when, ctx)]
         avoids = [a for a in p.avoids if check(a.when, ctx)]
         rules = [r for r in p.team_rules if check(r.when, ctx)]
@@ -177,7 +187,7 @@ class Engine:
             weapons = [(w, self.kb.equipment_buff("weapon", w.zh)) for w in sorted(b.weapons, key=lambda w: w.rank)]
         k = Kit(c.id, c.zh, c.element.value, p.id, cons, dict(provides), needs, avoids, rules, p.field, traits,
                 base_provides=provides, artifact_options=arts, weapon_options=weapons,
-                weapon_choice=weapons[0][0].zh if weapons else None)
+                weapon_choice=weapons[0][0].zh if weapons else None, optional=optional)
         return self._equip(k, 0, k.weapon_choice)
 
     def _equip(self, k: Kit, artifact_choice: int, weapon_choice: str | None) -> Kit:
@@ -219,27 +229,132 @@ class Engine:
             for e in excl:
                 excluded.setdefault((e.slot, e.char), e)
 
+        self._rank_by_damage(results)
         results.sort(key=lambda r: r.score, reverse=True)
-        seen: set[frozenset[str]] = set()
+        seen: dict[frozenset[str], TeamResult] = {}
         top: list[TeamResult] = []
         for r in results:
             key = frozenset(m.char for m in r.members)
-            if key in seen:
+            if key in seen:  # 同一队人只是四星命座不同：并到排在前面的那一条里显示
+                kept = seen[key]
+                kept_cons = {m.char: m.cons for m in kept.members}
+                diff = [m for m in r.members if m.cons != kept_cons[m.char]]
+                if diff and r.template == kept.template and len(kept.variants) < 4:
+                    kept.variants.append({"label": "、".join(f"{m.zh} {m.cons} 命" for m in diff),
+                                               "total": r.damage["total"] if r.damage else None, "score": r.score})
                 continue
-            seen.add(key)
-            top.append(r)
             if len(top) == top_n:
-                break
+                continue
+            seen[key] = r
+            top.append(r)
         for r in top:
             for m in r.members:
                 m.build = self.build(m.char, m.playstyle, m.cons, self._weapons(m.char, roster),
                                      m.artifact_choice, m.weapon_choice)
         return Recommendation(core_char.id, core_char.zh, core_cons, top, invalid, list(excluded.values()))
 
+    def _rank_by_damage(self, results: list[TeamResult]) -> None:
+        """有伤害数据的队伍按全队期望总伤害排：总伤害 / 最高总伤害，再减去没满足的需求、冲突的扣分。"""
+        best = max((r.damage["total"] for r in results if r.damage), default=0)
+        if best <= 0:
+            return
+        for r in results:
+            if r.damage:
+                r.score = round(r.damage["total"] / best - r.penalty, 3)
+                r.variants = [{"label": v["label"], "total": v["total"], "score": round(v["total"] / best - r.penalty, 3)}
+                              for v in r.damage.get("refine_variants", [])]
+
+    def _team_damage(self, kits: list[Kit]) -> dict | None:
+        """全队一轮的期望总伤害（damage/team.py）。主C没有循环数据时不算。"""
+        from .damage.team import MemberSpec, team_damage, weapon_name
+
+        profiles = self.kb.damage_profiles
+        if not profiles or self.kb.game is None or (kits[0].char, kits[0].playstyle) not in profiles:
+            return None
+        members = [
+            MemberSpec(k.char, k.zh, k.element, k.playstyle, k.cons, set(k.provides), k.position,
+                       self._find_build(k.char, k.playstyle, k.cons), k.weapon_choice, k.artifact_choice,
+                       [e for e in self.kb.equipment if e.zh in k.gear])
+            for k in kits
+        ]
+        if members[0].position is None:
+            members[0].position = "on_field"
+        # 有人排斥的功能，能不触发的就不触发：对应的技能不放（例如莱欧斯利队的希诺宁不放大招）
+        suppressed = {a.tag for k in kits for a in k.avoids}
+        weapons = self.kb.damage_weapons
+        split = []  # 武器精 1、精 5 要分开算的队员
+        shown = {}  # 精炼影响伤害的武器才列出来（西风这类只回能量的不列）
+        for m in members:
+            options = self._refine_options(m)
+            name = weapon_name(m)
+            matters = bool(self.kb.damage_weapons.get(name)) or any(
+                e.kind == "weapon" and e.zh == name for e in self.kb.equipment)
+            shown[m.char] = options != [1] and matters
+            m.refine = max(options)
+            if len(options) > 1:
+                split.append(m)
+
+        def run() -> dict:
+            d = team_damage(self.kb.game, members, profiles, suppressed=suppressed, weapons=weapons).to_dict()
+            d["refine"] = [label(m) for m in members if shown[m.char]]
+            return d
+
+        def label(m) -> str:
+            return f"{weapon_name(m)} 精 {m.refine}"
+
+        best = run()
+        if split:
+            high = [label(m) for m in split]
+            for m in split:
+                m.refine = 1
+            low = run()
+            low_label = [label(m) for m in split]
+            if low["total"] > best["total"]:  # 一般不会：精 5 数值更高
+                low["refine_variants"] = [{"label": "、".join(high), "total": best["total"]}]
+                return low
+            best["refine_variants"] = [{"label": "、".join(low_label), "total": low["total"]}]
+        return best
+
+    def _weapon_rarity(self, m) -> int:
+        from .damage.team import weapon_name
+
+        try:
+            return int(self.kb.game.weapon(weapon_name(m) or "").get("rarity", 5))
+        except KeyError:
+            return 5
+
+    def _refine_options(self, m) -> list[int]:
+        """武器按几精算（Cliff 2026-10-28）：五星精 1；三星、四星锻造的精 5；装备数据写死了的按写的（讨龙精 5）；
+        其他四星（祈愿、活动、纪行）精 1、精 5 各算一份。只有精 1、精 5 数值不同时才分开算。"""
+        from .damage.team import weapon_name
+
+        name = weapon_name(m)
+        if not name:
+            return [1]
+        rarity = self._weapon_rarity(m)
+        source = next((w.source for w in (m.build.weapons if m.build else []) if w.zh == name), "")
+        eq = next((e for e in self.kb.equipment if e.kind == "weapon" and e.zh == name), None)
+        if eq is not None and eq.refine:
+            return [eq.refine]
+        if rarity >= 5:
+            return [1]
+        if rarity <= 3 or source == "craftable":
+            return [5]
+        differs = (eq is not None and any(g.value_r5 is not None for g in eq.provides)) or any(
+            e.stats_r5 is not None for e in self.kb.damage_weapons.get(name, []))
+        return [1, 5] if differs else [1]
+
+    def _cons_options(self, char_id: str, roster: Roster) -> list[int]:
+        """队友按几命算：box 里有就按实际命座；不知道时四星 0 命、6 命各算一份（四星满命很常见，差别也大）。"""
+        if roster is not None and char_id in roster and roster[char_id].cons is not None:
+            return [roster[char_id].cons]
+        c = self.kb.characters.get(char_id)
+        return [0, 6] if c is not None and c.rarity == 4 else [0]
+
     def _cons(self, char_id: str, roster: Roster) -> int:
         if roster is None or char_id not in roster:
             return 0
-        return roster[char_id].cons
+        return roster[char_id].cons or 0
 
     def _weapons(self, char_id: str, roster: Roster) -> set[str] | None:
         if roster is None or char_id not in roster:
@@ -262,15 +377,16 @@ class Engine:
         def consider(char_id: str, pid: str, base: float, is_listed: bool) -> None:
             if char_id == core_id or not self._owns(char_id, roster):
                 return
-            k = self.kit(char_id, pid, self._cons(char_id, roster))
-            if k is None:
-                return
-            missing = [t for t in core_tags if k.has(t) <= 0]
-            if missing:
-                if is_listed:
-                    excl.append(Exclusion(slot.id, char_id, "缺少核心功能：" + "、".join(self._tag_zh(t) for t in missing)))
-                return
-            out.append((k, base))
+            for cons in self._cons_options(char_id, roster):
+                k = self.kit(char_id, pid, cons)
+                if k is None:
+                    continue
+                missing = [t for t in core_tags if k.has(t) <= 0]
+                if missing:
+                    if is_listed:
+                        excl.append(Exclusion(slot.id, char_id, "缺少核心功能：" + "、".join(self._tag_zh(t) for t in missing)))
+                    continue
+                out.append((k, base))
 
         for cand in slot.candidates:
             listed.add(cand.char)
@@ -419,7 +535,8 @@ class Engine:
         conflicts: list[Conflict] = []
         for owner in kits:
             for a in owner.avoids:
-                offenders = [k for k in kits if k is not owner and k.has(a.tag) > 0]
+                # 能在流程上不触发的功能（不放治疗大招）不算冲突
+                offenders = [k for k in kits if k is not owner and k.has(a.tag) > 0 and a.tag not in k.optional]
                 if offenders:
                     penalty = a.weight * max(k.has(a.tag) for k in offenders)
                     conflicts.append(Conflict("avoid", owner.zh, f"排斥{self._tag_zh(a.tag)}：{a.reason}",
@@ -437,7 +554,8 @@ class Engine:
 
         score = sum(slot_scores) / len(slot_scores) - penalty_total
         subs = self._diffs(t, combo, roster)
-        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified, conflicts)
+        return TeamResult(t.id, t.zh, round(score, 3), members, needs, subs, t.verified, conflicts,
+                          tag_score=round(score, 3), penalty=round(penalty_total, 3), damage=self._team_damage(kits))
 
     def _diffs(self, t: TeamTemplate, combo, roster: Roster) -> list[SubstitutionDiff]:
         diffs: list[SubstitutionDiff] = []
@@ -477,7 +595,8 @@ class Engine:
 
     def carries_for(self, support_id: str, cons: int = 0, roster: Roster = None) -> tuple[list[dict], list[dict], bool]:
         """辅助可以搭配的主C。返回 (合适的, 不合适的及原因, 是否万用)。
-        合适 = 辅助自己的整队规则在「辅助 + 主C」两人时已经满足，且主C不排斥辅助的功能。
+        合适 = 主C的队伍模板候选里有这个辅助（模板已经按整队配好，优先于两人规则），
+        或者辅助自己的整队规则在「辅助 + 主C」两人时已经满足，且主C不排斥辅助的功能。
         万用 = 辅助没有整队规则（例如只要吃攻击力就行），这时只能请玩家直接选。"""
         kits = [k for pid in self.available_playstyles(support_id, cons) if (k := self.kit(support_id, pid, cons))]
         universal = not any(k.rules for k in kits)
@@ -487,22 +606,25 @@ class Engine:
             if c.id == support_id or not self._owns(c.id, roster):
                 continue
             ccons = self._cons(c.id, roster)
+            in_template = any(cand.char == support_id for t in self.kb.teams_for(c.id)
+                              for sl in t.slots for cand in sl.candidates)
             for pid in self.available_playstyles(c.id, ccons):
                 carry = self.kit(c.id, pid, ccons)
-                if carry is None or carry.has("main_dps") <= 0:
+                if carry is None or (carry.has("main_dps") <= 0 and not in_template):
                     continue
                 best: dict | None = None
                 for k in kits:
                     pair = [k, carry]
                     funcs = self._team_funcs(pair)
                     broken = [r.reason for r in k.rules if not evaluate(r.rule, {}, funcs)]
-                    avoided = [f"{c.zh}排斥{self._tag_zh(a.tag)}：{a.reason}" for a in carry.avoids if k.has(a.tag) > 0]
+                    avoided = [f"{c.zh}排斥{self._tag_zh(a.tag)}：{a.reason}" for a in carry.avoids
+                               if k.has(a.tag) > 0 and a.tag not in k.optional]
                     helps = [self._tag_zh(n.tag) for n in carry.needs if k.has(n.tag) > 0]
                     row = {"char": c.id, "zh": c.zh, "element": c.element.value, "support_playstyle": k.playstyle,
                            "meets_needs": helps, "has_team_template": bool(self.kb.teams_for(c.id)),
-                           "in_template": any(cand.char == support_id for t in self.kb.teams_for(c.id)
-                                              for sl in t.slots for cand in sl.candidates),
-                           "problems": broken + avoided}
+                           "in_template": in_template,
+                           # 模板里已有这个辅助：两人时的整队规则不作数，只留主C明确排斥的功能
+                           "problems": avoided if in_template else broken + avoided}
                     if best is None or len(row["problems"]) < len(best["problems"]):
                         best = row
                 if best is not None:

@@ -1,0 +1,19 @@
+# AI 草稿：后台挂冰。战技寒病鬼差（专项调整后会协同攻击）+ 大招，未经实测核对。
+# 专项调整（游戏解包 upgrades）：
+#   仙法·救苦度厄：辉映·星超导时额外造成一次星超导伤害（「星超导伤害」那一行）。
+#   七宝奉真：鬼差持续期间，全队超导、星超导伤害 +50%（星扩散队：冰扩散、星扩散 +50%）。
+char: qiqi
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:寒病鬼差伤害, count: 7}
+  - {talent: 战技:寒病鬼差协同攻击伤害, count: 15}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:星超导伤害, stellar: 星超导, count: 1, when: "reaction('stellar_superconduct')"}
+buffs:
+  - {source: 七宝奉真（辉映·星超导）, to: all, stats: {星超导加成: 50, 超导加成: 50}, uptime: 0.9,
+     when: "reaction('stellar_superconduct')"}
+  - {source: 七宝奉真（辉映·星扩散）, to: all, stats: {星扩散加成: 50}, uptime: 0.9, when: "reaction('stellar_swirl')"}
+  - {source: 冰寒蚀骨（2 命，辉映·星烁：攻击力 +50%）, stats: {攻击力%: 50},
+     when: "cons >= 2 and (reaction('stellar_superconduct') or reaction('stellar_swirl'))"}
+verified: false

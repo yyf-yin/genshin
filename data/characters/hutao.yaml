@@ -1,0 +1,24 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: hutao
+zh: 胡桃
+aliases:
+- Hu Tao
+element: pyro
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素战技「蝶引来生」：，该元素转化无法被附魔覆盖； ·重击会为命中的敌人施加血梅香效果； ·提高胡桃的抗打断能力。
+    source: hints
+  - tag: healer
+    score: 0.4
+    evidence: 元素爆发「安神秘法」：命中敌人时，基于胡桃的生命值上限，恢复胡桃的生命值。
+    source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

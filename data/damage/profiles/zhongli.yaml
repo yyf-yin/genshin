@@ -1,0 +1,14 @@
+# AI 草稿：长按战技（护盾 + 岩脊共鸣）+ 偶尔放天星，未经实测核对。
+char: zhongli
+on_field_seconds: 2
+hits:
+  - {talent: 战技:长按伤害, count: 1}
+  - {talent: 战技:岩脊伤害/共鸣伤害, variant: 1, count: 8}
+  - {talent: 爆发:技能伤害, count: 0.5}
+buffs:
+  - source: 炊金馔玉（战技 +1.9% 生命值上限）
+    from_stat: {stat: hp, ratio: 0.019, key: 战技固定伤害}
+  - source: 炊金馔玉（天星 +33% 生命值上限）
+    from_stat: {stat: hp, ratio: 0.33, key: 爆发固定伤害}
+  - {source: 玉璋护盾, to: all, stats: {减抗: 20}}
+verified: false

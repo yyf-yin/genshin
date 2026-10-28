@@ -1,0 +1,16 @@
+# AI 草稿：战技 + 大招，动能标示「炽烈声援！」给站场角色加攻，未经实测核对。
+char: iansan
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1}
+reactions:
+  - {reaction: 星超导, count: 3, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 力的三原理「炽烈声援！」（伊安珊攻击力 × 天赋比例）
+    to: on_field
+    from_stat: {stat: atk, ratio_from: 爆发:高夜魂值攻击力转化率, key: 攻击力}
+    uptime: 0.7
+  - {source: 偷懒是健身大忌!（2 命：在后台时站场角色攻击力 +30%）, to: on_field, stats: {攻击力%: 30}, uptime: 0.6, when: "cons >= 2"}
+  - {source: 「沃陆之邦」的训教（6 命：极限发力，站场角色伤害 +25%）, to: on_field, stats: {增伤: 25}, uptime: 0.4, when: "cons >= 6"}
+verified: false

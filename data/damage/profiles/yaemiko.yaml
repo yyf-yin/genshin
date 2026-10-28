@@ -1,0 +1,27 @@
+# AI 草稿：按专项调整后的天赋（游戏解包 upgrades）估的 20 秒循环，未经实测核对。
+# 任务解锁天赋「祓所之讬宣」：杀生樱持续 24 秒；队伍触发超导/星超导后，下一次落雷 +80% 攻击力（每 2.5 秒一次），
+#   辉映·星超导时这次落雷再额外造成 200% 攻击力的星超导伤害。
+# 固有天赋「神篱之御荫」（调整后）：场上已有 3 株杀生樱时再放战技，额外雷击；辉映·星超导时为 50% 攻击力星超导伤害。
+char: yaemiko
+on_field_seconds: 4
+hits:
+  - {talent: 杀生樱伤害·叁阶, count: 20}            # 3 株约 3 秒一次，24 秒持续基本全程在场
+  - {name: 祓所之讬宣（落雷强化）, slot: skill, scaling: {atk: 0.8}, element: electro, count: 8,
+     when: "reaction('superconduct')"}
+  - {name: 祓所之讬宣（辉映·星超导）, slot: skill, scaling: {atk: 2.0}, stellar: 星超导, count: 8,
+     when: "reaction('stellar_superconduct')"}
+  - {name: 神篱之御荫（辉映·星超导）, slot: skill, scaling: {atk: 0.5}, stellar: 星超导, count: 1,
+     when: "reaction('stellar_superconduct')"}
+  - {talent: 爆发:技能伤害, count: 0.9}
+  - {talent: 天狐霆雷, count: 2.7}
+reactions:
+  - {reaction: 星超导, count: 10, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 启蜇之祝词（每点精通 +0.15% 杀生樱伤害）
+    from_stat: {stat: em, ratio: 0.0015, key: 战技增伤}
+  - source: 野狐供真篇（1 命：雷伤、星超导伤害 +50%）
+    to: all
+    stats: {雷伤: 50, 星超导加成: 50}
+    uptime: 0.9
+    when: "cons >= 1 and reaction('superconduct')"
+verified: false

@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: cyno
+zh: 赛诺
+aliases:
+- Cyno
+element: electro
+weapon: polearm
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: interruption_res
+    score: 0.4
+    evidence: 元素爆发「圣仪·煟煌随狼行」：重击与下落攻击造成的伤害转为无法被附魔覆盖的雷元素伤害； ·赛诺的元素精通提升，抗打断能力提高，并免疫感电反应造成的伤害。
+    source: hints
+  - tag: energy_battery
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「巡仪·蒇护禁罔」：发感电、月感电、超导、星超导、超载、原激化、超激化、超绽放、雷元素扩散反应后，将为队伍中附近的所有角色（除了赛诺自己）恢复3点元素能量。
+    source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

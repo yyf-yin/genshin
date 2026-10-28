@@ -1,0 +1,22 @@
+# AI 草稿：后台挂雷。战技召唤薇尔琪塔（约 2 秒放电一次）+ 大招，未经实测核对。
+# 月感电相关（频率超限回路、月兆）要有水才生效，星超导队里不算。
+char: ineffa
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:薇尔琪塔放电伤害, count: 10}
+  - {name: 频率超限回路, slot: skill, scaling: {atk: 0.65}, lunar: 月感电, count: 10, when: "reaction('lunar_charged')"}
+  - {talent: 爆发:技能伤害, count: 1}
+reactions:
+  - {reaction: 星超导, count: 8, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 全相重构协议（伊涅芙攻击力 6% 的精通）
+    from_stat: {stat: atk, ratio: 0.06, key: 元素精通}
+  - source: 全相重构协议（伊涅芙攻击力 6% 的精通）
+    to: on_field
+    from_stat: {stat: atk, ratio: 0.06, key: 元素精通}
+  - source: 月兆祝赐·象拟中继（每 100 攻击力 +0.7% 月感电基础伤害，至多 14%）
+    to: all
+    from_stat: {stat: atk, ratio: 0.00007, cap: 0.14, key: 月感电基础伤害提升}
+    when: "reaction('lunar_charged')"
+verified: false

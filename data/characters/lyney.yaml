@@ -1,0 +1,25 @@
+# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。
+id: lyney
+zh: 林尼
+aliases:
+- Lyney
+element: pyro
+weapon: bow
+rarity: 5
+playstyles:
+- id: default
+  zh: 主C
+  provides:
+  - tag: healer
+    score: 0.4
+    evidence: 元素战技「眩惑光戏法」：根据清除的层数，提升造成的伤害，并基于林尼的生命值上限为林尼恢复生命值。
+    source: hints
+  - tag: shred:pyro
+    score: 0.4
+    when: cons >= 4
+    evidence: 4 命「熟稔习练的筹谋」：林尼的元素类型为火元素的重击攻击命中敌人后，该敌人的火元素抗性降低20%，持续6秒。
+    source: hints
+  - tag: main_dps
+    score: 1.0
+    source: '[常识] 2026-10-27 补'
+verified: false

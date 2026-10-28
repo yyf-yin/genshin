@@ -34,6 +34,30 @@ DeepSeek key 依次找：`--key-file`、环境变量 `DEEPSEEK_API_KEY`、仓库
 - **知识库里还没有队伍模板的角色**（目前五个新角色都是）：给出配装，再按角色标签讲适合什么样的队友，不会凭空点名。
 - 代码在 `src/genshin_assistant/chat/`：`assistant.py` 是和界面无关的问答逻辑，`web.py` + `static/index.html` 是网页，以后换成聊天机器人只要另写一层界面。
 
+## 伤害计算（`damage` 命令）
+
+```bash
+python -m genshin_assistant multipliers 那维莱特 --level 10           # 列出天赋倍率，写场景时查名字
+python -m genshin_assistant damage examples/damage/neuvillette.yaml   # 按场景算，逐个乘区列出来
+python -m genshin_assistant damage examples/damage/neuvillette.yaml --json
+```
+
+公式：基础伤害（倍率 × 攻击/生命/防御/精通 + 固定值）× 增伤区 × 暴击区 × 防御区 × 抗性区 × 增幅反应区 × 擢升区。剧变、激化、月曜反应按各自公式算，说明和出处在 `data/mechanics/damage.yaml`、`reactions.yaml`，代码在 `src/genshin_assistant/damage/`。
+
+场景文件（例子见 `examples/damage/`）写角色、等级、天赋等级、武器、圣遗物（套装、三个主词条、副词条合计或词条数）、增益、敌人和要算的几下伤害：
+
+- **自动算的**：角色 90 级白值和突破属性、武器白值和副属性、圣遗物主词条、无条件的 2 件套、天赋 1~15 级倍率、等级系数。
+- **要自己写进 `buffs` 的**：武器特效、4 件套、角色固有天赋和命座、队友增益、减抗减防。没写的武器特效和 4 件套会在输出最后提示原文。属性名用中文（`水伤`、`重击增伤`、`暴击率`、`减抗`、`蒸发加成`、`擢升`……），百分比直接写数字，20 表示 20%。
+- **hits**：`talent` 写天赋行名（可以只写一部分，重名加 `爆发:` 这类前缀），可选 `reaction`（蒸发/融化/超激化/蔓激化）、`base_multiplier`（如遗龙之荣 1.6）、`times`、`variant`（低空/高空）、`element`（附魔）、`buffs`（只对这一下生效）。名字带「月感电伤害」等的天赋行自动按月曜直伤算，其他月曜直伤写 `lunar: 月感电`。单独算一次剧变或月曜反应写 `reaction: 超载`（扩散要加 `element`）。
+- **星烁反应**：星超导系数按叠满后的 2.0（反应本身 × 等级系数，角色技能里的星超导伤害 × 倍率）；星扩散直伤系数 1.0，星扩散反应本身的系数未知。和月曜一样不吃防御和普通增伤（社区资料，待实测）。
+- **还不能算的**：星扩散反应本身；角色 90 级以外的白值；天赋、命座、武器特效的自动解析。命座加的 3 级天赋要自己加在 `talents` 里。
+
+### 配队排序用伤害
+
+推荐引擎给每支候选队伍算「全队一轮（20 秒）的期望总伤害」：每个角色的循环和给队友的增益写在 `data/damage/profiles/`（写法见 `data/damage/README.md`），面板用 builds 的首选配装（让出增益装备后的那套）和统一副词条。增益带条件（例如菲谢尔的魔导·秘仪只在有超载、感电时生效），风套这类只对一种元素生效的增益由引擎逐个元素试、取总伤害最高的。
+
+有伤害数据时，队伍得分 = 总伤害 / 本次最高总伤害 − 没满足的需求和冲突的扣分；主C没有循环数据时仍按标签打分。队员没有循环数据时伤害按 0 算，输出里会列出来。目前有数据的：莱欧斯利、奥黛塔、菲谢尔、八重神子、砂糖、希诺宁（AI 草稿，次数按天赋原文估）。
+
 ## 知识库（`data/`）
 
 | 路径 | 内容 |
@@ -44,10 +68,11 @@ DeepSeek key 依次找：`--key-file`、环境变量 `DEEPSEEK_API_KEY`、仓库
 | `builds/` | 养成方案：按角色 × 玩法 × 命座区间（如阿罗夏 `0` 和 `1-6` 两档），武器档次、圣遗物组合（`set: mixed` 表示散搭）、主副词条、充能区间和随队伍变化的说明（`energy_recharge_notes`）、面板目标、天赋（`talents: {level: [...], skip: [...]}`，只分要点和不用点，不排优先级）、出处（`evidence`：UP 主、BV 号、时间点、原话）。五个新角色的配装是从 B 站攻略草稿整理的，待审 |
 | `drafts/builds/` | 还在 `drafts/characters/` 的队友的配装草稿（一人一个文件，2026-10-27 从五个新角色队里 28 个队友的 B 站攻略整理），引擎不读；逐项标了 `[攻略]`（视频里讲的）或 `[常识]`（AI 按通用配装补的），审核后和角色标签一起挪进 `builds/` |
 | `drafts/teams/` | 队伍模板草稿（五个新角色攻略里的队伍，按主 C 整理），引擎不读：候选人里有还在 `drafts/characters/` 的队友，标签审核后连同模板挪进 `characters/`、`teams/` |
+| `damage/profiles/` | 伤害循环：一轮放哪些技能、打几下、触发什么反应，给自己和队友的增益（配队排序用，AI 草稿） |
 | `equipment_buffs.yaml` | 会给队友加成的圣遗物套装和武器（翠绿之影、讨龙英杰谭、终末嗟叹之诗等）。角色配装首选了这些装备时，加成算到这个角色头上 |
 | `drafts/characters/` | `draft-tags` **自动起草**的角色标签（关键词匹配天赋原文，分数一律 0.4），不参与配队；审核后挪到 `characters/` |
 | `mvp_characters.yaml` | 第一版要覆盖的主C名单和录入进度 |
-| `game/` | **自动生成**的游戏本体数据：每个角色一个文件（天赋原文与 10/13 级倍率、固有天赋、命座、90 级属性、官方一句话定位、技能里的名词解释、能开启的月曜/星烁反应、魔女的课业），`weapons.yaml`（90 级数值、R1/R5 效果），`artifacts.yaml`（2/4 件套效果），`glossary.yaml`（游戏内名词解释） |
+| `game/` | **自动生成**的游戏本体数据：每个角色一个文件（天赋原文与 10/13 级倍率、固有天赋、命座、90 级属性、官方一句话定位、技能里的名词解释、能开启的月曜/星烁反应、魔女的课业、`upgrades`：genshin-db 还没有的专项调整后天赋和命座，来自解包），`weapons.yaml`（90 级数值、R1/R5 效果），`artifacts.yaml`（2/4 件套效果），`glossary.yaml`（游戏内名词解释），`talent_multipliers.yaml`（天赋 1~15 级倍率，伤害计算用），`level_multiplier.yaml`（1~100 级等级系数） |
 | `mechanics/` | 机制知识。`official_*.yaml` 是自动导入的游戏内教程和元素共鸣原文；`damage.yaml`（伤害公式）、`reactions.yaml`（元素反应，含月曜、星烁）、`team_systems.yaml`（月兆、魔导·秘仪、辉映·星烁、元素附着、ICD 等）是手写的，不确定的地方标了 `verified: false` |
 
 `validate` 会核对 `characters/`、`builds/`、`drafts/builds/` 里的角色、武器、圣遗物中文名是否和游戏数据一致，武器类型是否和角色对得上。
@@ -67,7 +92,7 @@ python -m genshin_assistant hints 沃雅妮莎                # 从天赋原文�
 python -m genshin_assistant draft-tags                   # 给知识库里还没有的角色起草标签，写到 drafts/characters/
 ```
 
-已知缺口：genshin-db 不含「魔女的课业」解锁的额外天赋和技能变化，角色数据里只有从文本表找到的「魔导·秘仪」说明（`witch_quest` 字段）。官方一句话定位（`intro`）只有较新的角色有。
+genshin-db 的天赋、命座文本不含专项调整（例如八重神子、莱欧斯利的星超导调整）和任务解锁的额外天赋，导入时从解包数据（AvatarSkillDepot、ProudSkill、AvatarTalent）补到角色的 `upgrades` 字段；天赋倍率表两边一致。官方一句话定位（`intro`）只有较新的角色有。
 
 ## 规则
 

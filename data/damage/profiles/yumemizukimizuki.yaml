@@ -1,0 +1,27 @@
+# AI 草稿：20 秒循环（战技梦浮约 10 秒 → 大招点心），未经实测核对。
+# 专项调整（游戏解包 upgrades）任务天赋「廓然梦生」：梦浮中扩散/星扩散后，下一次周期伤害 +1000% 精通（每 2.5 秒一次）；
+#   辉映·星扩散时再额外造成 1000% 精通的星扩散伤害；梦浮期间队友精通 +瑞希精通的 10%。
+char: yumemizukimizuki
+on_field_seconds: 12
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:持续攻击伤害, count: 12}
+  - {name: 廓然梦生（周期伤害提升）, slot: skill, scaling: {em: 10.0}, element: anemo, count: 4}
+  - {name: 廓然梦生（辉映·星扩散）, slot: skill, scaling: {em: 10.0}, stellar: 星扩散, count: 4, when: "reaction('stellar_swirl')"}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:梦念冲击波伤害, count: 6}
+reactions:
+  - {reaction: 扩散, element: hydro, count: 6, when: "count('hydro') > 0"}
+buffs:
+  - source: 秋沙歌枕巡礼（每点精通 +0.45% 扩散伤害）
+    to: all
+    from_stat: {stat: em, ratio: 0.0045, key: 扩散加成}
+  - source: 秋沙歌枕巡礼（每点精通 +0.045% 星扩散伤害）
+    to: all
+    from_stat: {stat: em, ratio: 0.00045, key: 星扩散加成}
+  - {source: 昼想夜梦（队友火水冰雷攻击命中，精通 +100）, stats: {元素精通: 100}, uptime: 0.8}
+  - source: 廓然梦生（队友精通 +瑞希精通的 10%）
+    to: others
+    from_stat: {stat: em, ratio: 0.1, key: 元素精通}
+    uptime: 0.6
+verified: false
