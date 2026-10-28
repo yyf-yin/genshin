@@ -241,3 +241,20 @@ def test_engine_ranks_by_team_damage(kb):
     best = max(t.damage["total"] for t in with_damage)
     for t in with_damage:
         assert t.score == pytest.approx(t.damage["total"] / best - t.penalty, abs=1e-3)
+
+
+def test_optional_function_is_not_a_conflict(kb):
+    """希诺宁的治疗来自大招，可以不放：莱欧斯利排斥治疗时不扣分，大招也不算进伤害。"""
+    from genshin_assistant.engine import Engine
+
+    rec = Engine(kb).recommend("莱欧斯利", None, None, top_n=10)
+    team = next(t for t in rec.teams if any(m.zh == "希诺宁" for m in t.members))
+    assert not any(c.kind == "avoid" for c in team.conflicts)
+    xilonen = next(m for m in team.damage["members"] if m["zh"] == "希诺宁")
+    assert not any("爆发" in h for h, _ in xilonen["top_hits"])
+
+
+def test_reworked_talents_in_game_data(gd):
+    """genshin-db 没有的专项调整（八重的星超导调整）从解包数据补进 upgrades。"""
+    ups = gd.character("八重神子").get("upgrades") or []
+    assert any(u["slot"] == "任务解锁天赋" and "星超导" in u["description"] for u in ups)

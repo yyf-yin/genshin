@@ -1,7 +1,9 @@
-# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-26。
+# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-28。
 # 重新生成：python -m genshin_assistant import-gamedata
 # stats_lv90 是 90 级突破后的白值，暴击率/暴击伤害已含基础 5%/50%。
 # scaling 写成「10级 / 13级」，两个等级相同时只写一个。
+# upgrades 是 genshin-db 还没有的新版说明（来自游戏解包）：专项调整任务后替换原文的技能、固有天赋、命座，
+# 以及完成任务解锁的额外天赋。有 upgrades 时以它为准。
 id: lisa
 game_id: 10000006
 zh: 丽莎

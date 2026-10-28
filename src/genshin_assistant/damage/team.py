@@ -59,6 +59,7 @@ class Effect:
     group: str | None = None
     option: str | None = None
     uptime: float = 1.0
+    uses: str | None = None  # 只有用到这个功能时才有（例如 healer：放治疗大招才有）
 
     @classmethod
     def parse(cls, raw: dict, default_to: str = "self") -> "Effect":
@@ -71,7 +72,7 @@ class Effect:
             fs = dict(fs)
             fs["key"] = stat_key(fs["key"])
         return cls(raw.get("source", ""), stats, raw.get("to", default_to), raw.get("when"), fs,
-                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)))
+                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)), raw.get("uses"))
 
 
 @dataclass
@@ -282,9 +283,12 @@ def _targets(e: Effect, provider: int, members: list[MemberSpec]) -> list[int]:
 
 
 def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[str, str], Profile],
-                enemy: Enemy | None = None) -> TeamDamage:
-    """members[0] 当作主C。几选一的增益逐个试，取全队总伤害最高的组合。"""
+                enemy: Enemy | None = None, suppressed: set[str] | None = None) -> TeamDamage:
+    """members[0] 当作主C。几选一的增益逐个试，取全队总伤害最高的组合。
+    suppressed：队里有人排斥的功能（如治疗），循环里标了 uses: 这些功能的技能和增益不放。"""
     enemy = enemy or Enemy()
+    suppressed = suppressed or set()
+    profiles = {k: _without(p, suppressed) for k, p in profiles.items()} if suppressed else profiles
     funcs = _funcs(members)
     panels = [member_panel(gd, m) for m in members]
     # 收集所有增益：(提供者序号, Effect)
@@ -312,6 +316,13 @@ def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[st
         if best is None or result.total > best.total:
             best = result
     return best
+
+
+def _without(p: Profile, suppressed: set[str]) -> Profile:
+    from dataclasses import replace
+
+    return replace(p, hits=[h for h in p.hits if h.get("uses") not in suppressed],
+                   effects=[e for e in p.effects if e.uses not in suppressed])
 
 
 def _evaluate(gd, members, profiles, panels, chosen, enemy) -> TeamDamage:
@@ -361,6 +372,7 @@ def _member_damage(gd: GameData, m: MemberSpec, p: Profile, st: Stats, enemy: En
             spec["base_multiplier"] = values[min(levels.get(src.slot, 9), len(values)) - 1] * float(
                 spec.get("base_multiplier", 1.0))
         count = float(spec.pop("count", 1))
+        spec.pop("uses", None)
         hits = talent_hit(gd, char, t, level, spec, st, enemy, 90)
         rows += [(h.label, h.average * count) for h in hits]
     for spec in p.reactions:

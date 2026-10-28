@@ -1,4 +1,4 @@
-# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-27。
+# 自动生成，不要手改。来源：genshin-db 5.2.14、AnimeGameData2；生成日期 2026-10-28。
 # 重新生成：python -m genshin_assistant import-gamedata
 # 天赋倍率：template 是游戏里的显示模板，params 是 1~15 级的原始数值（百分比按小数存）。
 # 解析见 src/genshin_assistant/damage/talents.py。

@@ -51,6 +51,7 @@ class Kit:
     weapon_options: list[tuple[WeaponOption, EquipmentBuff | None]] = field(default_factory=list)  # 按档次
     artifact_choice: int = 0
     weapon_choice: str | None = None
+    optional: set[str] = field(default_factory=set)  # 能在流程上不触发的功能（TagGrant.optional）
 
     def has(self, tag: str) -> float:
         """功能强度。「buff:*」这种通配写法取同类标签里最高的，槽位可以写「任何增益」。"""
@@ -165,9 +166,12 @@ class Engine:
             return None
         # 元素是每个角色都有的「功能」，让 needs 可以写 element:hydro
         provides: dict[str, float] = {f"element:{c.element.value}": 1.0}
+        optional: set[str] = set()
         for g in p.provides:
             if check(g.when, ctx):
                 provides[g.tag] = max(provides.get(g.tag, 0.0), g.score)
+                if g.optional:
+                    optional.add(g.tag)
         needs = [n for n in p.needs if check(n.when, ctx)]
         avoids = [a for a in p.avoids if check(a.when, ctx)]
         rules = [r for r in p.team_rules if check(r.when, ctx)]
@@ -181,7 +185,7 @@ class Engine:
             weapons = [(w, self.kb.equipment_buff("weapon", w.zh)) for w in sorted(b.weapons, key=lambda w: w.rank)]
         k = Kit(c.id, c.zh, c.element.value, p.id, cons, dict(provides), needs, avoids, rules, p.field, traits,
                 base_provides=provides, artifact_options=arts, weapon_options=weapons,
-                weapon_choice=weapons[0][0].zh if weapons else None)
+                weapon_choice=weapons[0][0].zh if weapons else None, optional=optional)
         return self._equip(k, 0, k.weapon_choice)
 
     def _equip(self, k: Kit, artifact_choice: int, weapon_choice: str | None) -> Kit:
@@ -265,7 +269,9 @@ class Engine:
         ]
         if members[0].position is None:
             members[0].position = "on_field"
-        return team_damage(self.kb.game, members, profiles).to_dict()
+        # 有人排斥的功能，能不触发的就不触发：对应的技能不放（例如莱欧斯利队的希诺宁不放大招）
+        suppressed = {a.tag for k in kits for a in k.avoids}
+        return team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
 
     def _cons(self, char_id: str, roster: Roster) -> int:
         if roster is None or char_id not in roster:
@@ -450,7 +456,8 @@ class Engine:
         conflicts: list[Conflict] = []
         for owner in kits:
             for a in owner.avoids:
-                offenders = [k for k in kits if k is not owner and k.has(a.tag) > 0]
+                # 能在流程上不触发的功能（不放治疗大招）不算冲突
+                offenders = [k for k in kits if k is not owner and k.has(a.tag) > 0 and a.tag not in k.optional]
                 if offenders:
                     penalty = a.weight * max(k.has(a.tag) for k in offenders)
                     conflicts.append(Conflict("avoid", owner.zh, f"排斥{self._tag_zh(a.tag)}：{a.reason}",
@@ -531,7 +538,8 @@ class Engine:
                     pair = [k, carry]
                     funcs = self._team_funcs(pair)
                     broken = [r.reason for r in k.rules if not evaluate(r.rule, {}, funcs)]
-                    avoided = [f"{c.zh}排斥{self._tag_zh(a.tag)}：{a.reason}" for a in carry.avoids if k.has(a.tag) > 0]
+                    avoided = [f"{c.zh}排斥{self._tag_zh(a.tag)}：{a.reason}" for a in carry.avoids
+                               if k.has(a.tag) > 0 and a.tag not in k.optional]
                     helps = [self._tag_zh(n.tag) for n in carry.needs if k.has(n.tag) > 0]
                     row = {"char": c.id, "zh": c.zh, "element": c.element.value, "support_playstyle": k.playstyle,
                            "meets_needs": helps, "has_team_template": bool(self.kb.teams_for(c.id)),

@@ -26,6 +26,11 @@ AGD_FILES = {
     "proud_skills": "ExcelBinOutput/ProudSkillExcelConfigData.json",
     "resonance": "ExcelBinOutput/TeamResonanceExcelConfigData.json",
     "element_coeff": "ExcelBinOutput/ElementCoeffExcelConfigData.json",  # 剧变/月曜反应的等级系数
+    # 角色技能、天赋、命座的原始配置：genshin-db 没有的「专项调整」（完成任务后生效的新天赋、命座新文本）从这里取
+    "avatars": "ExcelBinOutput/AvatarExcelConfigData.json",
+    "skill_depots": "ExcelBinOutput/AvatarSkillDepotExcelConfigData.json",
+    "skills": "ExcelBinOutput/AvatarSkillExcelConfigData.json",
+    "avatar_talents": "ExcelBinOutput/AvatarTalentExcelConfigData.json",
     "textmap": "TextMap/TextMapCHS.json",
     "textmap_medium": "TextMap/TextMap_MediumCHS.json",
 }

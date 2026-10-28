@@ -72,7 +72,7 @@ python -m genshin_assistant damage examples/damage/neuvillette.yaml --json
 | `equipment_buffs.yaml` | 会给队友加成的圣遗物套装和武器（翠绿之影、讨龙英杰谭、终末嗟叹之诗等）。角色配装首选了这些装备时，加成算到这个角色头上 |
 | `drafts/characters/` | `draft-tags` **自动起草**的角色标签（关键词匹配天赋原文，分数一律 0.4），不参与配队；审核后挪到 `characters/` |
 | `mvp_characters.yaml` | 第一版要覆盖的主C名单和录入进度 |
-| `game/` | **自动生成**的游戏本体数据：每个角色一个文件（天赋原文与 10/13 级倍率、固有天赋、命座、90 级属性、官方一句话定位、技能里的名词解释、能开启的月曜/星烁反应、魔女的课业），`weapons.yaml`（90 级数值、R1/R5 效果），`artifacts.yaml`（2/4 件套效果），`glossary.yaml`（游戏内名词解释），`talent_multipliers.yaml`（天赋 1~15 级倍率，伤害计算用），`level_multiplier.yaml`（1~100 级等级系数） |
+| `game/` | **自动生成**的游戏本体数据：每个角色一个文件（天赋原文与 10/13 级倍率、固有天赋、命座、90 级属性、官方一句话定位、技能里的名词解释、能开启的月曜/星烁反应、魔女的课业、`upgrades`：genshin-db 还没有的专项调整后天赋和命座，来自解包），`weapons.yaml`（90 级数值、R1/R5 效果），`artifacts.yaml`（2/4 件套效果），`glossary.yaml`（游戏内名词解释），`talent_multipliers.yaml`（天赋 1~15 级倍率，伤害计算用），`level_multiplier.yaml`（1~100 级等级系数） |
 | `mechanics/` | 机制知识。`official_*.yaml` 是自动导入的游戏内教程和元素共鸣原文；`damage.yaml`（伤害公式）、`reactions.yaml`（元素反应，含月曜、星烁）、`team_systems.yaml`（月兆、魔导·秘仪、辉映·星烁、元素附着、ICD 等）是手写的，不确定的地方标了 `verified: false` |
 
 `validate` 会核对 `characters/`、`builds/`、`drafts/builds/` 里的角色、武器、圣遗物中文名是否和游戏数据一致，武器类型是否和角色对得上。
@@ -92,7 +92,7 @@ python -m genshin_assistant hints 沃雅妮莎                # 从天赋原文�
 python -m genshin_assistant draft-tags                   # 给知识库里还没有的角色起草标签，写到 drafts/characters/
 ```
 
-已知缺口：genshin-db 不含「魔女的课业」解锁的额外天赋和技能变化，角色数据里只有从文本表找到的「魔导·秘仪」说明（`witch_quest` 字段）。官方一句话定位（`intro`）只有较新的角色有。
+genshin-db 的天赋、命座文本不含专项调整（例如八重神子、莱欧斯利的星超导调整）和任务解锁的额外天赋，导入时从解包数据（AvatarSkillDepot、ProudSkill、AvatarTalent）补到角色的 `upgrades` 字段；天赋倍率表两边一致。官方一句话定位（`intro`）只有较新的角色有。
 
 ## 规则
 

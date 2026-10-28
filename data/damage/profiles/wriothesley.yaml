@@ -1,4 +1,7 @@
-# AI 草稿：按天赋原文估的 20 秒循环（大招 → 战技 → 强化普攻连段），未经实测核对。
+# AI 草稿：按专项调整后的天赋（游戏解包 upgrades）估的 20 秒循环（大招 → 战技 → 强化普攻连段），未经实测核对。
+# 任务解锁天赋「冤苦终有显明之期」（辉映·星超导，即队里有奥黛塔这类星超导角色和雷时）：
+#   强化的第三、五段斥逐拳额外造成原本 60%/80% 的星超导伤害，天辉·凌跃拳额外造成原本 100% 的星超导伤害，
+#   莱欧斯利造成的星超导伤害 +30%。「原本」按强化后的斥逐拳倍率算（待核对）。
 char: wriothesley
 on_field_seconds: 15
 hits:
@@ -10,10 +13,19 @@ hits:
   - {talent: 普攻:三段伤害, base_multiplier_from: 战技:强化斥逐拳伤害, count: 4}
   - {talent: 普攻:四段伤害, base_multiplier_from: 战技:强化斥逐拳伤害, count: 4}
   - {talent: 普攻:五段伤害, base_multiplier_from: 战技:强化斥逐拳伤害, count: 4}
-  # 惩戒·凌跃拳：每 5 秒一次，伤害 +50%
-  - {talent: 普攻:重击伤害, base_multiplier: 1.5, count: 3}
+  - {talent: 普攻:三段伤害, base_multiplier_from: 战技:强化斥逐拳伤害, base_multiplier: 0.6, stellar: 星超导, count: 4,
+     when: "reaction('stellar_superconduct')"}
+  - {talent: 普攻:五段伤害, base_multiplier_from: 战技:强化斥逐拳伤害, base_multiplier: 0.8, stellar: 星超导, count: 4,
+     when: "reaction('stellar_superconduct')"}
+  # 惩戒·凌跃拳（不在极星辉域时，伤害 +50%）/ 天辉·凌跃拳（辉映·星超导时，额外 100% 星超导伤害）
+  - {talent: 普攻:重击伤害, base_multiplier: 1.5, count: 3, when: "not reaction('stellar_superconduct')"}
+  - {talent: 普攻:重击伤害, count: 3, when: "reaction('stellar_superconduct')"}
+  - {talent: 普攻:重击伤害, stellar: 星超导, count: 3, when: "reaction('stellar_superconduct')"}
 buffs:
   - source: 罪业终有报偿之时（检偿之敕 5 层）
     stats: {攻击力%: 30}
     uptime: 0.9
+  - source: 冤苦终有显明之期（辉映·星超导）
+    stats: {星超导加成: 30}
+    when: "reaction('stellar_superconduct')"
 verified: false

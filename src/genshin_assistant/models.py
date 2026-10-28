@@ -42,6 +42,9 @@ class TagGrant(BaseModel):
     score: float = Field(1.0, ge=0, le=1)
     when: str | None = None
     value: float | None = None  # 增益的大致数值：百分比写小数（0.2 = 20%），固定值写点数
+    # 能在流程上不触发（例如希诺宁的治疗来自大招，不放大招就没有）：队友排斥这个功能时不扣分，
+    # 伤害循环里标了 uses: 这个功能 的技能也跟着不放
+    optional: bool = False
     evidence: str = ""  # 天赋原文片段
     source: str = ""
 

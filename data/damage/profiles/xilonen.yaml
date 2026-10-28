@@ -3,7 +3,7 @@ char: xilonen
 on_field_seconds: 3
 hits:
   - {talent: 战技:突进伤害, count: 1}
-  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1, uses: healer}   # 大招带治疗；队里有人排斥治疗时不放
 buffs:
   - {source: 音火锻淬（源音采样，岩）, to: all, stats: {岩减抗: 36}, uptime: 0.9}
   - {source: 音火锻淬（源音采样，冰）, to: all, stats: {冰减抗: 36}, uptime: 0.9, when: "count('cryo') > 0"}

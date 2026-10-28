@@ -107,6 +107,14 @@ class Importer:
         self.tutorials = {t["id"]: t for t in agd["tutorials"]}
         self.resonance = agd["resonance"]
         self.element_coeff = agd.get("element_coeff", [])
+        self.avatars = {a["id"]: a for a in agd.get("avatars", [])}
+        self.depots = {d["id"]: d for d in agd.get("skill_depots", [])}
+        self.skills = {x["id"]: x for x in agd.get("skills", [])}
+        self.avatar_talents = {t["talentId"]: t for t in agd.get("avatar_talents", [])}
+        self.proud_groups: dict[int, dict] = {}
+        for p in agd["proud_skills"]:
+            if p.get("level", 1) == 1:
+                self.proud_groups.setdefault(p["proudSkillGroupId"], p)
         self._intros = self._find_intros()
         self._witch = self._find_witch_quests()
 
@@ -208,6 +216,51 @@ class Importer:
                 out[f"c{i}"] = {"name": x["name"], "description": x["description"]}
         return out
 
+    def _upgraded_text(self, row: dict) -> str:
+        """解包数据里技能/天赋/命座除 name、desc 以外的另一个文本（字段名被混淆，按「能在文本表里查到」找）。
+        这是完成「专项调整」任务后替换原文的新版说明，例如八重神子的星超导调整。"""
+        for k, v in row.items():
+            if k in ("nameTextMapHash", "descTextMapHash", "extraDescTextMapHash", "unlockDescTextMapHash"):
+                continue
+            if isinstance(v, int) and v > 1000 and (text := self._text(v)):
+                if text != self._text(row.get("descTextMapHash", 0)) and len(text) > 8:
+                    return text
+        return ""
+
+    def upgrades(self, game_id: int) -> list[dict]:
+        """genshin-db 没有的新版说明：专项调整后的技能、固有天赋、命座文本，以及完成任务解锁的额外天赋。"""
+        av = self.avatars.get(game_id)
+        depot = self.depots.get(av.get("skillDepotId")) if av else None
+        if not depot:
+            return []
+        out = []
+        slots = [("普通攻击", depot["skills"][0] if depot["skills"] else 0),
+                 ("元素战技", depot["skills"][1] if len(depot["skills"]) > 1 else 0),
+                 ("元素爆发", depot.get("energySkill", 0))]
+        for where, sid in slots:
+            sk = self.skills.get(sid)
+            if sk and (text := self._upgraded_text(sk)):
+                out.append({"slot": where, "name": self._text(sk["nameTextMapHash"]), "description": self._clean(text)})
+        inherent, special = [], []
+        for k, v in depot.items():
+            if isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+                groups = [x["proudSkillGroupId"] for x in v if x.get("proudSkillGroupId")]
+                is_quest = any(isinstance(y, str) and "QUEST" in y for x in v for y in x.values())
+                (special if is_quest else inherent).extend(groups)
+        for gid in inherent:
+            p = self.proud_groups.get(gid)
+            if p and (text := self._upgraded_text(p)):
+                out.append({"slot": "固有天赋", "name": self._text(p["nameTextMapHash"]), "description": self._clean(text)})
+        for gid in special:
+            p = self.proud_groups.get(gid)
+            if p and (text := self._text(p["descTextMapHash"])):
+                out.append({"slot": "任务解锁天赋", "name": self._text(p["nameTextMapHash"]), "description": self._clean(text)})
+        for i, tid in enumerate(depot.get("talents", []), 1):
+            t = self.avatar_talents.get(tid)
+            if t and (text := self._upgraded_text(t)):
+                out.append({"slot": f"c{i}", "name": self._text(t["nameTextMapHash"]), "description": self._clean(text)})
+        return out
+
     def character_keys(self) -> list[str]:
         """全部角色，加上各元素的旅行者（genshin-db 里只有天赋和命座，没有单独的角色条目）。"""
         return sorted(set(self.zh["characters"]) | set(self.zh["talents"]))
@@ -238,6 +291,7 @@ class Importer:
             "talents": talents,
             "passives": passives,
             "constellations": cons,
+            "upgrades": None if traveler else self.upgrades(c["id"]),
             "terms": [e for i in sorted(links) if (e := self.glossary_entry(i))],
         }
         return {k: v for k, v in out.items() if v not in (None, [], {})}
@@ -326,6 +380,8 @@ class Importer:
         char_header = header + (
             "# stats_lv90 是 90 级突破后的白值，暴击率/暴击伤害已含基础 5%/50%。\n"
             "# scaling 写成「10级 / 13级」，两个等级相同时只写一个。\n"
+            "# upgrades 是 genshin-db 还没有的新版说明（来自游戏解包）：专项调整任务后替换原文的技能、固有天赋、命座，\n"
+            "# 以及完成任务解锁的额外天赋。有 upgrades 时以它为准。\n"
         )
         game = data_dir / "game"
         char_dir = game / "characters"
