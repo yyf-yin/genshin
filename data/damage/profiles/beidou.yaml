@@ -1,0 +1,24 @@
+# AI 草稿：后台挂雷。长按战技（任务天赋主动攒满两层）+ 大招雷兽之盾，闪雷靠站场角色普攻/重击触发，每秒至多一道。
+# 未经实测核对。
+char: beidou
+on_field_seconds: 3
+hits:
+  - {talent: 战技:基础伤害, count: 1}
+  - {talent: 战技:受击时伤害提升, count: 2}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:闪雷伤害, count: 12}
+reactions:
+  - {reaction: 星超导, count: 8, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - {source: 北斗祓幽孽（6 命）, to: all, stats: {雷减抗: 15}, uptime: 0.75, when: "cons >= 6"}
+  - source: 北斗祓幽孽（6 命，辉映·星超导）
+    to: all
+    stats: {冰减抗: 15}
+    uptime: 0.75
+    when: "cons >= 6 and reaction('stellar_superconduct')"
+  - source: 北斗祓幽孽（6 命，辉映·星超导）
+    to: on_field
+    stats: {元素精通: 200}
+    uptime: 0.75
+    when: "cons >= 6 and reaction('stellar_superconduct')"
+verified: false

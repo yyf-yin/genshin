@@ -18,6 +18,13 @@ class GameData:
     terms: dict[str, dict] = field(default_factory=dict)
     mechanics: dict[str, dict] = field(default_factory=dict)
     meta: dict = field(default_factory=dict)
+    talent_multipliers: dict[str, dict] = field(default_factory=dict)  # 角色 id → 天赋倍率表（伤害计算用）
+    level_multipliers: dict[int, float] = field(default_factory=dict)
+
+    def level_multiplier(self, level: int) -> float:
+        if level not in self.level_multipliers:
+            raise KeyError(f"没有 {level} 级的等级系数")
+        return self.level_multipliers[level]
 
     def _find(self, table: dict[str, dict], name: str, kind: str) -> dict:
         key = name.strip().lower()
@@ -84,6 +91,9 @@ def load_gamedata(data_dir: Path | str = DEFAULT_DATA_DIR) -> GameData:
     gd.artifact_sets = {a["id"]: a for a in _read(game / "artifacts.yaml")["artifact_sets"]}
     gd.terms = {t["name"]: t for t in _read(game / "glossary.yaml")["terms"]}
     gd.meta = _read(game / "meta.yaml")
+    if (game / "talent_multipliers.yaml").exists():
+        gd.talent_multipliers = _read(game / "talent_multipliers.yaml")
+        gd.level_multipliers = {int(k): v for k, v in _read(game / "level_multiplier.yaml")["level_multiplier"].items()}
     mech = data_dir / "mechanics"
     if mech.exists():
         gd.mechanics = {p.stem: _read(p) for p in sorted(mech.glob("*.yaml"))}

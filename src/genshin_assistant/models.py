@@ -42,6 +42,10 @@ class TagGrant(BaseModel):
     score: float = Field(1.0, ge=0, le=1)
     when: str | None = None
     value: float | None = None  # 增益的大致数值：百分比写小数（0.2 = 20%），固定值写点数
+    value_r5: float | None = None  # 武器精炼 5 时的数值（value 是精炼 1）
+    # 能在流程上不触发（例如希诺宁的治疗来自大招，不放大招就没有）：队友排斥这个功能时不扣分，
+    # 伤害循环里标了 uses: 这个功能 的技能也跟着不放
+    optional: bool = False
     evidence: str = ""  # 天赋原文片段
     source: str = ""
 
@@ -120,6 +124,10 @@ class EquipmentBuff(BaseModel):
     provides: list[TagGrant]
     note: str = ""
     verified: bool = False
+    # 伤害计算用：加成给谁（all / others / on_field / off_field），几条加成是否只能生效其一（风套只降被扩散的元素）
+    to: str = "all"
+    choose_one: bool = False
+    refine: int | None = None  # 武器固定按几精算（讨龙按精 5）；不写时按获取途径定
 
 
 class CharRef(BaseModel):

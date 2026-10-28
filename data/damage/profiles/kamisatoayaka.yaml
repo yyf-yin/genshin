@@ -1,0 +1,14 @@
+# AI 草稿：冻结队 20 秒循环（战技 ×2 → 大招 → 冲刺重击），未经实测核对。
+# 冰套的暴击率（四件套）没算：同一个主C换队友比较时影响不大。
+char: kamisatoayaka
+on_field_seconds: 12
+hits:
+  - {talent: 战技:技能伤害, count: 2}
+  - {talent: 爆发:切割伤害, count: 19}
+  - {talent: 爆发:绽放伤害, count: 1}
+  - {talent: 普攻:一段伤害, count: 3}
+  - {talent: 普攻:重击伤害, count: 4}
+buffs:
+  - {source: 天罪国罪镇词（战技后普攻、重击 +30%）, stats: {普攻增伤: 30, 重击增伤: 30}, uptime: 0.6}
+  - {source: 寒天宣命祝词（冰伤 +18%）, stats: {冰伤: 18}, uptime: 0.8}
+verified: false

@@ -1,0 +1,15 @@
+# AI 草稿：战技（护盾 + 虚己之赐加攻）+ 大招默观颂祷，未经实测核对。
+# 奥迹造影：站场角色攻击命中时协同攻击，按站场角色攻击力 180% 和元素算，每 3 秒至多一次、一次大招至多 4 次。
+# 魔导·秘仪（魔导角色的奥迹造影 +尼可攻击力 300%）还没算。
+char: nicole
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:奥迹造影伤害, by: on_field, count: 4}
+buffs:
+  - source: 虚己之赐（尼可攻击力的 15%）
+    to: all
+    from_stat: {stat: atk, ratio: 0.15, key: 攻击力}
+  - {source: 圣祝之引（站场 3 秒后升变）, to: on_field, stats: {攻击力: 300}, uptime: 0.85}
+verified: false

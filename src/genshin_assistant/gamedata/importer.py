@@ -75,6 +75,13 @@ def _str(dumper: yaml.SafeDumper, value: str):
 _Dumper.add_representer(str, _str)
 
 
+class _Flow(list):
+    """写成一行 [a, b, c] 的列表（天赋参数表）。"""
+
+
+_Dumper.add_representer(_Flow, lambda d, v: d.represent_sequence("tag:yaml.org,2002:seq", v, flow_style=True))
+
+
 def dump(data, path: Path, header: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     body = yaml.dump(data, Dumper=_Dumper, allow_unicode=True, sort_keys=False, width=10_000)
@@ -99,6 +106,15 @@ class Importer:
         self.hyperlinks = {h["id"]: h for h in agd["hyperlinks"]}
         self.tutorials = {t["id"]: t for t in agd["tutorials"]}
         self.resonance = agd["resonance"]
+        self.element_coeff = agd.get("element_coeff", [])
+        self.avatars = {a["id"]: a for a in agd.get("avatars", [])}
+        self.depots = {d["id"]: d for d in agd.get("skill_depots", [])}
+        self.skills = {x["id"]: x for x in agd.get("skills", [])}
+        self.avatar_talents = {t["talentId"]: t for t in agd.get("avatar_talents", [])}
+        self.proud_groups: dict[int, dict] = {}
+        for p in agd["proud_skills"]:
+            if p.get("level", 1) == 1:
+                self.proud_groups.setdefault(p["proudSkillGroupId"], p)
         self._intros = self._find_intros()
         self._witch = self._find_witch_quests()
 
@@ -200,6 +216,51 @@ class Importer:
                 out[f"c{i}"] = {"name": x["name"], "description": x["description"]}
         return out
 
+    def _upgraded_text(self, row: dict) -> str:
+        """解包数据里技能/天赋/命座除 name、desc 以外的另一个文本（字段名被混淆，按「能在文本表里查到」找）。
+        这是完成「专项调整」任务后替换原文的新版说明，例如八重神子的星超导调整。"""
+        for k, v in row.items():
+            if k in ("nameTextMapHash", "descTextMapHash", "extraDescTextMapHash", "unlockDescTextMapHash"):
+                continue
+            if isinstance(v, int) and v > 1000 and (text := self._text(v)):
+                if text != self._text(row.get("descTextMapHash", 0)) and len(text) > 8:
+                    return text
+        return ""
+
+    def upgrades(self, game_id: int) -> list[dict]:
+        """genshin-db 没有的新版说明：专项调整后的技能、固有天赋、命座文本，以及完成任务解锁的额外天赋。"""
+        av = self.avatars.get(game_id)
+        depot = self.depots.get(av.get("skillDepotId")) if av else None
+        if not depot:
+            return []
+        out = []
+        slots = [("普通攻击", depot["skills"][0] if depot["skills"] else 0),
+                 ("元素战技", depot["skills"][1] if len(depot["skills"]) > 1 else 0),
+                 ("元素爆发", depot.get("energySkill", 0))]
+        for where, sid in slots:
+            sk = self.skills.get(sid)
+            if sk and (text := self._upgraded_text(sk)):
+                out.append({"slot": where, "name": self._text(sk["nameTextMapHash"]), "description": self._clean(text)})
+        inherent, special = [], []
+        for k, v in depot.items():
+            if isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+                groups = [x["proudSkillGroupId"] for x in v if x.get("proudSkillGroupId")]
+                is_quest = any(isinstance(y, str) and "QUEST" in y for x in v for y in x.values())
+                (special if is_quest else inherent).extend(groups)
+        for gid in inherent:
+            p = self.proud_groups.get(gid)
+            if p and (text := self._upgraded_text(p)):
+                out.append({"slot": "固有天赋", "name": self._text(p["nameTextMapHash"]), "description": self._clean(text)})
+        for gid in special:
+            p = self.proud_groups.get(gid)
+            if p and (text := self._text(p["descTextMapHash"])):
+                out.append({"slot": "任务解锁天赋", "name": self._text(p["nameTextMapHash"]), "description": self._clean(text)})
+        for i, tid in enumerate(depot.get("talents", []), 1):
+            t = self.avatar_talents.get(tid)
+            if t and (text := self._upgraded_text(t)):
+                out.append({"slot": f"c{i}", "name": self._text(t["nameTextMapHash"]), "description": self._clean(text)})
+        return out
+
     def character_keys(self) -> list[str]:
         """全部角色，加上各元素的旅行者（genshin-db 里只有天赋和命座，没有单独的角色条目）。"""
         return sorted(set(self.zh["characters"]) | set(self.zh["talents"]))
@@ -230,6 +291,7 @@ class Importer:
             "talents": talents,
             "passives": passives,
             "constellations": cons,
+            "upgrades": None if traveler else self.upgrades(c["id"]),
             "terms": [e for i in sorted(links) if (e := self.glossary_entry(i))],
         }
         return {k: v for k, v in out.items() if v not in (None, [], {})}
@@ -277,6 +339,15 @@ class Importer:
                 out[f"{n}pc"] = a[f"effect{n}Pc"]
         return {k: v for k, v in out.items() if v is not None}
 
+    # ---------- 伤害计算用的数值表 ----------
+
+    def talent_multipliers(self, key: str) -> dict:
+        """天赋每一行的模板和 1~15 级参数，给伤害计算用（damage/talents.py 负责解析）。"""
+        return talent_multipliers(self.zh["talents"].get(key, {}), self.gdb["stats"]["talents"].get(key, {}))
+
+    def level_multipliers(self) -> dict[int, float]:
+        return level_multipliers(self.element_coeff)
+
     # ---------- 教程 ----------
 
     def tutorials_by_topic(self) -> dict[str, list[str]]:
@@ -309,6 +380,8 @@ class Importer:
         char_header = header + (
             "# stats_lv90 是 90 级突破后的白值，暴击率/暴击伤害已含基础 5%/50%。\n"
             "# scaling 写成「10级 / 13级」，两个等级相同时只写一个。\n"
+            "# upgrades 是 genshin-db 还没有的新版说明（来自游戏解包）：专项调整任务后替换原文的技能、固有天赋、命座，\n"
+            "# 以及完成任务解锁的额外天赋。有 upgrades 时以它为准。\n"
         )
         game = data_dir / "game"
         char_dir = game / "characters"
@@ -327,11 +400,51 @@ class Importer:
         dump({"source_version": self.gdb_version, "generated": stamp,
               "latest_game_version": max(self.version["characters"].values(), key=_version_key)},
              game / "meta.yaml", header)
+        write_damage_tables(game, header, {k: self.talent_multipliers(k) for k in keys}, self.level_multipliers())
         tutorials = self.tutorials_by_topic()
         dump({"tutorials": tutorials}, data_dir / "mechanics" / "official_tutorials.yaml", header)
         dump({"resonances": self.resonances()}, data_dir / "mechanics" / "official_resonance.yaml", header)
         return {"characters": len(keys), "weapons": len(weapons), "artifact_sets": len(sets),
                 "terms": len(glossary), "tutorial_topics": len(tutorials)}
+
+
+def talent_multipliers(talent: dict, params: dict) -> dict:
+    """{天赋槽: [{name, template, params: {paramN: [1~15级]}}]}，只留带百分比参数（倍率）的行。"""
+    out = {}
+    for src, dst in TALENT_SLOTS:
+        labels = talent.get(src, {}).get("attributes", {}).get("labels", [])
+        if not labels or src not in params:
+            continue
+        rows = []
+        for label in labels:
+            name, _, template = label.partition("|")
+            used = _PARAM_REF.findall(template)
+            if not any(fmt.endswith("P") for _, fmt in used):
+                continue
+            rows.append({
+                "name": name,
+                "template": template,
+                "params": {f"param{n}": _Flow(round(v, 6) for v in params[src].get(f"param{n}", [])) for n, _ in used},
+            })
+        if rows:
+            out[dst] = rows
+    return out
+
+
+def level_multipliers(element_coeff: list[dict]) -> dict[int, float]:
+    """角色等级 → 等级系数（ElementCoeffExcelConfigData 的 playerElementLevelCo，第 0 行是占位，第 n 行是 n 级）。"""
+    return {lv: round(row["playerElementLevelCo"], 4) for lv, row in enumerate(element_coeff) if 1 <= lv <= 100}
+
+
+def write_damage_tables(game: Path, header: str, multipliers: dict[str, dict], levels: dict[int, float]) -> None:
+    dump({k: v for k, v in sorted(multipliers.items()) if v}, game / "talent_multipliers.yaml", header + (
+        "# 天赋倍率：template 是游戏里的显示模板，params 是 1~15 级的原始数值（百分比按小数存）。\n"
+        "# 解析见 src/genshin_assistant/damage/talents.py。\n"))
+    dump({"level_multiplier": levels}, game / "level_multiplier.yaml", header + (
+        "# 等级系数（剧变、月曜反应和激化的基础值），按触发角色的等级。\n"))
+
+
+_PARAM_REF = re.compile(r"\{param(\d+):([A-Z0-9]+)\}")
 
 
 def _enabled_reactions(passives: list[dict]) -> list[str]:

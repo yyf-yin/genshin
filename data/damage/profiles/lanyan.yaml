@@ -1,0 +1,15 @@
+# AI 草稿：护盾位。战技（翦月环回旋两次）+ 大招，未经实测核对。
+# 苍翎镇邪敕符：战技伤害值 +309% 精通，大招伤害值 +774% 精通。
+char: lanyan
+on_field_seconds: 3
+hits:
+  - {talent: 战技:翦月环伤害, count: 2}
+  - {talent: 战技:翦月环伤害, count: 2, when: "cons >= 1"}   # 1 命：元素转化后多抛一枚
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  - source: 苍翎镇邪敕符（战技）
+    from_stat: {stat: em, ratio: 3.09, key: 战技固定伤害}
+  - source: 苍翎镇邪敕符（爆发）
+    from_stat: {stat: em, ratio: 7.74, key: 爆发固定伤害}
+  - {source: 「揽龙鹰兮结血珠」（4 命：大招后全队精通 +60）, to: all, stats: {元素精通: 60}, uptime: 0.6, when: "cons >= 4"}
+verified: false

@@ -20,7 +20,8 @@ from . import importer
 from .hints import draft, suggest
 from .store import load_gamedata
 
-SECTIONS = {"talents": "talents", "passives": "passives", "cons": "constellations", "terms": "terms"}
+SECTIONS = {"talents": "talents", "passives": "passives", "cons": "constellations", "terms": "terms",
+            "upgrades": "upgrades"}
 COMMANDS = {"import-gamedata", "game", "enablers", "hints", "draft-tags"}
 DRAFT_HEADER = "# 自动起草（关键词匹配天赋原文），未经审核。审核后挪到 data/characters/ 才会参与配队。\n"
 

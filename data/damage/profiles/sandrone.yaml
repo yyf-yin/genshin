@@ -1,0 +1,22 @@
+# AI 草稿：重击站场 20 秒循环（大招 → 战技 → 重击解算模式），次数按天赋说明估，未经实测核对。
+# 辉映·星超导（队里有雷）时冷凝射线、第二枚棱晶弹、聚能光束都转为星超导伤害。
+# 固有天赋「悠久的演算机关」：第二枚棱晶弹原本 400%；聚能光束 100%+层数×10%（按清 10 层算，原本 200%）。
+char: sandrone
+on_field_seconds: 14
+hits:
+  - {talent: 爆发:轰炸伤害, count: 1}
+  - {talent: 爆发:聚能光束伤害, base_multiplier: 2.0, count: 1, when: "not reaction('stellar_superconduct')"}
+  - {talent: 爆发:聚能光束星超导伤害, base_multiplier: 2.0, stellar: 星超导, count: 1, when: "reaction('stellar_superconduct')"}
+  - {talent: 战技:棱晶弹伤害, count: 1}
+  - {talent: 战技:棱晶弹伤害, base_multiplier: 4.0, count: 1, when: "not reaction('stellar_superconduct')"}
+  - {talent: 战技:棱晶弹星超导伤害, base_multiplier: 4.0, stellar: 星超导, count: 1, when: "reaction('stellar_superconduct')"}
+  - {talent: 普攻:重击扫射伤害, element: cryo, count: 15}
+  - {talent: 普攻:重击冷凝射线伤害, element: cryo, count: 8, when: "not reaction('stellar_superconduct')"}
+  - {talent: 普攻:重击冷凝射线星超导伤害, element: cryo, stellar: 星超导, count: 8, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 淑女的行事准则（每 100 攻击力 +8 精通，至多 160）
+    from_stat: {stat: atk, ratio: 0.08, cap: 160, key: 元素精通}
+  - source: 星耀祝礼·唯理为光（每 100 攻击力 +0.7% 星超导/星扩散基础伤害，至多 14%）
+    to: all
+    from_stat: {stat: atk, ratio: 0.00007, cap: 0.14, key: 星烁基础伤害提升}
+verified: false

@@ -9,7 +9,8 @@
     python -m genshin_assistant game 桑多涅
     python -m genshin_assistant web                      # 本机网页问答（DeepSeek 解析问题、解释引擎结果）
     python -m genshin_assistant chat                     # 同上，命令行版
-游戏数据相关的命令见 gamedata/cli.py。
+    python -m genshin_assistant damage examples/damage/neuvillette.yaml   # 伤害计算
+游戏数据相关的命令见 gamedata/cli.py，伤害计算见 damage/cli.py。
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import sys
 from pathlib import Path
 
 from .engine import Engine, Owned, Recommendation
+from .damage import cli as damage_cli
 from .gamedata import cli as gamedata_cli
 from .kb import DEFAULT_DATA_DIR, KnowledgeBase, load
 
@@ -42,7 +44,20 @@ def _print(rec: Recommendation) -> None:
     for i, t in enumerate(rec.teams, 1):
         flag = "" if t.verified else "  [草稿数据，未审核]"
         print(f"\n{i}. {t.template_zh}  得分 {t.score}{flag}")
-        print("   成员：" + "、".join(m.zh for m in t.members))
+        print("   成员：" + "、".join(m.zh + (f"（{m.cons} 命）" if m.cons else "") for m in t.members))
+        if t.damage:
+            d = t.damage
+            print(f"   全队一轮期望伤害 {d['total']:,}（标签分 {t.tag_score}）：" + "，".join(
+                f"{m['zh']} {m['share']:.0%}" for m in d["members"]))
+            if d.get("refine"):
+                print("   武器精炼：" + "、".join(d["refine"]))
+            for v in t.variants:
+                total = f"全队伤害 {v['total']:,}，" if v["total"] else ""
+                print(f"   换成{v['label']}：{total}得分 {v['score']}")
+            if d["choices"]:
+                print("   几选一：" + "；".join(d["choices"]))
+            if d["missing"]:
+                print("   还没有伤害数据（按 0 算）：" + "、".join(d["missing"]))
         for n in t.needs:
             state = f"由{'、'.join(n.met_by)}满足" if n.met_by else f"未满足，扣 {n.penalty}"
             print(f"   需求：{n.owner}需要{n.tag_zh}（{n.reason}）→ {state}")
@@ -147,6 +162,7 @@ def main(argv: list[str] | None = None) -> None:
             x.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
+    damage_cli.add_subcommands(sub)
     args = p.parse_args(argv)
 
     if args.cmd == "import-gamedata":
@@ -158,6 +174,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.cmd in gamedata_cli.COMMANDS:
         gamedata_cli.run(args, kb)
+        return
+    if args.cmd in damage_cli.COMMANDS:
+        damage_cli.run(args, kb)
         return
     if args.cmd == "validate":
         from .gamedata import load_gamedata
