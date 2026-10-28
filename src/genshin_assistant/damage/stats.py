@@ -41,6 +41,7 @@ def _aliases() -> dict[str, str]:
         "治疗加成": "heal", "护盾强效": "shield",
         "月曜基础伤害提升": "lunar_base_bonus", "月曜反应伤害提升": "lunar_bonus",
         "星烁基础伤害提升": "stellar_base_bonus", "星烁反应伤害提升": "stellar_bonus",
+        "月曜暴击伤害": "lunar_cd", "星烁暴击伤害": "stellar_cd",  # 只对月曜/星烁反应伤害
         # builds/ 里主词条、副词条的写法
         "atk%": "atk_pct", "hp%": "hp_pct", "def%": "def_pct", "em": "em", "energy_recharge": "er",
         "crit_rate": "cr", "crit_dmg": "cd", "healing_bonus": "heal",
@@ -98,7 +99,7 @@ def _known(key: str) -> bool:
     if tail == "dmg":
         return head in ELEMENTS or head in CATEGORIES
     if tail in ("cr", "cd"):
-        return head in CATEGORIES or (tail == "cd" and head in ELEMENTS)
+        return head in CATEGORIES or (tail == "cd" and (head in ELEMENTS or head in ("lunar", "stellar")))
     if tail == "bonus":
         return head in REACTION_ZH
     return False

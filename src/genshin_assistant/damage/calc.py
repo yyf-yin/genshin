@@ -206,7 +206,9 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
             zones = [Zone("基础伤害", talent_part * base_mult + hit.flat, desc),
                      Zone(f"{REACTION_ZH[special]}系数", coef, "角色技能直接造成的反应伤害")]
             zones += _special_zones(special, st, enemy, element)
-            out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd + st.get(f"{element}_cd"), times))
+            family = "lunar" if special in LUNAR_REACTIONS else "stellar"
+            cd_total = cd + st.get(f"{element}_cd") + st.get(f"{family}_cd")
+            out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd_total, times))
             continue
         base = talent_part * base_mult + hit.flat + st.get("flat_dmg") + st.get(f"{category}_flat_dmg")
         zones = [Zone("基础伤害", base, desc + (f"，倍率×{base_mult}" if base_mult != 1 else ""))]
@@ -259,7 +261,9 @@ def reaction_hit(gd: GameData, spec: dict, st: Stats, enemy: Enemy, char_level: 
         zones = [Zone("基础伤害", float(coef) * lv_mult, f"系数 {coef} × 等级系数 {lv_mult:.1f}")]
         zones += _special_zones(reaction, st, enemy)
         element = SPECIAL_ELEMENT[reaction]
-        return _finish(f"{REACTION_ZH[reaction]}反应", element, zones, st.get("cr"), st.get("cd") + st.get(f"{element}_cd"), times)
+        family = "lunar" if reaction in LUNAR_REACTIONS else "stellar"
+        cd = st.get("cd") + st.get(f"{element}_cd") + st.get(f"{family}_cd")
+        return _finish(f"{REACTION_ZH[reaction]}反应", element, zones, st.get("cr"), cd, times)
     if reaction not in f.TRANSFORMATIVE:
         raise ValueError(f"{REACTION_ZH[reaction]} 要写在技能那一条上（reaction: {REACTION_ZH[reaction]}）")
     element = TRANSFORMATIVE_ELEMENT.get(reaction) or _element({}, None, None, spec.get("element"))

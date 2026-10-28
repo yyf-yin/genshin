@@ -266,7 +266,7 @@ class Engine:
 
     def _team_damage(self, kits: list[Kit]) -> dict | None:
         """全队一轮的期望总伤害（damage/team.py）。主C没有循环数据时不算。"""
-        from .damage.team import MemberSpec, team_damage
+        from .damage.team import MemberSpec, team_damage, weapon_name
 
         profiles = self.kb.damage_profiles
         if not profiles or self.kb.game is None or (kits[0].char, kits[0].playstyle) not in profiles:
@@ -281,48 +281,68 @@ class Engine:
             members[0].position = "on_field"
         # 有人排斥的功能，能不触发的就不触发：对应的技能不放（例如莱欧斯利队的希诺宁不放大招）
         suppressed = {a.tag for k in kits for a in k.avoids}
-        split = []  # 精 1、精 5 要分开算的武器：(队员, 武器名)
+        weapons = self.kb.damage_weapons
+        split = []  # 武器精 1、精 5 要分开算的队员
+        shown = {}  # 精炼影响伤害的武器才列出来（西风这类只回能量的不列）
         for m in members:
             options = self._refine_options(m)
+            name = weapon_name(m)
+            matters = bool(self.kb.damage_weapons.get(name)) or any(
+                e.kind == "weapon" and e.zh == name for e in self.kb.equipment)
+            shown[m.char] = options != [1] and matters
             m.refine = max(options)
             if len(options) > 1:
                 split.append(m)
-        best = team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
-        best["refine"] = [f"{w} 精 {m.refine}" for m in members for w in self._buff_weapons(m)]
+
+        def run() -> dict:
+            d = team_damage(self.kb.game, members, profiles, suppressed=suppressed, weapons=weapons).to_dict()
+            d["refine"] = [label(m) for m in members if shown[m.char]]
+            return d
+
+        def label(m) -> str:
+            return f"{weapon_name(m)} 精 {m.refine}"
+
+        best = run()
         if split:
+            high = [label(m) for m in split]
             for m in split:
                 m.refine = 1
-            low = team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
-            label = "、".join(f"{w} 精 1" for m in split for w in self._buff_weapons(m))
-            high_label = "、".join(f"{w} 精 5" for m in split for w in self._buff_weapons(m))
+            low = run()
+            low_label = [label(m) for m in split]
             if low["total"] > best["total"]:  # 一般不会：精 5 数值更高
-                low["refine"], low["refine_variants"] = best["refine"], [{"label": high_label, "total": best["total"]}]
+                low["refine_variants"] = [{"label": "、".join(high), "total": best["total"]}]
                 return low
-            best["refine_variants"] = [{"label": label, "total": low["total"]}]
+            best["refine_variants"] = [{"label": "、".join(low_label), "total": low["total"]}]
         return best
 
-    def _buff_weapons(self, m) -> list[str]:
-        return [e.zh for e in m.equipment if e.kind == "weapon"]
+    def _weapon_rarity(self, m) -> int:
+        from .damage.team import weapon_name
+
+        try:
+            return int(self.kb.game.weapon(weapon_name(m) or "").get("rarity", 5))
+        except KeyError:
+            return 5
 
     def _refine_options(self, m) -> list[int]:
-        """给队友加成的武器按几精算：五星精 1；四星锻造精 5，装备数据写死了的（讨龙精 5）按写的，
-        其他四星（祈愿、活动、纪行）精 1、精 5 各算一份。"""
-        options = {1}
-        for e in m.equipment:
-            if e.kind != "weapon":
-                continue
-            try:
-                rarity = int(self.kb.game.weapon(e.zh).get("rarity", 5))
-            except KeyError:
-                rarity = 5
-            source = next((w.source for w in (m.build.weapons if m.build else []) if w.zh == e.zh), "")
-            if e.refine:
-                options = {e.refine}
-            elif rarity == 4 and source == "craftable":
-                options = {5}
-            elif rarity == 4 and any(g.value_r5 is not None for g in e.provides):
-                options = {1, 5}
-        return sorted(options)
+        """武器按几精算（Cliff 2026-10-28）：五星精 1；三星、四星锻造的精 5；装备数据写死了的按写的（讨龙精 5）；
+        其他四星（祈愿、活动、纪行）精 1、精 5 各算一份。只有精 1、精 5 数值不同时才分开算。"""
+        from .damage.team import weapon_name
+
+        name = weapon_name(m)
+        if not name:
+            return [1]
+        rarity = self._weapon_rarity(m)
+        source = next((w.source for w in (m.build.weapons if m.build else []) if w.zh == name), "")
+        eq = next((e for e in self.kb.equipment if e.kind == "weapon" and e.zh == name), None)
+        if eq is not None and eq.refine:
+            return [eq.refine]
+        if rarity >= 5:
+            return [1]
+        if rarity <= 3 or source == "craftable":
+            return [5]
+        differs = (eq is not None and any(g.value_r5 is not None for g in eq.provides)) or any(
+            e.stats_r5 is not None for e in self.kb.damage_weapons.get(name, []))
+        return [1, 5] if differs else [1]
 
     def _cons_options(self, char_id: str, roster: Roster) -> list[int]:
         """队友按几命算：box 里有就按实际命座；不知道时四星 0 命、6 命各算一份（四星满命很常见，差别也大）。"""

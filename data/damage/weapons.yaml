@@ -1,0 +1,132 @@
+# 武器给装备者自己的效果（伤害计算用），按 data/game/weapons.yaml 的精炼 1 / 精炼 5 原文录入（2026-10-28）。
+# 给队友的部分写在 data/equipment_buffs.yaml，这里不重复（终末、松籁、苍古的「千年的大乐章」团队效果，
+# 岩峰巡歌、尘光七谕、漩流颂歌、香韵奏者的队友加成等）。
+# 写法同 profiles 里的 buffs；stats 是精炼 1 的数值，r5 是精炼 5 的数值（只有四星要写，五星默认精 1）。
+# chars / not_chars：效果因人而异时只对这些装备者生效。uptime 按常见循环估，未经实测核对。
+# 只回能量、治疗或特殊机制的武器（西风系列、祭礼弓、试作金珀、黑缨枪、鹤鸣余音）不影响伤害，不写。
+weapons:
+  # ---------- 五星 ----------
+  - weapon: 超越之匙
+    effects:
+      - {stats: {攻击力%: 28}}
+      - {source: 超越之匙「超越」3 层, stats: {星超导加成: 48, 星扩散加成: 48}, uptime: 0.9}
+  - weapon: 焚曜千阳
+    effects:
+      - {source: 焚曜千阳「焚光」, stats: {暴击伤害: 20, 攻击力%: 28}, uptime: 0.8}
+  - weapon: 白湖冬羽
+    effects:
+      - {source: 白湖冬羽「湖色的哀告」3 层, stats: {攻击力%: 24, 星烁暴击伤害: 50}, uptime: 0.85}
+  - weapon: 蝶变
+    effects:
+      - {source: 蝶变「忠忱之风」, stats: {暴击伤害: 56}, uptime: 0.6}
+      - {source: 蝶变「叛弃之风」, stats: {星扩散加成: 36}, uptime: 0.6}
+  - weapon: 金流监督
+    effects:
+      - {stats: {攻击力%: 16}}
+      - {source: 金流监督 3 层, stats: {普攻增伤: 48, 重击增伤: 42, 星超导加成: 42}, uptime: 0.9}
+  - weapon: 溢彩心念
+    effects:
+      - {stats: {攻击力%: 28}}   # 下落攻击暴伤对这些角色的循环没用
+  - weapon: 神乐之真意
+    effects:
+      - {source: 神乐之真意「神乐舞」3 层, stats: {战技增伤: 36, 星超导加成: 36, 增伤: 12}, uptime: 0.9}
+  - weapon: 鹤鸣余音
+    effects: []
+  - weapon: 赤沙之杖
+    effects:
+      - source: 赤沙之杖（精通的 52% + 赤沙之梦 3 层 84%，按平均约 128%）
+        from_stat: {stat: em, ratio: 1.28, key: 攻击力}
+  - weapon: 和璞鸢
+    effects:
+      - {source: 和璞鸢 7 层, stats: {攻击力%: 22.4, 增伤: 12}, uptime: 0.8}
+  - weapon: 息灾
+    effects:
+      - {stats: {增伤: 12}}
+      - {source: 息灾「圆顿」（后台翻倍）, stats: {攻击力%: 38.4}, uptime: 0.8, chars: [iansan]}
+      - {source: 息灾「圆顿」, stats: {攻击力%: 19.2}, uptime: 0.8, not_chars: [iansan]}
+  - weapon: 支离轮光
+    effects:
+      - {stats: {攻击力%: 24}, uptime: 0.9}
+  - weapon: 薙草之稻光
+    effects:
+      - source: 薙草之稻光（充能超出 100% 的部分 × 28%，至多 80%）
+        from_stat: {stat: er, ratio: 0.28, offset: -1, cap: 0.8, key: 攻击力%}
+      - {source: 薙草之稻光（大招后）, stats: {充能: 30}, uptime: 0.6}
+  - weapon: 香韵奏者
+    effects:
+      - {stats: {攻击力%: 24}}   # 12% + 后台再 12%（这些角色基本在后台）
+      - {source: 香韵奏者「甘美回奏」, stats: {攻击力%: 32}, uptime: 0.4}
+  - weapon: 天空之脊
+    effects:
+      - {stats: {暴击率: 8}}
+  - weapon: 万世流涌大典
+    effects:
+      - {stats: {生命值%: 16}}
+      - {source: 万世流涌大典 3 层, stats: {重击增伤: 42}, uptime: 0.9}
+  - weapon: 千夜浮梦
+    effects:
+      # 每个同元素队友精通 +32，每个不同元素队友本元素伤害 +10%（按装备者是风元素写，瑞希用）
+      - {source: 千夜浮梦（同元素 1）, stats: {元素精通: 32}, when: "count('anemo') >= 2"}
+      - {source: 千夜浮梦（同元素 2）, stats: {元素精通: 32}, when: "count('anemo') >= 3"}
+      - {source: 千夜浮梦（同元素 3）, stats: {元素精通: 32}, when: "count('anemo') >= 4"}
+      - {source: 千夜浮梦（不同元素 1）, stats: {风伤: 10}, when: "count('anemo') <= 3"}
+      - {source: 千夜浮梦（不同元素 2）, stats: {风伤: 10}, when: "count('anemo') <= 2"}
+      - {source: 千夜浮梦（不同元素 3）, stats: {风伤: 10}, when: "count('anemo') <= 1"}
+  - weapon: 寝正月初晴
+    effects:
+      - {source: 寝正月初晴（扩散后）, stats: {元素精通: 120}, uptime: 0.7}
+      - {source: 寝正月初晴（战技后）, stats: {元素精通: 96}, uptime: 0.9}
+      - {source: 寝正月初晴（爆发后）, stats: {元素精通: 32}}
+  - weapon: 天空之卷
+    effects:
+      - {stats: {增伤: 12}}
+  - weapon: 尘光七谕
+    effects:
+      - {stats: {攻击力%: 12}}
+  - weapon: 漩流颂歌
+    effects:
+      - {stats: {治疗加成: 4, 生命值%: 12}}
+  - weapon: 岩峰巡歌
+    effects:
+      - {source: 岩峰巡歌「荣花之歌」2 层, stats: {防御力%: 16, 增伤: 20}, uptime: 0.5}
+  - weapon: 终末嗟叹之诗
+    effects:
+      - {stats: {元素精通: 60}}
+  - weapon: 松籁响起之时
+    effects:
+      - {stats: {攻击力%: 16}}
+  - weapon: 苍古自由之誓
+    effects:
+      - {stats: {增伤: 10}}
+  - weapon: 苍耀
+    effects:
+      # 丝柯克的元素爆发不靠能量，能量一直是 0：战技后攻击力 +48%、暴伤 +40%
+      - {source: 苍耀（能量为 0）, stats: {攻击力%: 48, 暴击伤害: 40}, uptime: 0.75, chars: [skirk]}
+      - {source: 苍耀（战技后）, stats: {攻击力%: 24}, uptime: 0.6, not_chars: [skirk]}
+      - {source: 苍耀（战技后且能量为 0）, stats: {攻击力%: 24, 暴击伤害: 40}, uptime: 0.25, not_chars: [skirk]}
+  - weapon: 雾切之回光
+    effects:
+      - {stats: {增伤: 12}}
+      - {source: 雾切之巴印 3 层, stats: {冰伤: 28}, uptime: 0.8, chars: [kamisatoayaka, skirk]}
+  - weapon: 若水
+    effects:
+      - {stats: {生命值%: 16, 增伤: 20}}
+  - weapon: 静水流涌之辉
+    effects:
+      - {source: 静水流涌之辉（自己 3 层、队友 2 层）, stats: {战技增伤: 24, 生命值%: 28}, uptime: 0.9}
+  - weapon: 风鹰剑
+    effects:
+      - {stats: {攻击力%: 20}}
+  - weapon: 天空之刃
+    effects:
+      - {stats: {暴击率: 4}}
+  # ---------- 四星（stats 精 1，r5 精 5） ----------
+  - weapon: 铁蜂刺
+    effects:
+      - {source: 铁蜂刺「注能之刺」2 层, stats: {增伤: 12}, r5: {增伤: 24}, uptime: 0.9}
+  - weapon: 寒息
+    effects:
+      - {source: 寒息（冰、水反应后）, stats: {攻击力%: 20}, r5: {攻击力%: 40}, uptime: 0.9}
+  - weapon: 柔风游弦
+    effects:
+      - {stats: {充能: 20}, r5: {充能: 40}}

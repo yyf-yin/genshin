@@ -61,6 +61,9 @@ class Effect:
     uptime: float = 1.0
     uses: str | None = None  # 只有用到这个功能时才有（例如 healer：放治疗大招才有）
     talent_stats: dict[str, str] = field(default_factory=dict)  # {属性: 天赋行}：数值按提供者的天赋等级查表
+    stats_r5: dict[str, float] | None = None  # 武器精炼 5 时的数值（stats 是精炼 1）
+    chars: list[str] = field(default_factory=list)  # 只对这些装备者生效（武器效果因人而异时用）
+    not_chars: list[str] = field(default_factory=list)
 
     @classmethod
     def parse(cls, raw: dict, default_to: str = "self") -> "Effect":
@@ -73,8 +76,11 @@ class Effect:
             fs = dict(fs)
             fs["key"] = stat_key(fs["key"])
         talent_stats = {stat_key(k): v for k, v in (raw.get("talent_stats") or {}).items()}
+        r5 = raw.get("r5")
+        stats_r5 = {stat_key(k): parse_value(stat_key(k), v) for k, v in r5.items()} if r5 else None
         return cls(raw.get("source", ""), stats, raw.get("to", default_to), raw.get("when"), fs,
-                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)), raw.get("uses"), talent_stats)
+                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)), raw.get("uses"), talent_stats,
+                   stats_r5, list(raw.get("chars") or []), list(raw.get("not_chars") or []))
 
 
 @dataclass
@@ -106,6 +112,37 @@ def load_profiles(data_dir: Path | str) -> dict[tuple[str, str], Profile]:
                     verified=bool(raw.get("verified", False)),
                 )
                 out[(p.char, p.playstyle)] = p
+    return out
+
+
+def load_weapon_effects(data_dir: Path | str) -> dict[str, list[Effect]]:
+    """data/damage/weapons.yaml：武器给装备者自己的效果（给队友的在 equipment_buffs.yaml）。"""
+    path = Path(data_dir) / "damage" / "weapons.yaml"
+    if not path.exists():
+        return {}
+    with path.open(encoding="utf-8") as fh:
+        raw = yaml.safe_load(fh) or {}
+    return {w["weapon"]: [Effect.parse({"source": w["weapon"], **e}) for e in w.get("effects") or []]
+            for w in raw.get("weapons") or []}
+
+
+def weapon_name(m: "MemberSpec") -> str | None:
+    """组队时选定的武器，没选就用配装里排第一的。"""
+    if m.weapon:
+        return m.weapon
+    b = m.build
+    return sorted(b.weapons, key=lambda w: w.rank)[0].zh if b is not None and b.weapons else None
+
+
+def weapon_effects(m: "MemberSpec", table: dict[str, list[Effect]]) -> list[Effect]:
+    """装备者自己武器的效果，按精炼取数值。"""
+    from dataclasses import replace
+
+    out = []
+    for e in table.get(weapon_name(m) or "", []):
+        if (e.chars and m.char not in e.chars) or m.char in e.not_chars:
+            continue
+        out.append(replace(e, stats=e.stats_r5) if m.refine >= 5 and e.stats_r5 is not None else e)
     return out
 
 
@@ -148,7 +185,7 @@ class MemberSpec:
     weapon: str | None = None  # 组队时选定的武器中文名
     artifact_choice: int = 0
     equipment: list = field(default_factory=list)  # 这名队员身上会给队友加成的装备（EquipmentBuff）
-    refine: int = 1  # 武器精炼
+    refine: int = 1  # 武器精炼（装备者自己的武器，和身上给队友加成的武器是同一把）
 
 
 @dataclass
@@ -195,7 +232,7 @@ def member_panel(gd: GameData, m: MemberSpec) -> Stats:
     b = m.build
     if b is None:
         return st
-    weapon = m.weapon or (sorted(b.weapons, key=lambda w: w.rank)[0].zh if b.weapons else None)
+    weapon = weapon_name(m)
     if weapon:
         try:
             st = st.merged(weapon_stats(gd.weapon(weapon)))
@@ -301,7 +338,8 @@ def _targets(e: Effect, provider: int, members: list[MemberSpec]) -> list[int]:
 
 
 def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[str, str], Profile],
-                enemy: Enemy | None = None, suppressed: set[str] | None = None) -> TeamDamage:
+                enemy: Enemy | None = None, suppressed: set[str] | None = None,
+                weapons: dict[str, list[Effect]] | None = None) -> TeamDamage:
     """members[0] 当作主C。几选一的增益逐个试，取全队总伤害最高的组合。
     suppressed：队里有人排斥的功能（如治疗），循环里标了 uses: 这些功能的技能和增益不放。"""
     enemy = enemy or Enemy()
@@ -317,6 +355,7 @@ def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[st
             effects += [(i, e) for e in p.effects]
         for eq in m.equipment:
             effects += [(i, e) for e in equipment_effects(eq, m.refine if eq.kind == "weapon" else 1)]
+        effects += [(i, e) for e in weapon_effects(m, weapons or {})]
     active = [(i, _resolve(gd, members[i], profiles.get((members[i].char, members[i].playstyle)), e))
               for i, e in effects if not e.when or evaluate(e.when, {"cons": members[i].cons}, funcs)]
     groups: dict[tuple[int, str], dict[str, list[tuple[int, Effect]]]] = {}

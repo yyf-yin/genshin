@@ -34,6 +34,7 @@ class KnowledgeBase:
     equipment: list[EquipmentBuff] = field(default_factory=list)
     game: object | None = None  # GameData（伤害计算要用白值、天赋倍率）
     damage_profiles: dict = field(default_factory=dict)  # (角色, 玩法) → damage.team.Profile
+    damage_weapons: dict = field(default_factory=dict)  # 武器名 → 给装备者自己的效果（damage.team.Effect）
 
     def equipment_buff(self, kind: str, zh: str, pieces: int = 4) -> EquipmentBuff | None:
         for e in self.equipment:
@@ -224,9 +225,10 @@ def load(data_dir: Path | str = DEFAULT_DATA_DIR, validate: bool = True) -> Know
 
     game = load_gamedata(data_dir)
     kb.game = game
-    from .damage.team import load_profiles
+    from .damage.team import load_profiles, load_weapon_effects
 
     kb.damage_profiles = load_profiles(data_dir)
+    kb.damage_weapons = load_weapon_effects(data_dir)
     _add_identity_tags(kb, game)
     if validate:
         kb.validate(game)

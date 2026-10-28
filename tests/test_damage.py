@@ -307,10 +307,24 @@ def test_four_star_weapon_refinement(kb):
     eq = {e.zh: e for e in kb.equipment}
     e = Engine(kb)
     member = lambda gear, source="": SimpleNamespace(  # noqa: E731
-        equipment=[eq[gear]], build=SimpleNamespace(weapons=[SimpleNamespace(zh=gear, source=source)]))
+        weapon=gear, build=SimpleNamespace(weapons=[SimpleNamespace(zh=gear, source=source, rank=1)]))
     assert e._refine_options(member("讨龙英杰谭")) == [5]
     assert e._refine_options(member("柔风游弦", "gacha_4star")) == [1, 5]
     assert e._refine_options(member("柔风游弦", "craftable")) == [5]
+    assert e._refine_options(member("铁蜂刺", "gacha_4star")) == [1, 5]   # 自己的增伤 6% / 12%
+    assert e._refine_options(member("西风剑", "gacha_4star")) == [1]      # 只回能量，伤害算不出差别
+    assert e._refine_options(member("超越之匙", "limited_5star")) == [1]
     r1 = equipment_effects(eq["柔风游弦"], 1)[0].stats
     r5 = equipment_effects(eq["柔风游弦"], 5)[0].stats
     assert list(r1.values()) == [0.24] and list(r5.values()) == [0.48]
+
+
+def test_wielder_weapon_effects(kb):
+    """武器给装备者自己的效果（超越之匙的星超导加成）算进伤害，五星按精 1。"""
+    from genshin_assistant.damage.team import team_damage
+
+    members = _team(kb, ["桑多涅", "奥黛塔", "八重神子", "砂糖"])
+    d = team_damage(kb.game, members, kb.damage_profiles, weapons=kb.damage_weapons)
+    assert any(b.startswith("桑多涅·超越之匙「超越」3 层 → 桑多涅") for b in d.buffs)
+    plain = team_damage(kb.game, members, kb.damage_profiles)
+    assert d.total > plain.total
