@@ -24,4 +24,9 @@ buffs:
     to: "tag:witch_arcana"
     stats: {普攻增伤: 7.14, 重击增伤: 7.14, 下落增伤: 7.14, 战技增伤: 7.14, 爆发增伤: 7.14}
     when: "count_tag('witch_arcana') >= 2"
+  # 混元熵增论（6 命）：大招元素转化后全队对应元素伤害 +20%，大招持续约 8 秒
+  - {source: 混元熵增论, to: all, group: swirl, option: cryo, stats: {冰伤: 20}, uptime: 0.4, when: "cons >= 6"}
+  - {source: 混元熵增论, to: all, group: swirl, option: electro, stats: {雷伤: 20}, uptime: 0.4, when: "cons >= 6"}
+  - {source: 混元熵增论, to: all, group: swirl, option: hydro, stats: {水伤: 20}, uptime: 0.4, when: "cons >= 6"}
+  - {source: 混元熵增论, to: all, group: swirl, option: pyro, stats: {火伤: 20}, uptime: 0.4, when: "cons >= 6"}
 verified: false

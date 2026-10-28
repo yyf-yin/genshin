@@ -44,11 +44,14 @@ def _print(rec: Recommendation) -> None:
     for i, t in enumerate(rec.teams, 1):
         flag = "" if t.verified else "  [草稿数据，未审核]"
         print(f"\n{i}. {t.template_zh}  得分 {t.score}{flag}")
-        print("   成员：" + "、".join(m.zh for m in t.members))
+        print("   成员：" + "、".join(m.zh + (f"（{m.cons} 命）" if m.cons else "") for m in t.members))
         if t.damage:
             d = t.damage
             print(f"   全队一轮期望伤害 {d['total']:,}（标签分 {t.tag_score}）：" + "，".join(
                 f"{m['zh']} {m['share']:.0%}" for m in d["members"]))
+            for v in t.cons_variants:
+                total = f"全队伤害 {v['total']:,}，" if v["total"] else ""
+                print(f"   换成{v['label']}：{total}得分 {v['score']}")
             if d["choices"]:
                 print("   几选一：" + "；".join(d["choices"]))
             if d["missing"]:

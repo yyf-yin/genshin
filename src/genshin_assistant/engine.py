@@ -21,11 +21,11 @@ FIELD_CONFLICT_PENALTY = 0.3
 
 @dataclass
 class Owned:
-    cons: int = 0
+    cons: int | None = None  # None：有这个角色，命座不知道（当 0 命算；四星 0 命、6 命各算一份）
     weapons: set[str] | None = None  # None 表示不限制武器
 
 
-# 角色 id → 拥有情况；roster 为 None 表示假定拥有全部角色（0 命）
+# 角色 id → 拥有情况；roster 为 None 表示假定拥有全部角色（命座不知道）
 Roster = dict[str, Owned] | None
 
 
@@ -129,6 +129,8 @@ class TeamResult:
     tag_score: float = 0.0
     penalty: float = 0.0
     damage: dict | None = None
+    # 同一队人只是四星命座不同（0 命 / 6 命）的另一种算法：[{"label": "砂糖 0 命", "total": ..., "score": ...}]
+    cons_variants: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -229,16 +231,22 @@ class Engine:
 
         self._rank_by_damage(results)
         results.sort(key=lambda r: r.score, reverse=True)
-        seen: set[frozenset[str]] = set()
+        seen: dict[frozenset[str], TeamResult] = {}
         top: list[TeamResult] = []
         for r in results:
             key = frozenset(m.char for m in r.members)
-            if key in seen:
+            if key in seen:  # 同一队人只是四星命座不同：并到排在前面的那一条里显示
+                kept = seen[key]
+                kept_cons = {m.char: m.cons for m in kept.members}
+                diff = [m for m in r.members if m.cons != kept_cons[m.char]]
+                if diff and r.template == kept.template and len(kept.cons_variants) < 3:
+                    kept.cons_variants.append({"label": "、".join(f"{m.zh} {m.cons} 命" for m in diff),
+                                               "total": r.damage["total"] if r.damage else None, "score": r.score})
                 continue
-            seen.add(key)
-            top.append(r)
             if len(top) == top_n:
-                break
+                continue
+            seen[key] = r
+            top.append(r)
         for r in top:
             for m in r.members:
                 m.build = self.build(m.char, m.playstyle, m.cons, self._weapons(m.char, roster),
@@ -273,10 +281,17 @@ class Engine:
         suppressed = {a.tag for k in kits for a in k.avoids}
         return team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
 
+    def _cons_options(self, char_id: str, roster: Roster) -> list[int]:
+        """队友按几命算：box 里有就按实际命座；不知道时四星 0 命、6 命各算一份（四星满命很常见，差别也大）。"""
+        if roster is not None and char_id in roster and roster[char_id].cons is not None:
+            return [roster[char_id].cons]
+        c = self.kb.characters.get(char_id)
+        return [0, 6] if c is not None and c.rarity == 4 else [0]
+
     def _cons(self, char_id: str, roster: Roster) -> int:
         if roster is None or char_id not in roster:
             return 0
-        return roster[char_id].cons
+        return roster[char_id].cons or 0
 
     def _weapons(self, char_id: str, roster: Roster) -> set[str] | None:
         if roster is None or char_id not in roster:
@@ -299,15 +314,16 @@ class Engine:
         def consider(char_id: str, pid: str, base: float, is_listed: bool) -> None:
             if char_id == core_id or not self._owns(char_id, roster):
                 return
-            k = self.kit(char_id, pid, self._cons(char_id, roster))
-            if k is None:
-                return
-            missing = [t for t in core_tags if k.has(t) <= 0]
-            if missing:
-                if is_listed:
-                    excl.append(Exclusion(slot.id, char_id, "缺少核心功能：" + "、".join(self._tag_zh(t) for t in missing)))
-                return
-            out.append((k, base))
+            for cons in self._cons_options(char_id, roster):
+                k = self.kit(char_id, pid, cons)
+                if k is None:
+                    continue
+                missing = [t for t in core_tags if k.has(t) <= 0]
+                if missing:
+                    if is_listed:
+                        excl.append(Exclusion(slot.id, char_id, "缺少核心功能：" + "、".join(self._tag_zh(t) for t in missing)))
+                    continue
+                out.append((k, base))
 
         for cand in slot.candidates:
             listed.add(cand.char)

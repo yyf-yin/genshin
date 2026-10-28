@@ -281,3 +281,17 @@ def test_reaction_needs_a_real_applicator(kb):
     odette = next(m for m in d.members if m.zh == "奥黛塔")
     assert any("（星扩散）" in h for h, _ in odette.hits)
     assert not any("（星超导）" in h for h, _ in odette.hits)
+
+
+def test_four_stars_ranked_at_c0_and_c6(kb):
+    """不知道命座时，四星队友 0 命、6 命各算一份；珐露珊 6 命的风伤暴伤让队伍伤害更高。"""
+    from genshin_assistant.engine import Engine, Owned
+
+    rec = Engine(kb).recommend("薇斯纳", None, None, top_n=30)
+    team = next(t for t in rec.teams if {x.char for x in t.members} == {"vesna", "odette", "vodyanitsa", "faruzan"})
+    # 同一队人只显示一条，另一种命座的结果挂在 cons_variants 里
+    assert next(m.cons for m in team.members if m.char == "faruzan") == 6
+    assert team.cons_variants[0]["label"] == "珐露珊 0 命" and team.cons_variants[0]["total"] < team.damage["total"]
+    owned = {c: Owned(cons=2) for c in ["vesna", "odette", "vodyanitsa", "faruzan", "sucrose"]}
+    rec2 = Engine(kb).recommend("薇斯纳", owned, None, top_n=30)
+    assert {m.cons for t in rec2.teams for m in t.members if m.char == "faruzan"} == {2}

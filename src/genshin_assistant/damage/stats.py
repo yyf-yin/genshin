@@ -48,6 +48,7 @@ def _aliases() -> dict[str, str]:
     for e, zh in ELEMENT_ZH.items():
         a[f"{zh}伤"] = a[f"{zh}元素伤害加成"] = a[f"{zh}伤害加成"] = f"{e}_dmg"
         a[f"{zh}减抗"] = a[f"{zh}元素减抗"] = a[f"{zh}抗性降低"] = f"{e}_res_shred"
+        a[f"{zh}元素暴击伤害"] = a[f"{zh}伤暴击伤害"] = f"{e}_cd"  # 只对这个元素的伤害生效（珐露珊 6 命）
     a["物理伤害加成"] = "physical_dmg"
     for c, zh in CATEGORIES.items():
         short = {"normal": "普攻", "skill": "战技", "burst": "爆发", "charged": "重击", "plunge": "下落"}[c]
@@ -97,7 +98,7 @@ def _known(key: str) -> bool:
     if tail == "dmg":
         return head in ELEMENTS or head in CATEGORIES
     if tail in ("cr", "cd"):
-        return head in CATEGORIES
+        return head in CATEGORIES or (tail == "cd" and head in ELEMENTS)
     if tail == "bonus":
         return head in REACTION_ZH
     return False

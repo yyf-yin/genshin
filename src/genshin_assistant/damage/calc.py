@@ -206,7 +206,7 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
             zones = [Zone("基础伤害", talent_part * base_mult + hit.flat, desc),
                      Zone(f"{REACTION_ZH[special]}系数", coef, "角色技能直接造成的反应伤害")]
             zones += _special_zones(special, st, enemy, element)
-            out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd, times))
+            out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd + st.get(f"{element}_cd"), times))
             continue
         base = talent_part * base_mult + hit.flat + st.get("flat_dmg") + st.get(f"{category}_flat_dmg")
         zones = [Zone("基础伤害", base, desc + (f"，倍率×{base_mult}" if base_mult != 1 else ""))]
@@ -228,7 +228,7 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
         if st.get("elevate"):
             zones.append(Zone("擢升区", 1 + st.get("elevate")))
         suffix = f"（{REACTION_ZH[reaction]}）" if reaction else ""
-        out.append(_finish(label + suffix, element, zones, cr, cd, times))
+        out.append(_finish(label + suffix, element, zones, cr, cd + st.get(f"{element}_cd"), times))
     return out
 
 
@@ -258,7 +258,8 @@ def reaction_hit(gd: GameData, spec: dict, st: Stats, enemy: Enemy, char_level: 
             raise NotImplementedError(f"{REACTION_ZH[reaction]}本身不直接造成伤害（或系数未知），可以用 coefficient 指定")
         zones = [Zone("基础伤害", float(coef) * lv_mult, f"系数 {coef} × 等级系数 {lv_mult:.1f}")]
         zones += _special_zones(reaction, st, enemy)
-        return _finish(f"{REACTION_ZH[reaction]}反应", SPECIAL_ELEMENT[reaction], zones, st.get("cr"), st.get("cd"), times)
+        element = SPECIAL_ELEMENT[reaction]
+        return _finish(f"{REACTION_ZH[reaction]}反应", element, zones, st.get("cr"), st.get("cd") + st.get(f"{element}_cd"), times)
     if reaction not in f.TRANSFORMATIVE:
         raise ValueError(f"{REACTION_ZH[reaction]} 要写在技能那一条上（reaction: {REACTION_ZH[reaction]}）")
     element = TRANSFORMATIVE_ELEMENT.get(reaction) or _element({}, None, None, spec.get("element"))

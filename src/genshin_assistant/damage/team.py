@@ -60,6 +60,7 @@ class Effect:
     option: str | None = None
     uptime: float = 1.0
     uses: str | None = None  # 只有用到这个功能时才有（例如 healer：放治疗大招才有）
+    talent_stats: dict[str, str] = field(default_factory=dict)  # {属性: 天赋行}：数值按提供者的天赋等级查表
 
     @classmethod
     def parse(cls, raw: dict, default_to: str = "self") -> "Effect":
@@ -71,8 +72,9 @@ class Effect:
         if fs:
             fs = dict(fs)
             fs["key"] = stat_key(fs["key"])
+        talent_stats = {stat_key(k): v for k, v in (raw.get("talent_stats") or {}).items()}
         return cls(raw.get("source", ""), stats, raw.get("to", default_to), raw.get("when"), fs,
-                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)), raw.get("uses"))
+                   raw.get("group"), raw.get("option"), float(raw.get("uptime", 1.0)), raw.get("uses"), talent_stats)
 
 
 @dataclass
@@ -313,7 +315,8 @@ def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[st
             effects += [(i, e) for e in p.effects]
         for eq in m.equipment:
             effects += [(i, e) for e in equipment_effects(eq)]
-    active = [(i, e) for i, e in effects if not e.when or evaluate(e.when, {"cons": members[i].cons}, funcs)]
+    active = [(i, _resolve(gd, members[i], profiles.get((members[i].char, members[i].playstyle)), e))
+              for i, e in effects if not e.when or evaluate(e.when, {"cons": members[i].cons}, funcs)]
     groups: dict[tuple[int, str], dict[str, list[tuple[int, Effect]]]] = {}
     fixed = []
     for i, e in active:
@@ -330,6 +333,30 @@ def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[st
         if best is None or result.total > best.total:
             best = result
     return best
+
+
+def _resolve(gd: GameData, m: MemberSpec, p: Profile | None, e: Effect) -> Effect:
+    """按提供者的天赋等级（含 3、5 命加的 3 级）查表：talent_stats 的数值、from_stat 的 ratio_from。"""
+    fs = e.from_stat
+    if not e.talent_stats and not (fs and "ratio_from" in fs):
+        return e
+    from dataclasses import replace
+
+    char = _game_char(gd, m)
+    talents = load_talents(gd.talent_multipliers.get(char["id"], {}))
+    levels = _talent_levels(m, p or Profile(m.char), char)
+
+    def value(query: str) -> float:
+        t = find_talent(talents, query)
+        values = next(iter(t.params.values()))
+        return values[min(levels.get(t.slot, 9), len(values)) - 1]
+
+    stats = dict(e.stats)
+    for k, q in e.talent_stats.items():
+        stats[k] = stats.get(k, 0.0) + value(q)
+    if fs and "ratio_from" in fs:
+        fs = {**fs, "ratio": value(fs["ratio_from"]) * float(fs.get("ratio_scale", 1.0))}
+    return replace(e, stats=stats, from_stat=fs, talent_stats={})
 
 
 def _without(p: Profile, suppressed: set[str]) -> Profile:
@@ -372,7 +399,7 @@ def _member_damage(gd: GameData, m: MemberSpec, p: Profile, st: Stats, enemy: En
                    panels: list[Stats], buffs: list[Stats], members: list[MemberSpec]) -> MemberDamage:
     char = _game_char(gd, m)
     talents = load_talents(gd.talent_multipliers.get(char["id"], {}))
-    levels = _talent_levels(m, p)
+    levels = _talent_levels(m, p, char)
     rows: list[tuple[str, float]] = []
     j = next((k for k, x in enumerate(members) if x.position == "on_field"), 0)
     for spec in p.hits:
@@ -417,8 +444,9 @@ def _custom_talent(spec: dict) -> Talent:
     return Talent(spec.get("slot", "skill"), spec.get("name", "额外伤害"), "+".join(parts), params)
 
 
-def _talent_levels(m: MemberSpec, p: Profile) -> dict[str, int]:
-    """配装里「要点」的天赋按 10 级，「不用点」按 6 级，其余 9 级；循环数据里写了的以循环为准。"""
+def _talent_levels(m: MemberSpec, p: Profile, char: dict | None = None) -> dict[str, int]:
+    """配装里「要点」的天赋按 10 级，「不用点」按 6 级，其余 9 级；循环数据里写了的以循环为准。
+    3 命、5 命的「技能等级提高 3 级」再加 3 级。"""
     out = {"normal_attack": 9, "skill": 9, "burst": 9}
     if m.build is not None:
         slot = {"normal": "normal_attack", "skill": "skill", "burst": "burst"}
@@ -427,6 +455,20 @@ def _talent_levels(m: MemberSpec, p: Profile) -> dict[str, int]:
         for x in m.build.talents.skip:
             out[slot[x]] = 6
     out.update(p.talents)
+    for slot in _cons_level_ups(char, m.cons) if char else []:
+        out[slot] = out[slot] + 3
+    return out
+
+
+def _cons_level_ups(char: dict, cons: int) -> list[str]:
+    """命座原文「XX的技能等级提高3级」对应的天赋。"""
+    talents = char.get("talents") or {}
+    out = []
+    for n in (3, 5):
+        text = ((char.get("constellations") or {}).get(f"c{n}") or {}).get("description", "")
+        if cons < n or "技能等级提高3级" not in text:
+            continue
+        out += [slot for slot, t in talents.items() if t.get("name") and t["name"] in text and slot in ("normal_attack", "skill", "burst")]
     return out
 
 

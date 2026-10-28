@@ -1,12 +1,17 @@
-# AI 草稿：战技 ×2 + 大招领域加攻（班尼特基础攻击力的约 100%），未经实测核对。
+# AI 草稿：战技 ×2 + 大招领域加攻（班尼特基础攻击力 × 天赋比例，3、5 命加的等级会算进去），未经实测核对。
 char: bennett
 on_field_seconds: 3
 hits:
   - {talent: 战技:点按伤害, count: 2}
   - {talent: 爆发:技能伤害, count: 1}
 buffs:
-  - source: 美妙旅程（基础攻击力的约 100%）
+  - source: 美妙旅程（基础攻击力 × 天赋比例）
     to: on_field
-    from_stat: {stat: base_atk, ratio: 1.0, key: 攻击力}
+    from_stat: {stat: base_atk, ratio_from: 爆发:攻击力加成比例, key: 攻击力}
     uptime: 0.7
+  - source: 冒险憧憬（1 命：再加基础攻击力的 20%）
+    to: on_field
+    from_stat: {stat: base_atk, ratio: 0.2, key: 攻击力}
+    uptime: 0.7
+    when: "cons >= 1"
 verified: false

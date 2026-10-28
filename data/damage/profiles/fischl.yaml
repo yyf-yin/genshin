@@ -5,6 +5,9 @@ hits:
   - {talent: 战技:召唤伤害, count: 0.8}
   - {talent: 战技:奥兹攻击, count: 18}
   - {talent: 爆发:落雷伤害, count: 1}
+  - {name: 圣裁影羽（2 命）, slot: skill, scaling: {atk: 2.0}, count: 0.8, when: "cons >= 2"}
+  - {name: 皇女幻绮谭（4 命）, slot: burst, scaling: {atk: 2.22}, count: 1, when: "cons >= 4"}
+  - {name: 永夜之禽（6 命：奥兹协同攻击）, slot: skill, scaling: {atk: 0.3}, element: electro, count: 14, when: "cons >= 6"}
   # 断罪雷影：站场角色触发雷元素相关反应时降下圣裁之雷（菲谢尔 80% 攻击力）
   - {name: 断罪雷影, scaling: {atk: 0.8}, element: electro, count: 8, when: "count_any(['pyro', 'hydro', 'cryo', 'dendro']) > 0"}
 reactions:
