@@ -204,3 +204,15 @@ def test_switching_character_drops_stale_missing(kb):
     assert r.query.missing == []
     a.model.parsed = {"intent": "team", "character": "那维莱特", "missing": ["芙宁娜", "枫原万叶"]}
     assert a.ask("那万叶也没有呢", Query("team", "那维莱特", 0, ["芙宁娜"])).query.missing == ["芙宁娜", "枫原万叶"]
+
+
+def test_model_never_sees_damage_numbers(kb):
+    a = make(kb, {"intent": "team", "character": "那维莱特"})
+    r = a.ask("水龙怎么配")
+    sent = a.model.calls[-1][1]
+    for key in ('"total"', '"share"', '"score"'):
+        assert key not in sent
+    dmg = [t["damage"] for t in r.facts["teams"] if t.get("damage")]
+    assert dmg, "那维莱特队应该有伤害数据"
+    assert all(m["role"] in ("主力输出", "重要输出", "以辅助为主") for d in dmg for m in d["members"])
+    assert all(isinstance(h, str) for d in dmg for m in d["members"] for h in m["top_hits"])

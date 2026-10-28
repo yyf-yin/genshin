@@ -32,24 +32,30 @@ PARSE_SYSTEM = """你是原神配队助手的问题解析器。把玩家的问�
 {names}
 只输出 JSON 对象。"""
 
-EXPLAIN_SYSTEM = """你是原神配队与养成助手，用中文回答玩家。
-下面的「引擎结果」是推荐引擎按知识库算出来的，是你唯一的依据：
-- 只推荐引擎结果里出现的角色、武器、圣遗物，不要凭记忆添加或改动；引擎没给的就直说知识库里还没有
-- 队伍按引擎的顺序讲，先给结论（队伍成员），再讲为什么：每个位置起什么作用、满足了谁的需求、扣分项
-- 有替补时，讲清替补保留了什么、失去了什么，有攻略结论（override_reason）时优先讲它，没有就不提
-- 数据标了未审核（verified=false 或 draft）时，在结尾提醒一句「这部分数据还是草稿，未审核」
-- 命座会改变结论时要点出来
-- status 是 need_carry 时，问的是辅助角色，先不要给队伍：问玩家想搭配哪个主C。universal 为 false 时列出 candidates 里的主C和一句理由（meets_needs、in_template、元素），unfit 里的可以简短说为什么不合适；universal 为 true 时说明这个辅助几乎哪个队都能用，直接问想搭配哪个主C，candidates 只作为可选举例
-- 有 carry 时，队伍是以 carry 为核心、包含所问辅助的队伍，先说明这一点；support_missing_reason 有值时说明这个主C的现有队伍里放不进该辅助及原因
-- status 是 no_team_template 时，说明还没有现成队伍，再按 kit（这个角色提供的功能、对队友的需求、整队规则）讲适合什么样的队友，但不要点名具体角色，除非 appears_in 里有
-- 理由只能来自引擎结果：保留/失去的功能照 kept、lost 原样讲，扣分只讲 needs、conflicts 里的，不要自己补强度评价或扣分原因
-- 队伍有 damage 时，排序依据是全队一轮的期望总伤害：讲每人的伤害占比（share）和主要伤害来源（top_hits），队友对比时用它说明谁更强、强在哪；choices 是引擎为风套等「几选一」增益选的元素；missing 里的角色还没有伤害数据，伤害按 0 算，要点明
-- 队员 cons 不为 0 时，名字后面带上命座；玩家没说命座时四星按 0 命、6 命各算一份；给队友加成的四星武器锻造的按精 5，其他的精 1、精 5 各算一份（damage.refine 是这队用的精炼）；variants 是同一队换成另一种命座或精炼的全队伤害，要讲出差多少
-- 武器按 rank 讲，rank 相同的写成并列
-- 队员 gear_swapped 为 true 表示首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已由队友带着，同一件一队只生效一次，所以他换成了列出的次选，要点明
-- 不要在回答里出现英文字段名（如 override_reason、kept、verified）
-- 简洁，用短段落和列表，不要寒暄
-输出 JSON：{{"answer": "Markdown 格式的回答"}}"""
+EXPLAIN_SYSTEM = """你是一位很懂配队和养成的原神攻略向导，正在和玩家面对面聊天，用中文回答他的问题。
+语气：像熟人当面指点一样自然、笃定。先说结论，再顺着讲理由。不要说「可能」「大概」「仅供参考」「建议核对」这类含糊的话。
+写法：用口语化的短段落，一段讲一件事，句子完整，称呼玩家用「你」。少用列表，不用标题、表格、加粗和表情符号。
+这段话之后会被改写成游戏里 NPC 的说话风格，所以只写平实的内容，不要加自己的人设、口头禅或角色扮演。
+
+下面的「攻略要点」是你知道的全部内容（玩家看不到它，也不要提到它）：
+- 绝不说结论从哪来：不提引擎、知识库、数据、模板、草稿、审核、得分、计算、模拟，也不提攻略作者、UP 主、视频、评论区或「很多人认为」，直接当成你自己的判断说出来
+- 绝不说具体伤害数字或伤害百分比；比较强弱只用「主力输出」「伤害最高」「差不多」「明显更强」这类说法
+- 只提要点里出现的角色、武器、圣遗物，不要凭记忆添加或改动；要点里没有的就不展开，也不要编
+- 队伍按给出的顺序讲：第一套是最推荐的，后面是备选。先报阵容，再讲每个人在队里干什么、帮谁解决了什么问题、有什么短板
+- 有替补时，讲清换上的人保留了什么、少了什么；有 override_reason 时用它作为理由
+- 队伍有 damage 时：role 说明每人在队里是主力输出、重要输出还是以辅助为主，top_hits 是他伤害主要来自哪些招式；missing 里的角色伤害没算进去，就说他「主要靠辅助」即可，不要提没算
+- variants 是同一队换成另一种命座或武器精炼的效果，用 compare（更强、略强、差不多、略弱、更弱）讲区别
+- 队员 cons 不为 0 时，提到他时带上命座；命座会改变结论时要点出来
+- status 是 need_carry 时，问的是辅助：先别给队伍，反问玩家想把他带进哪个主C的队伍。universal 为 false 时说出 candidates 里的主C并各给一句理由（meets_needs、in_template、元素），unfit 里的简短说为什么不推荐；universal 为 true 时直接说这个辅助几乎哪个队都能用，问想配哪个主C，candidates 只当举例
+- 有 carry 时，开头说明这是以 carry 为核心、带上所问辅助的阵容；support_missing_reason 有值时直接说这个主C的队伍里放不下该辅助、为什么
+- status 是 no_team_template 或 carry_no_template 时，不给具体阵容，改讲这个角色在队里干什么、需要什么样的队友（kit、carry_kit、support_kit 里的功能、需求和整队规则），只点名 appears_in 里出现的角色；把配装讲完整
+- status 是 not_in_kb 时，只讲配装，配队一句话带过：这个角色怎么配队你还没摸透
+- 理由只能来自要点：保留/失去的功能照 kept、lost 讲，短板只讲 needs、conflicts 里的，不要自己补强度评价
+- 武器按 rank 讲，rank 相同的说成都可以；圣遗物、词条、充能、天赋照要点讲，充能区间、面板目标这类养成数字可以说
+- 队员 gear_swapped 为 true 时点明：首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已经有队友带了，同一件一队只生效一次，所以他换成次选
+- 不要在回答里出现英文字段名
+- 不要寒暄，不要结尾客套
+输出 JSON：{{"answer": "回答正文"}}"""
 
 
 @dataclass
@@ -161,7 +167,7 @@ class Assistant:
 
     def facts(self, q: Query) -> dict:
         if q.intent == "other" or not q.character:
-            return {"status": "unsupported", "note": "目前只回答某个角色的配队和养成，问题里要带上角色名"}
+            return {"status": "unsupported", "note": "我只解答角色的配队和养成，问的时候带上角色名，比如「那维莱特怎么配队」"}
         try:
             core = self.kb.resolve(q.character)
         except KeyError:
@@ -177,7 +183,7 @@ class Assistant:
             return {**out, **self._support_facts(q, core, roster, cons)}
         if not self.kb.teams_for(core.id):
             return {**out, "status": "no_team_template",
-                    "note": f"知识库里还没有以{core.zh}为核心的队伍模板",
+                    "note": f"{core.zh}的成套阵容还没定下来，先讲{core.zh}在队里的作用和需要什么队友",
                     "appears_in": self._appears_in(core.id),
                     "kit": self._kit(core.id, q.playstyle, cons),
                     "build": _trim_build(self.engine.build(core.id, q.playstyle or "default", cons))}
@@ -190,17 +196,17 @@ class Assistant:
             fit, unfit, universal = self.engine.carries_for(support.id, cons, roster)
             return {"status": "need_carry", "universal": universal,
                     "candidates": [_carry_row(r) for r in fit], "unfit": [_carry_row(r) for r in unfit],
-                    "note": f"{support.zh}是辅助，先确定搭配哪个主C"}
+                    "note": f"{support.zh}是辅助，得先定下带进哪个主C的队伍"}
         try:
             carry = self.kb.resolve(q.carry)
         except KeyError:
-            return {"status": "unknown_character", "name": q.carry, "note": "找不到这个主C，或者还没录入知识库"}
+            return {"status": "unknown_character", "name": q.carry, "note": "没认出这个主C，换个叫法再问一次"}
         saved = self.roster.load() or {}
         roster = {**roster, carry.id: roster.get(carry.id) or Owned(cons=saved.get(carry.zh, 0))}  # 选的主C当作拥有
         out = {"status": "team", "support": support.zh, "carry": carry.zh, "missing": q.missing}
         if not self.kb.teams_for(carry.id):
             return {**out, "status": "carry_no_template",
-                    "note": f"知识库里还没有以{carry.zh}为核心的队伍模板",
+                    "note": f"{carry.zh}的成套阵容还没定下来，先讲两人各自的作用",
                     "carry_kit": self._kit(carry.id, None, roster[carry.id].cons or 0),
                     "support_kit": self._kit(support.id, q.playstyle, cons),
                     "build": _trim_build(self.engine.build(support.id, q.playstyle or "default", cons))}
@@ -265,7 +271,7 @@ class Assistant:
             for s in t.slots:
                 for c in s.candidates:
                     if c.char == char_id:
-                        out.append({"team": t.zh, "slot": s.zh or s.id, "score": c.score, "verified": t.verified})
+                        out.append({"team": t.zh, "slot": s.zh or s.id})
         return out
 
     def _outside_kb(self, q: Query) -> dict:
@@ -273,11 +279,11 @@ class Assistant:
             row = self.game.character(q.character)
         except KeyError:
             return {"status": "unknown_character", "name": q.character,
-                    "note": "知识库和游戏数据里都找不到这个角色，可能是名字写错了"}
+                    "note": "没认出这个角色，检查一下名字再问"}
         drafts = KnowledgeBase(builds=[b for b in load_draft_builds(self.data_dir) if b.char == row["id"]])
         b = Engine(drafts).build(row["id"], q.playstyle or "default", q.cons or 0)
         out = {"status": "not_in_kb", "character": row["zh"], "cons": q.cons or 0,
-               "note": f"{row['zh']}还没有录入知识库，没有配队数据"}
+               "note": f"{row['zh']}怎么配队还没摸透，先说养成"}
         if b:
             out["build"] = {**_trim_build(b), "draft": True}
         return out
@@ -317,21 +323,35 @@ def _trim_rec(r: dict) -> dict:
     teams = []
     for t in r["teams"]:
         teams.append({
-            "template": t["template_zh"], "score": t["score"], "verified": t["verified"],
+            "template": t["template_zh"],
             "members": [member(m) for m in t["members"]],
             "needs": t["needs"], "conflicts": t["conflicts"], "substitutions": t["substitutions"],
             "damage": _trim_damage(t.get("damage")),
-            "variants": t.get("variants") or [],
+            "variants": [{"label": v["label"], "compare": _compare(v.get("score"), t["score"])}
+                         for v in t.get("variants") or []],
         })
     return {"teams": teams, "invalid": r["invalid"], "excluded": r["excluded"]}
 
 
 def _trim_damage(d: dict | None) -> dict | None:
+    """给大模型看的伤害：只给定位和招式名，不给数字（回答里不能出现具体伤害）。"""
     if not d:
         return None
-    return {"total": d["total"], "members": [{"zh": m["zh"], "share": m["share"], "top_hits": [h for h, _ in m["top_hits"]]}
-                                             for m in d["members"]],
+    return {"members": [{"zh": m["zh"], "role": _role(m["share"]), "top_hits": [h for h, _ in m["top_hits"]]}
+                        for m in d["members"]],
             "choices": d["choices"], "missing": d["missing"], "refine": d.get("refine", [])}
+
+
+def _role(share: float) -> str:
+    return "主力输出" if share >= 0.4 else "重要输出" if share >= 0.15 else "以辅助为主"
+
+
+def _compare(variant: float | None, base: float) -> str:
+    """同一队换命座/精炼后的强弱，只给定性说法。"""
+    if variant is None or not base:
+        return "差不多"
+    r = variant / base - 1
+    return "更强" if r > 0.1 else "略强" if r > 0.02 else "更弱" if r < -0.1 else "略弱" if r < -0.02 else "差不多"
 
 
 def _member_label(m: dict) -> str:
@@ -348,21 +368,18 @@ def render_plain(facts: dict) -> str:
     if st == "team":
         lines.append(f"**{facts['character']}（{facts['cons']} 命）**")
         for i, t in enumerate(facts["teams"], 1):
-            lines.append(f"\n{i}. {'、'.join(_member_label(m) for m in t['members'])}（{t['template']}，得分 {t['score']}"
-                         f"{'' if t['verified'] else '，草稿未审核'}）")
+            lines.append(f"\n{i}. {'、'.join(_member_label(m) for m in t['members'])}{'（最推荐）' if i == 1 else ''}")
             if t.get("damage"):
-                dmg = t["damage"]
-                lines.append("   - 伤害占比：" + "，".join(f"{m['zh']} {m['share']:.0%}" for m in dmg["members"])
-                             + (f"（{'、'.join(dmg['missing'])}还没有伤害数据）" if dmg["missing"] else ""))
+                lines.append("   - " + "，".join(f"{m['zh']}{m['role']}" for m in t["damage"]["members"]))
             for v in t.get("variants") or []:
-                lines.append(f"   - 换成{v['label']}：得分 {v['score']}")
+                lines.append(f"   - 换成{v['label']}：{v['compare']}")
             for d in t["substitutions"]:
                 why = d["override_reason"] or f"保留 {'、'.join(d['kept']) or '无'}；失去 {'、'.join(d['lost']) or '无'}"
                 lines.append(f"   - {d['chosen']} 替 {d['preferred']}：{why}")
             for c in t["conflicts"]:
-                lines.append(f"   - 扣分：{c['owner']}，{c['reason']}")
+                lines.append(f"   - 短板：{c['owner']}，{c['reason']}")
         for x in facts["invalid"]:
-            lines.append(f"\n不成立：{x['template_zh']}：{x['reason']}")
+            lines.append(f"\n{x['template_zh']}这套凑不齐：{x['reason']}")
         if not facts["teams"] and not facts["invalid"]:
             lines.append("没有找到可用的队伍。")
     if st == "need_carry":
@@ -380,12 +397,12 @@ def render_plain(facts: dict) -> str:
         lines.append(f"- 可以在「{a['team']}」里当{a['slot']}")
     b = facts.get("build")
     if b:
-        lines.append(f"\n**养成：{b['zh']}（{b['cons']} 命）**{'' if b['verified'] and not b.get('draft') else '（草稿，未审核）'}")
+        lines.append(f"\n**养成：{b['zh']}（{b['cons']} 命）**")
         lines.append("武器：" + "；".join(f"{w['rank']}. {w['zh']}" for w in b["weapons"]))
         lines.append("圣遗物：" + "；".join(b["artifact_sets"]))
         if b["energy_recharge"]:
             lines.append(f"充能：{b['energy_recharge'][0]}%~{b['energy_recharge'][1]}%")
         lines.extend(f"备注：{n}" for n in b["notes"])
     elif st in ("build", "no_team_template"):
-        lines.append("知识库里还没有这个角色在这个命座下的配装。")
+        lines.append("这个命座怎么养还没定下来。")
     return "\n".join(lines)
