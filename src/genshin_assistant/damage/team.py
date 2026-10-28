@@ -109,11 +109,12 @@ def load_profiles(data_dir: Path | str) -> dict[tuple[str, str], Profile]:
     return out
 
 
-def equipment_effects(equipment) -> list[Effect]:
-    """equipment_buffs.yaml 的一件装备 → 增益。带 choose_one 的几条互斥（风套）。"""
+def equipment_effects(equipment, refine: int = 1) -> list[Effect]:
+    """equipment_buffs.yaml 的一件装备 → 增益。带 choose_one 的几条互斥（风套）。武器精 5 时用 value_r5。"""
     out = []
     for g in equipment.provides:
-        if g.value is None:
+        value = g.value_r5 if refine >= 5 and g.value_r5 is not None else g.value
+        if value is None:
             continue
         base, _, param = g.tag.partition(":")
         if g.tag in TAG_STATS:
@@ -128,7 +129,7 @@ def equipment_effects(equipment) -> list[Effect]:
             continue
         # 风套这类「几条只生效一条」：按扩散到的元素分组，和砂糖固有天赋等同组增益一起选
         group, option = ("swirl", param) if equipment.choose_one else (None, None)
-        out.append(Effect(equipment.zh, {key: float(g.value)}, equipment.to, g.when, None, group, option))
+        out.append(Effect(equipment.zh, {key: float(value)}, equipment.to, g.when, None, group, option))
     return out
 
 
@@ -147,6 +148,7 @@ class MemberSpec:
     weapon: str | None = None  # 组队时选定的武器中文名
     artifact_choice: int = 0
     equipment: list = field(default_factory=list)  # 这名队员身上会给队友加成的装备（EquipmentBuff）
+    refine: int = 1  # 武器精炼
 
 
 @dataclass
@@ -314,7 +316,7 @@ def team_damage(gd: GameData, members: list[MemberSpec], profiles: dict[tuple[st
         if p:
             effects += [(i, e) for e in p.effects]
         for eq in m.equipment:
-            effects += [(i, e) for e in equipment_effects(eq)]
+            effects += [(i, e) for e in equipment_effects(eq, m.refine if eq.kind == "weapon" else 1)]
     active = [(i, _resolve(gd, members[i], profiles.get((members[i].char, members[i].playstyle)), e))
               for i, e in effects if not e.when or evaluate(e.when, {"cons": members[i].cons}, funcs)]
     groups: dict[tuple[int, str], dict[str, list[tuple[int, Effect]]]] = {}

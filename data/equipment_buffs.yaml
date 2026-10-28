@@ -1,7 +1,8 @@
 # 会给队友加成的圣遗物套装和武器（草稿，按 data/game/ 里的原文起草，未逐条核对）。
 # 某个角色的配装（builds/）首选了这里的装备时，引擎把 provides 加到这个角色身上：
 # 砂糖 = 技能增益 + 翠绿之影 + 讨龙英杰谭。只写给队友的部分，只给装备者自己的不写。
-# value：圣遗物按原文；武器按精炼 1（4 星武器常见满精，note 里写了精 5 的数值）；讨龙按精 5（Cliff 2026-10-28）。
+# value：圣遗物按原文；武器按精炼 1，value_r5 是精炼 5。四星武器锻造的按精 5，refine 写死的按写的（讨龙精 5），
+# 其他四星精 1、精 5 各算一份（Cliff 2026-10-28）。
 # 依赖队伍条件的（扩散/结晶到的元素、月兆等级）先按「条件满足」写，score 调低一些表示不稳定。
 # 伤害计算（damage/team.py）用 value 算具体加成：to 写加成给谁（默认 all），choose_one: true 表示几条里只生效一条。
 equipment:
@@ -77,8 +78,9 @@ equipment:
     zh: 讨龙英杰谭
     to: on_field
     provides:
-      - {tag: buff:atk_pct, score: 0.8, value: 0.48}
-    note: 只给下一个登场的角色；按精 5（精 1 为 24%）
+      - {tag: buff:atk_pct, score: 0.8, value: 0.24, value_r5: 0.48}
+    refine: 5
+    note: 只给下一个登场的角色；按精 5 算（Cliff 2026-10-28）
   - kind: weapon
     zh: 苍古自由之誓
     provides:
@@ -147,9 +149,8 @@ equipment:
   - kind: weapon
     zh: 柔风游弦
     provides:
-      - {tag: reaction_buff:stellar_superconduct, score: 0.7, value: 0.24}
-      - {tag: reaction_buff:stellar_swirl, score: 0.7, value: 0.24}
-    note: 精 5 为 48%
+      - {tag: reaction_buff:stellar_superconduct, score: 0.7, value: 0.24, value_r5: 0.48}
+      - {tag: reaction_buff:stellar_swirl, score: 0.7, value: 0.24, value_r5: 0.48}
   - kind: weapon
     zh: 流浪的晚星
     provides:
@@ -170,4 +171,4 @@ equipment:
     zh: 寒息
     provides:
       - {tag: energy_battery, score: 0.4, value: 6}
-    note: 触发冰、水相关反应后给其他队友回 6 点能量，每 16 秒一次；精 5 为 12 点
+    note: 触发冰、水相关反应后给其他队友回 6 点能量（精 5 为 12 点），每 16 秒一次

@@ -289,9 +289,28 @@ def test_four_stars_ranked_at_c0_and_c6(kb):
 
     rec = Engine(kb).recommend("薇斯纳", None, None, top_n=30)
     team = next(t for t in rec.teams if {x.char for x in t.members} == {"vesna", "odette", "vodyanitsa", "faruzan"})
-    # 同一队人只显示一条，另一种命座的结果挂在 cons_variants 里
+    # 同一队人只显示一条，另一种命座的结果挂在 variants 里
     assert next(m.cons for m in team.members if m.char == "faruzan") == 6
-    assert team.cons_variants[0]["label"] == "珐露珊 0 命" and team.cons_variants[0]["total"] < team.damage["total"]
+    assert team.variants[0]["label"] == "珐露珊 0 命" and team.variants[0]["total"] < team.damage["total"]
     owned = {c: Owned(cons=2) for c in ["vesna", "odette", "vodyanitsa", "faruzan", "sucrose"]}
     rec2 = Engine(kb).recommend("薇斯纳", owned, None, top_n=30)
     assert {m.cons for t in rec2.teams for m in t.members if m.char == "faruzan"} == {2}
+
+
+def test_four_star_weapon_refinement(kb):
+    """讨龙固定精 5；锻造四星精 5；其他四星（柔风游弦）精 1、精 5 分开算，精 5 用 value_r5。"""
+    from types import SimpleNamespace
+
+    from genshin_assistant.damage.team import equipment_effects
+    from genshin_assistant.engine import Engine
+
+    eq = {e.zh: e for e in kb.equipment}
+    e = Engine(kb)
+    member = lambda gear, source="": SimpleNamespace(  # noqa: E731
+        equipment=[eq[gear]], build=SimpleNamespace(weapons=[SimpleNamespace(zh=gear, source=source)]))
+    assert e._refine_options(member("讨龙英杰谭")) == [5]
+    assert e._refine_options(member("柔风游弦", "gacha_4star")) == [1, 5]
+    assert e._refine_options(member("柔风游弦", "craftable")) == [5]
+    r1 = equipment_effects(eq["柔风游弦"], 1)[0].stats
+    r5 = equipment_effects(eq["柔风游弦"], 5)[0].stats
+    assert list(r1.values()) == [0.24] and list(r5.values()) == [0.48]

@@ -44,7 +44,7 @@ EXPLAIN_SYSTEM = """你是原神配队与养成助手，用中文回答玩家。
 - status 是 no_team_template 时，说明还没有现成队伍，再按 kit（这个角色提供的功能、对队友的需求、整队规则）讲适合什么样的队友，但不要点名具体角色，除非 appears_in 里有
 - 理由只能来自引擎结果：保留/失去的功能照 kept、lost 原样讲，扣分只讲 needs、conflicts 里的，不要自己补强度评价或扣分原因
 - 队伍有 damage 时，排序依据是全队一轮的期望总伤害：讲每人的伤害占比（share）和主要伤害来源（top_hits），队友对比时用它说明谁更强、强在哪；choices 是引擎为风套等「几选一」增益选的元素；missing 里的角色还没有伤害数据，伤害按 0 算，要点明
-- 队员 cons 不为 0 时，名字后面带上命座；玩家没说命座时四星按 0 命、6 命各算一份，cons_variants 是同一队换成另一种命座的全队伤害，要讲出差多少
+- 队员 cons 不为 0 时，名字后面带上命座；玩家没说命座时四星按 0 命、6 命各算一份；给队友加成的四星武器锻造的按精 5，其他的精 1、精 5 各算一份（damage.refine 是这队用的精炼）；variants 是同一队换成另一种命座或精炼的全队伤害，要讲出差多少
 - 武器按 rank 讲，rank 相同的写成并列
 - 队员 gear_swapped 为 true 表示首选的增益装备（如翠绿之影、讨龙英杰谭、炉火）已由队友带着，同一件一队只生效一次，所以他换成了列出的次选，要点明
 - 不要在回答里出现英文字段名（如 override_reason、kept、verified）
@@ -321,7 +321,7 @@ def _trim_rec(r: dict) -> dict:
             "members": [member(m) for m in t["members"]],
             "needs": t["needs"], "conflicts": t["conflicts"], "substitutions": t["substitutions"],
             "damage": _trim_damage(t.get("damage")),
-            "cons_variants": t.get("cons_variants") or [],
+            "variants": t.get("variants") or [],
         })
     return {"teams": teams, "invalid": r["invalid"], "excluded": r["excluded"]}
 
@@ -331,7 +331,7 @@ def _trim_damage(d: dict | None) -> dict | None:
         return None
     return {"total": d["total"], "members": [{"zh": m["zh"], "share": m["share"], "top_hits": [h for h, _ in m["top_hits"]]}
                                              for m in d["members"]],
-            "choices": d["choices"], "missing": d["missing"]}
+            "choices": d["choices"], "missing": d["missing"], "refine": d.get("refine", [])}
 
 
 def _member_label(m: dict) -> str:
@@ -354,7 +354,7 @@ def render_plain(facts: dict) -> str:
                 dmg = t["damage"]
                 lines.append("   - 伤害占比：" + "，".join(f"{m['zh']} {m['share']:.0%}" for m in dmg["members"])
                              + (f"（{'、'.join(dmg['missing'])}还没有伤害数据）" if dmg["missing"] else ""))
-            for v in t.get("cons_variants") or []:
+            for v in t.get("variants") or []:
                 lines.append(f"   - 换成{v['label']}：得分 {v['score']}")
             for d in t["substitutions"]:
                 why = d["override_reason"] or f"保留 {'、'.join(d['kept']) or '无'}；失去 {'、'.join(d['lost']) or '无'}"

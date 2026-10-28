@@ -49,7 +49,9 @@ def _print(rec: Recommendation) -> None:
             d = t.damage
             print(f"   全队一轮期望伤害 {d['total']:,}（标签分 {t.tag_score}）：" + "，".join(
                 f"{m['zh']} {m['share']:.0%}" for m in d["members"]))
-            for v in t.cons_variants:
+            if d.get("refine"):
+                print("   武器精炼：" + "、".join(d["refine"]))
+            for v in t.variants:
                 total = f"全队伤害 {v['total']:,}，" if v["total"] else ""
                 print(f"   换成{v['label']}：{total}得分 {v['score']}")
             if d["choices"]:

@@ -129,8 +129,8 @@ class TeamResult:
     tag_score: float = 0.0
     penalty: float = 0.0
     damage: dict | None = None
-    # 同一队人只是四星命座不同（0 命 / 6 命）的另一种算法：[{"label": "砂糖 0 命", "total": ..., "score": ...}]
-    cons_variants: list[dict] = field(default_factory=list)
+    # 同一队人换一种算法（四星 0 命 / 6 命、四星武器精 1 / 精 5）：[{"label": "砂糖 0 命", "total": ..., "score": ...}]
+    variants: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -239,8 +239,8 @@ class Engine:
                 kept = seen[key]
                 kept_cons = {m.char: m.cons for m in kept.members}
                 diff = [m for m in r.members if m.cons != kept_cons[m.char]]
-                if diff and r.template == kept.template and len(kept.cons_variants) < 3:
-                    kept.cons_variants.append({"label": "、".join(f"{m.zh} {m.cons} 命" for m in diff),
+                if diff and r.template == kept.template and len(kept.variants) < 4:
+                    kept.variants.append({"label": "、".join(f"{m.zh} {m.cons} 命" for m in diff),
                                                "total": r.damage["total"] if r.damage else None, "score": r.score})
                 continue
             if len(top) == top_n:
@@ -261,6 +261,8 @@ class Engine:
         for r in results:
             if r.damage:
                 r.score = round(r.damage["total"] / best - r.penalty, 3)
+                r.variants = [{"label": v["label"], "total": v["total"], "score": round(v["total"] / best - r.penalty, 3)}
+                              for v in r.damage.get("refine_variants", [])]
 
     def _team_damage(self, kits: list[Kit]) -> dict | None:
         """全队一轮的期望总伤害（damage/team.py）。主C没有循环数据时不算。"""
@@ -279,7 +281,48 @@ class Engine:
             members[0].position = "on_field"
         # 有人排斥的功能，能不触发的就不触发：对应的技能不放（例如莱欧斯利队的希诺宁不放大招）
         suppressed = {a.tag for k in kits for a in k.avoids}
-        return team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
+        split = []  # 精 1、精 5 要分开算的武器：(队员, 武器名)
+        for m in members:
+            options = self._refine_options(m)
+            m.refine = max(options)
+            if len(options) > 1:
+                split.append(m)
+        best = team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
+        best["refine"] = [f"{w} 精 {m.refine}" for m in members for w in self._buff_weapons(m)]
+        if split:
+            for m in split:
+                m.refine = 1
+            low = team_damage(self.kb.game, members, profiles, suppressed=suppressed).to_dict()
+            label = "、".join(f"{w} 精 1" for m in split for w in self._buff_weapons(m))
+            high_label = "、".join(f"{w} 精 5" for m in split for w in self._buff_weapons(m))
+            if low["total"] > best["total"]:  # 一般不会：精 5 数值更高
+                low["refine"], low["refine_variants"] = best["refine"], [{"label": high_label, "total": best["total"]}]
+                return low
+            best["refine_variants"] = [{"label": label, "total": low["total"]}]
+        return best
+
+    def _buff_weapons(self, m) -> list[str]:
+        return [e.zh for e in m.equipment if e.kind == "weapon"]
+
+    def _refine_options(self, m) -> list[int]:
+        """给队友加成的武器按几精算：五星精 1；四星锻造精 5，装备数据写死了的（讨龙精 5）按写的，
+        其他四星（祈愿、活动、纪行）精 1、精 5 各算一份。"""
+        options = {1}
+        for e in m.equipment:
+            if e.kind != "weapon":
+                continue
+            try:
+                rarity = int(self.kb.game.weapon(e.zh).get("rarity", 5))
+            except KeyError:
+                rarity = 5
+            source = next((w.source for w in (m.build.weapons if m.build else []) if w.zh == e.zh), "")
+            if e.refine:
+                options = {e.refine}
+            elif rarity == 4 and source == "craftable":
+                options = {5}
+            elif rarity == 4 and any(g.value_r5 is not None for g in e.provides):
+                options = {1, 5}
+        return sorted(options)
 
     def _cons_options(self, char_id: str, roster: Roster) -> list[int]:
         """队友按几命算：box 里有就按实际命座；不知道时四星 0 命、6 命各算一份（四星满命很常见，差别也大）。"""
