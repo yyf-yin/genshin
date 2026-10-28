@@ -1,0 +1,25 @@
+# AI 草稿：后台挂雷。点按战技 + 大招（轰霆猎场、图加林每 2 秒一次），未经实测核对。
+# 雷挂上去后由站场的冰角色打出超导（有星超导角色时转为星超导），反应伤害按站场角色面板算。
+char: alyosha
+on_field_seconds: 3
+hits:
+  - {talent: 战技:点按伤害, count: 1}
+  - {talent: 爆发:轰霆猎场伤害, count: 6}
+  - {talent: 爆发:图加林伤害, count: 6}
+reactions:
+  - {reaction: 星超导, count: 6, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 告别冬麦与残叶（每 1% 充能 +0.35% 战技伤害，至多 70%）
+    from_stat: {stat: er, ratio: 0.35, cap: 0.70, key: 战技增伤}
+  - source: 告别冬麦与残叶（每 1% 充能 +0.35% 爆发伤害，至多 70%）
+    from_stat: {stat: er, ratio: 0.35, cap: 0.70, key: 爆发增伤}
+  - source: 猎者之准（激活弋猎印记）
+    to: on_field
+    stats: {攻击力%: 20}
+    uptime: 0.8
+  - source: 星赴险域（辉映·星超导：猎者之准期间站场星超导伤害 +20%）
+    to: on_field
+    stats: {星超导加成: 20}
+    uptime: 0.8
+    when: "reaction('stellar_superconduct')"
+verified: false

@@ -1,5 +1,5 @@
 # AI 草稿：后台星超导副C。按「大招 → 战技 → 破晓终奏」，独舞倒影 20 秒内约 10 次舞步（拂羽、旋翼交替），
-# 处于极星辉域时每次舞步附带一段星超导伤害。辉映·星扩散的情况没算。未经实测核对。
+# 处于极星辉域时每次舞步附带一段星超导伤害（星扩散队里是星扩散伤害）。未经实测核对。
 char: odette
 on_field_seconds: 4
 hits:
@@ -7,11 +7,15 @@ hits:
   - {talent: 爆发:斩击最终段, count: 1}
   - {talent: 战技:技能伤害, count: 1}
   - {talent: 破晓终奏持续伤害, count: 3}
-  - {talent: 破晓终奏星超导, variant: 0, stellar: 星超导, count: 1}
+  # 共舞结束时一次星超导或星扩散伤害（冰伤）；队里能超导就按星超导，否则能冰扩散就按星扩散
+  - {talent: 破晓终奏星超导, variant: 0, stellar: 星超导, count: 1, when: "reaction('superconduct')"}
+  - {talent: 破晓终奏星超导, variant: 1, stellar: 星扩散, count: 1, when: "not reaction('superconduct') and reaction('swirl')"}
   - {talent: 拂羽舞步伤害, count: 5}
   - {talent: 拂羽舞步星超导, variant: 0, stellar: 星超导, count: 5, when: "reaction('superconduct')"}
+  - {talent: 拂羽舞步星超导, variant: 1, stellar: 星扩散, count: 5, when: "not reaction('superconduct') and reaction('swirl')"}
   - {talent: 旋翼舞步伤害, count: 5}
   - {talent: 旋翼舞步星超导, variant: 0, stellar: 星超导, count: 5, when: "reaction('superconduct')"}
+  - {talent: 旋翼舞步星超导, variant: 1, stellar: 星扩散, count: 5, when: "not reaction('superconduct') and reaction('swirl')"}
 buffs:
   - source: 疾板·苍羽一梦「雪鹄之梦」
     stats: {星烁反应伤害提升: 50}

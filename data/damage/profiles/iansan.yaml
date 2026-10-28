@@ -1,0 +1,14 @@
+# AI 草稿：战技 + 大招，动能标示「炽烈声援！」给站场角色加攻，未经实测核对。
+char: iansan
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1}
+reactions:
+  - {reaction: 星超导, count: 3, by: on_field, when: "reaction('stellar_superconduct')"}
+buffs:
+  - source: 力的三原理「炽烈声援！」（伊安珊攻击力的约 26%）
+    to: on_field
+    from_stat: {stat: atk, ratio: 0.26, key: 攻击力}
+    uptime: 0.7
+verified: false

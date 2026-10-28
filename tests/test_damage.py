@@ -258,3 +258,26 @@ def test_reworked_talents_in_game_data(gd):
     """genshin-db 没有的专项调整（八重的星超导调整）从解包数据补进 upgrades。"""
     ups = gd.character("八重神子").get("upgrades") or []
     assert any(u["slot"] == "任务解锁天赋" and "星超导" in u["description"] for u in ups)
+
+
+def test_direct_stellar_damage_keeps_skill_element(kb):
+    """八重的星超导伤害是雷伤，吃雷抗；星超导反应本身是冰伤。"""
+    from genshin_assistant.damage.team import team_damage
+
+    d = team_damage(kb.game, _team(kb, ["莱欧斯利", "奥黛塔", "八重神子", "砂糖"]), kb.damage_profiles)
+    yae = next(m for m in d.members if m.zh == "八重神子")
+    stellar = next(v for h, v in yae.hits if "辉映·星超导）（星超导）" in h)
+    d2 = team_damage(kb.game, _team(kb, ["莱欧斯利", "奥黛塔", "八重神子", "希诺宁"]), kb.damage_profiles)
+    yae2 = next(m for m in d2.members if m.zh == "八重神子")
+    stellar2 = next(v for h, v in yae2.hits if "辉映·星超导）（星超导）" in h)
+    assert stellar2 > stellar  # 希诺宁减雷抗，砂糖的风套只减冰抗
+
+
+def test_reaction_needs_a_real_applicator(kb):
+    """伊安珊是雷，但不挂雷：薇斯纳队里有她也开不了超导，奥黛塔的舞步还是星扩散。"""
+    from genshin_assistant.damage.team import team_damage
+
+    d = team_damage(kb.game, _team(kb, ["薇斯纳", "奥黛塔", "沃雅妮莎", "伊安珊"]), kb.damage_profiles)
+    odette = next(m for m in d.members if m.zh == "奥黛塔")
+    assert any("（星扩散）" in h for h, _ in odette.hits)
+    assert not any("（星超导）" in h for h, _ in odette.hits)

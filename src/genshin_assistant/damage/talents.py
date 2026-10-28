@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 _PARAM = re.compile(r"\{param(\d+):([A-Z0-9]+)\}")
 _REPEAT = re.compile(r"^(.*?)\*(\d+)$")
 
-STATS = {"攻击力": "atk", "生命值上限": "hp", "最大生命值": "hp", "防御力": "def", "元素精通": "em"}
+STATS = {"攻击力": "atk", "对应角色攻击力": "atk", "生命值上限": "hp", "最大生命值": "hp", "防御力": "def", "元素精通": "em"}
 ELEMENT_SUFFIX = {"物理": "physical", "火元素": "pyro", "水元素": "hydro", "雷元素": "electro", "冰元素": "cryo",
                   "风元素": "anemo", "岩元素": "geo", "草元素": "dendro"}
 
@@ -41,7 +41,7 @@ class Talent:
 
     @property
     def is_damage(self) -> bool:
-        return "伤害" in self.name and not any(w in self.name for w in ("提升", "提高", "增加"))
+        return "伤害" in self.name and not any(w in self.name for w in ("提升", "提高", "增加", "加成"))
 
     def variants(self) -> list[str]:
         """/ 分隔的几种情况。只有单位的部分（「/层」「/0.5秒」）不算一种情况；
@@ -82,7 +82,7 @@ def _value(params: dict[str, list[float]], n: str, level: int) -> float:
 
 
 def _parse_expr(expr: str, params: dict[str, list[float]], level: int) -> list[Hit]:
-    expr = expr.strip()
+    expr = expr.strip().removeprefix("每个")  # 迪奥娜「猫爪伤害：每个{param1}」
     m = _REPEAT.match(expr)
     if m and not _PARAM.fullmatch(m.group(2)):
         inner, times = m.group(1).strip(), int(m.group(2))

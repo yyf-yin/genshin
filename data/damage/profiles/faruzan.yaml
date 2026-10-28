@@ -1,0 +1,13 @@
+# AI 草稿：战技 → 飓烈箭（满蓄力瞄准射击 + 风涡）→ 大招，未经实测核对。
+# 注意：风伤加成对星扩散伤害无效（星烁伤害不吃增伤区），只有减抗有用；固有天赋的烈风护持（基础攻击 32% 的固定伤害）没算。
+char: faruzan
+on_field_seconds: 4
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 普攻:满蓄力瞄准射击, element: anemo, count: 1}
+  - {talent: 战技:风压坍陷风涡伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  - {source: 抟风秘道「祈风之赐」, to: all, stats: {风伤: 30}, uptime: 0.9}
+  - {source: 抟风秘道「诡风之祸」, to: all, stats: {风减抗: 30}, uptime: 0.9}
+verified: false

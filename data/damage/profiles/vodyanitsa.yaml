@@ -1,0 +1,13 @@
+# AI 草稿：战技遥久之歌（唤春角笛约 2 秒一次）+ 大招，未经实测核对。
+# 战技和角笛命中降水、冰抗 30%；最后的塑诗者：遥久之歌期间队伍触发星扩散时创造流荡风旋，风抗 -35%。
+char: vodyanitsa
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:唤春角笛伤害, count: 10}
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  - {source: 遥久之歌（爆发伤害）, stats: {爆发增伤: 80}}
+  - {source: 宣叙·晨声纷流, to: all, stats: {水减抗: 30, 冰减抗: 30}, uptime: 0.9}
+  - {source: 最后的塑诗者「流荡风旋」, to: all, stats: {风减抗: 35}, uptime: 0.8, when: "reaction('stellar_swirl')"}
+verified: false

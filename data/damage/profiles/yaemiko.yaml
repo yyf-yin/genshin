@@ -19,4 +19,9 @@ reactions:
 buffs:
   - source: 启蜇之祝词（每点精通 +0.15% 杀生樱伤害）
     from_stat: {stat: em, ratio: 0.0015, key: 战技增伤}
+  - source: 野狐供真篇（1 命：雷伤、星超导伤害 +50%）
+    to: all
+    stats: {雷伤: 50, 星超导加成: 50}
+    uptime: 0.9
+    when: "cons >= 1 and reaction('superconduct')"
 verified: false

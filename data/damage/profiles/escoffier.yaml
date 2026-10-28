@@ -1,0 +1,15 @@
+# AI 草稿：点按战技（厨艺机关跟随，冻霜芭菲约 1.5 秒一发）+ 大招，未经实测核对。
+char: escoffier
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 战技:冻霜芭菲伤害, count: 12}
+  - {talent: 战技:流涌之刃伤害, count: 3}
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  # 灵感浸入调味：队里水、冰角色 1/2/3/4 名时，水、冰抗性降低 5%/10%/15%/55%
+  - {source: 灵感浸入调味（1 名水冰）, to: all, stats: {水减抗: 5, 冰减抗: 5}, uptime: 0.95, when: "count_any(['hydro', 'cryo']) == 1"}
+  - {source: 灵感浸入调味（2 名水冰）, to: all, stats: {水减抗: 10, 冰减抗: 10}, uptime: 0.95, when: "count_any(['hydro', 'cryo']) == 2"}
+  - {source: 灵感浸入调味（3 名水冰）, to: all, stats: {水减抗: 15, 冰减抗: 15}, uptime: 0.95, when: "count_any(['hydro', 'cryo']) == 3"}
+  - {source: 灵感浸入调味（4 名水冰）, to: all, stats: {水减抗: 55, 冰减抗: 55}, uptime: 0.95, when: "count_any(['hydro', 'cryo']) == 4"}
+verified: false

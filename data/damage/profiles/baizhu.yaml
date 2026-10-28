@@ -1,0 +1,9 @@
+# AI 草稿：战技 + 大招无郤气护盾（灵气脉），未经实测核对。
+char: baizhu
+on_field_seconds: 3
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:灵气脉技能伤害, count: 4}
+buffs:
+  - {source: 五运终天（草伤 +25%）, stats: {草伤: 25}, uptime: 0.8}
+verified: false

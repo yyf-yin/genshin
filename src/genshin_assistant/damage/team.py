@@ -177,8 +177,16 @@ class TeamDamage:
         }
 
 
+def _game_char(gd: GameData, m: MemberSpec) -> dict:
+    """知识库 id 和游戏数据 id 不一定一样（kazuha / kaedeharakazuha），找不到时按中文名查。"""
+    try:
+        return gd.character(m.char)
+    except KeyError:
+        return gd.character(m.zh)
+
+
 def member_panel(gd: GameData, m: MemberSpec) -> Stats:
-    char = gd.character(m.char)
+    char = _game_char(gd, m)
     st = character_stats(char)
     b = m.build
     if b is None:
@@ -242,8 +250,14 @@ def _mixed(text: str | None) -> dict[str, float] | None:
     return {key: parse_value(key, value)}
 
 
+# 这些元素要有人真的挂得上（站场，或者标了后台挂元素）才算能触发反应；伊安珊这类偶尔出一下雷的不算
+AURA_ELEMENTS = {"pyro", "hydro", "electro", "cryo"}
+
+
 def _funcs(members: list[MemberSpec]) -> dict:
     elements = [m.element for m in members]
+    applied = {m.element for m in members
+               if m.element not in AURA_ELEMENTS or m.position == "on_field" or f"application:{m.element}" in m.tags}
 
     def can(r: str) -> bool:
         need = REACTION_ELEMENTS.get(r)
@@ -251,7 +265,7 @@ def _funcs(members: list[MemberSpec]) -> dict:
             return any(f"enables:{r}" in m.tags for m in members) and can(
                 {"stellar_superconduct": "superconduct", "stellar_swirl": "swirl", "lunar_charged": "electro_charged",
                  "lunar_bloom": "bloom", "lunar_crystallize": "crystallize"}[r])
-        return all(any(e in elements for e in group) for group in need)
+        return all(any(e in applied for e in group) for group in need)
 
     return {
         "count": lambda e: elements.count(e),
@@ -356,13 +370,17 @@ def _evaluate(gd, members, profiles, panels, chosen, enemy) -> TeamDamage:
 
 def _member_damage(gd: GameData, m: MemberSpec, p: Profile, st: Stats, enemy: Enemy,
                    panels: list[Stats], buffs: list[Stats], members: list[MemberSpec]) -> MemberDamage:
-    char = gd.character(m.char)
-    talents = load_talents(gd.talent_multipliers.get(m.char, {}))
+    char = _game_char(gd, m)
+    talents = load_talents(gd.talent_multipliers.get(char["id"], {}))
     levels = _talent_levels(m, p)
     rows: list[tuple[str, float]] = []
+    j = next((k for k, x in enumerate(members) if x.position == "on_field"), 0)
     for spec in p.hits:
         if spec.get("when") and not evaluate(spec["when"], {"cons": m.cons}, _funcs(members)):
             continue
+        hit_char, hit_st = char, st
+        if spec.get("by") == "on_field":  # 协同攻击按站场角色的攻击力、元素和面板算（例：尼可的奥迹造影）
+            hit_char, hit_st = _game_char(gd, members[j]), panels[j].merged(buffs[j])
         t = _custom_talent(spec) if "scaling" in spec else find_talent(talents, spec["talent"])
         level = int(spec.get("level", levels.get(t.slot, 9)))
         spec = dict(spec)
@@ -373,7 +391,7 @@ def _member_damage(gd: GameData, m: MemberSpec, p: Profile, st: Stats, enemy: En
                 spec.get("base_multiplier", 1.0))
         count = float(spec.pop("count", 1))
         spec.pop("uses", None)
-        hits = talent_hit(gd, char, t, level, spec, st, enemy, 90)
+        hits = talent_hit(gd, hit_char, t, level, spec, hit_st, enemy, 90)
         rows += [(h.label, h.average * count) for h in hits]
     for spec in p.reactions:
         if spec.get("when") and not evaluate(spec["when"], {"cons": m.cons}, _funcs(members)):
@@ -381,7 +399,6 @@ def _member_damage(gd: GameData, m: MemberSpec, p: Profile, st: Stats, enemy: En
         count = float(spec.get("count", 1))
         who = st
         if spec.get("by") == "on_field":  # 反应由站场角色触发，按站场角色的面板算，伤害记在提供元素的人头上
-            j = next((k for k, x in enumerate(members) if x.position == "on_field"), 0)
             who = panels[j].merged(buffs[j])
         h: HitResult = reaction_hit(gd, spec, who, enemy, 90)
         rows.append((h.label, h.average * count))

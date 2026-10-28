@@ -1,0 +1,12 @@
+# AI 草稿：20 秒循环（战技 → 大招 → 3 次衡平推裁，每次约 3 秒、0.5 秒一跳），未经实测核对。
+# 古海孑遗的权柄：按 2 层（原本 125%）估。
+char: neuvillette
+on_field_seconds: 14
+hits:
+  - {talent: 战技:技能伤害, count: 1}
+  - {talent: 爆发:技能伤害, count: 1}
+  - {talent: 爆发:水瀑伤害, count: 2}
+  - {talent: 普攻:重击·衡平推裁持续伤害, base_multiplier: 1.25, count: 18}
+buffs:
+  - {source: 至高仲裁的纪律（水伤，至多 30%）, stats: {水伤: 30}, uptime: 0.7}
+verified: false

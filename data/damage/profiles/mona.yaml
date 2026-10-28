@@ -1,0 +1,13 @@
+# AI 草稿：冻结队水辅助。战技虚影 + 大招星异（伤害加成），未经实测核对。
+# 星异只在破裂前几秒生效，按 35% 的时间覆盖估。
+char: mona
+on_field_seconds: 3
+hits:
+  - {talent: 战技:持续伤害, count: 4}
+  - {talent: 战技:爆裂伤害, count: 1}
+  - {talent: 爆发:泡影破裂伤害, count: 1}
+buffs:
+  - source: 「托付于命运吧！」（水伤 +20% 充能）
+    from_stat: {stat: er, ratio: 0.2, key: 水伤}
+  - {source: 星命定轨「星异」, to: all, stats: {增伤: 58}, uptime: 0.35}
+verified: false

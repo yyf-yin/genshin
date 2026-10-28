@@ -21,7 +21,7 @@ SLOT_KEYS = {"普攻": "normal_attack", "普通攻击": "normal_attack", "a": "n
              "爆发": "burst", "元素爆发": "burst", "大招": "burst", "q": "burst", "burst": "burst"}
 # 特殊反应伤害的元素（抗性按这个算）。星扩散的「星辉风旋」爆炸和角色技能里的星扩散伤害都是冰伤
 SPECIAL_ELEMENT = {"lunar_charged": "electro", "lunar_bloom": "dendro", "lunar_crystallize": "geo",
-                   "stellar_superconduct": "cryo", "stellar_swirl": "cryo"}
+                   "stellar_superconduct": "cryo", "stellar_swirl": "anemo"}
 TRANSFORMATIVE_ELEMENT = {"overloaded": "pyro", "superconduct": "cryo", "electro_charged": "electro",
                           "shattered": "physical", "bloom": "dendro", "hyperbloom": "dendro", "burgeoning": "dendro",
                           "burning": "pyro"}
@@ -200,12 +200,12 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
         cr = st.get("cr") + st.get(f"{category}_cr")
         cd = st.get("cd") + st.get(f"{category}_cd")
         times = int(spec.get("times", 1))
-        if special:
+        if special:  # 技能直接造成的反应伤害保留技能本身的元素（八重的星超导是雷伤），物理的按反应的默认元素
             coef = f.SPECIAL[special]["direct"]
-            element = SPECIAL_ELEMENT[special]
+            element = SPECIAL_ELEMENT[special] if element == "physical" else element
             zones = [Zone("基础伤害", talent_part * base_mult + hit.flat, desc),
                      Zone(f"{REACTION_ZH[special]}系数", coef, "角色技能直接造成的反应伤害")]
-            zones += _special_zones(special, st, enemy)
+            zones += _special_zones(special, st, enemy, element)
             out.append(_finish(label + f"（{REACTION_ZH[special]}）", element, zones, cr, cd, times))
             continue
         base = talent_part * base_mult + hit.flat + st.get("flat_dmg") + st.get(f"{category}_flat_dmg")
@@ -232,7 +232,7 @@ def talent_hit(gd: GameData, char: dict, talent: Talent, level: int, spec: dict,
     return out
 
 
-def _special_zones(reaction: str, st: Stats, enemy: Enemy) -> list[Zone]:
+def _special_zones(reaction: str, st: Stats, enemy: Enemy, element: str | None = None) -> list[Zone]:
     """月曜/星烁共用：基础伤害提升、反应加成（精通 + 加成）、擢升、抗性。不吃防御和普通增伤。"""
     family = "lunar" if reaction in LUNAR_REACTIONS else "stellar"
     family_zh = "月曜" if family == "lunar" else "星烁"
@@ -242,7 +242,7 @@ def _special_zones(reaction: str, st: Stats, enemy: Enemy) -> list[Zone]:
         Zone(f"{family_zh}反应加成", 1 + f.em_bonus(em, "lunar") + st.get(f"{family}_bonus") + st.get(f"{reaction}_bonus"),
              f"精通 {em:.0f}"),
         Zone("擢升区", 1 + st.get("elevate")),
-        _res_zone(enemy, st, SPECIAL_ELEMENT[reaction]),
+        _res_zone(enemy, st, element or SPECIAL_ELEMENT[reaction]),
     ]
 
 

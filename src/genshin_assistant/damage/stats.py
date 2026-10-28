@@ -154,7 +154,8 @@ class Stats:
         return self.get("def_base") * (1 + self.get("def_pct")) + self.get("def_flat")
 
     def scaling_stat(self, name: str) -> float:
-        return {"hp": self.hp, "atk": self.atk, "def": self.defense, "em": self.get("em")}[name]
+        return {"hp": self.hp, "atk": self.atk, "def": self.defense, "em": self.get("em"), "er": 1 + self.get("er"),
+                "base_atk": self.get("atk_base")}[name]
 
 
 # 角色突破属性、武器副属性的中文名 → 属性键（这里的「攻击力」「生命值」「防御力」是百分比）

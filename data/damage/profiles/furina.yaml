@@ -1,0 +1,15 @@
+# AI 草稿：荒性沙龙成员全程在场 + 大招普世欢腾，未经实测核对。
+# 沙龙成员按 4 名队友生命值高于 50% 算（原本 140%）；气氛值按平均约 170 点（+40% 伤害）估。
+char: furina
+on_field_seconds: 3
+hits:
+  - {talent: 战技:荒性泡沫伤害, count: 1}
+  - {talent: 战技:乌瑟勋爵伤害, base_multiplier: 1.4, count: 6}
+  - {talent: 战技:海薇玛夫人伤害, base_multiplier: 1.4, count: 13}
+  - {talent: 战技:谢贝蕾妲小姐伤害, base_multiplier: 1.4, count: 4}
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  - source: 无人听的自白（每 1000 生命值上限 +0.7% 沙龙成员伤害，至多 28%）
+    from_stat: {stat: hp, ratio: 0.000007, cap: 0.28, key: 战技增伤}
+  - {source: 万众狂欢（气氛值）, to: all, stats: {增伤: 40}, uptime: 0.9}
+verified: false

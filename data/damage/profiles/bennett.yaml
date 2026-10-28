@@ -1,0 +1,12 @@
+# AI 草稿：战技 ×2 + 大招领域加攻（班尼特基础攻击力的约 100%），未经实测核对。
+char: bennett
+on_field_seconds: 3
+hits:
+  - {talent: 战技:点按伤害, count: 2}
+  - {talent: 爆发:技能伤害, count: 1}
+buffs:
+  - source: 美妙旅程（基础攻击力的约 100%）
+    to: on_field
+    from_stat: {stat: base_atk, ratio: 1.0, key: 攻击力}
+    uptime: 0.7
+verified: false
