@@ -4,7 +4,7 @@
 接口：
     GET  /             页面
     GET  /api/state    模型名、派蒙改写和派蒙语音服务状态、开场白
-    GET  /api/greeting.wav  预先合成好的开场白语音（还没合成好时 404）
+    GET  /api/greeting.wav  存好的开场白语音（和现在的开场白对不上时 404）
     POST /api/ask      {"question": "...", "last": 上一轮的 query 或 null} → 回答
     POST /api/speak    {"text": "一段话"} → wav（派蒙语音没开或不可用时 503）
 """
@@ -29,20 +29,34 @@ GREETING = ("哇，旅行者，你终于来啦！派蒙等你好久了～这次�
 
 
 class Greeting:
-    """开场白语音：启动时在后台合成一次存进 cache_dir，网页打开就直接播文件，不用等 GPT-SoVITS。"""
+    """开场白语音：用派蒙模型合成好，存成 data/voice/greeting.wav，网页打开就直接播，不用等 GPT-SoVITS。
 
-    def __init__(self, voice: PaimonVoice, cache_dir: Path, text: str = GREETING, mood: str = "兴奋说话"):
-        self.voice, self.cache_dir, self.text, self.mood = voice, Path(cache_dir), text, mood
-        self.path: Path | None = None
+    旁边的 greeting.txt 记着这段音频念的是哪句话。GREETING 改了，下次启动 web 时（语音服务起来后）在后台重新合成，
+    两个文件一起更新；没改就一直用存好的文件，语音服务没开也能播。
+    """
 
-    def prepare(self, tries: int = 120, wait: float = 5.0) -> Path | None:
-        """缓存里有就直接用；没有就等语音服务起来再合成（最多等 tries × wait 秒）。"""
+    def __init__(self, voice_dir: Path, voice: PaimonVoice | None = None, text: str = GREETING, mood: str = "兴奋说话"):
+        self.wav = Path(voice_dir) / "greeting.wav"
+        self.voice, self.text, self.mood = voice, text, mood
+
+    @property
+    def ready(self) -> bool:
+        """存好的音频念的就是现在的开场白。"""
+        txt = self.wav.with_suffix(".txt")
+        return self.wav.exists() and txt.exists() and txt.read_text(encoding="utf-8").strip() == self.text
+
+    def refresh(self, tries: int = 120, wait: float = 5.0) -> bool:
+        """开场白改过就重新合成（等语音服务起来，最多 tries × wait 秒）。"""
+        if self.ready or self.voice is None:
+            return self.ready
         for i in range(tries):
-            self.path = self.voice.cached(self.text, self.cache_dir, self.mood)
-            if self.path or i == tries - 1:
-                break
-            time.sleep(wait)
-        return self.path
+            if self.voice.save(self.text, self.wav, self.mood):
+                self.wav.with_suffix(".txt").write_text(self.text + "\n", encoding="utf-8")
+                print(f"派蒙语音：开场白已重新合成，存在 {self.wav}")
+                return True
+            if i < tries - 1:
+                time.sleep(wait)
+        return False
 
 
 def make_handler(assistant: Assistant, voice: PaimonVoice | None = None, greeting: Greeting | None = None):
@@ -72,10 +86,10 @@ def make_handler(assistant: Assistant, voice: PaimonVoice | None = None, greetin
                 self._json({"model": getattr(assistant.model, "model", ""), "paimon": style,
                             "voice": voice.health() if voice else "off",
                             "greeting": greeting.text if greeting else GREETING,
-                            "greeting_audio": bool(greeting and greeting.path and greeting.path.exists())})
+                            "greeting_audio": bool(greeting and greeting.ready)})
             elif self.path == "/api/greeting.wav":
-                if greeting and greeting.path and greeting.path.exists():
-                    self._send(200, greeting.path.read_bytes(), "audio/wav")
+                if greeting and greeting.ready:
+                    self._send(200, greeting.wav.read_bytes(), "audio/wav")
                 else:
                     self._send(404, b"not ready", "text/plain")
             else:
@@ -109,10 +123,10 @@ def make_handler(assistant: Assistant, voice: PaimonVoice | None = None, greetin
 
 
 def serve(assistant: Assistant, port: int = 8765, open_browser: bool = True, voice: PaimonVoice | None = None,
-          cache_dir: Path | None = None) -> None:
-    greeting = Greeting(voice, cache_dir) if voice and cache_dir else None
-    if greeting:
-        threading.Thread(target=greeting.prepare, daemon=True).start()
+          voice_dir: Path | None = None) -> None:
+    greeting = Greeting(voice_dir, voice) if voice_dir else None
+    if greeting and voice:
+        threading.Thread(target=greeting.refresh, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(assistant, voice, greeting))
     url = f"http://127.0.0.1:{port}/"
     print(f"原神配队助手：{url}（Ctrl+C 退出）")

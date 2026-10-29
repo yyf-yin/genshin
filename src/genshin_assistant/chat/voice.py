@@ -17,7 +17,6 @@ GPT-SoVITS 服务（默认 http://127.0.0.1:9880）：
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import threading
@@ -129,23 +128,17 @@ class PaimonVoice:
             return self.voices[mood]
         return next((self.voices[m] for m in MOODS.get(mood_of(text), []) if m in self.voices), self.base)
 
-    def cached(self, text: str, cache_dir: Path, mood: str | None = None) -> Path | None:
-        """合成一次存成文件（开场白这种固定的话），以后直接读。文字、参考音频或权重变了才重新合成。"""
-        if self.base is None:
-            return None
-        v = self._voice(speakable(text), mood)
-        key = "\n".join(map(str, (speakable(text), v.ref.name, self.base.gpt and self.base.gpt.name, self.base.sovits and self.base.sovits.name)))
-        path = Path(cache_dir) / f"greeting-{hashlib.sha1(key.encode()).hexdigest()[:12]}.wav"
-        if path.exists():
-            return path
+    def save(self, text: str, path: Path, mood: str | None = None) -> bool:
+        """合成一段话存成 wav 文件（先写临时文件再替换，合成失败不会留下半个文件）。"""
         wav = self.speak(text, mood)
         if not wav:
-            return None
+            return False
+        path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_suffix(".tmp")
         tmp.write_bytes(wav)
         tmp.replace(path)
-        return path
+        return True
 
 
 def find_gpt_sovits(*roots: Path) -> Path | None:

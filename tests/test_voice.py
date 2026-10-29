@@ -144,24 +144,31 @@ def test_web_speak(kb, tmp_path, models, gsv):  # noqa: F811
             server.shutdown()
 
 
-def test_cached_synthesizes_once_per_text(models, gsv, tmp_path):
-    voice = PaimonVoice(models, gsv["url"])
-    first = voice.cached("旅行者，你终于来啦！", tmp_path / "cache", "平静")
-    assert first.read_bytes() == b"RIFF-fake-wav" and len(gsv["tts"]) == 1
-    assert gsv["tts"][0]["prompt_text"] == "既然罗莎莉亚说足迹上有元素力"  # 指定的语气优先于句末的「！」
-    assert voice.cached("旅行者，你终于来啦！", tmp_path / "cache", "平静") == first and len(gsv["tts"]) == 1
-    # 服务关了也能直接用缓存
-    assert PaimonVoice(models, "http://127.0.0.1:9").cached("旅行者，你终于来啦！", tmp_path / "cache", "平静") == first
-    other = voice.cached("换一句开场白！", tmp_path / "cache", "平静")
-    assert other != first and len(gsv["tts"]) == 2
-    assert PaimonVoice(models, "http://127.0.0.1:9").cached("没合成过", tmp_path / "cache") is None
+def test_greeting_saved_and_regenerated_when_text_changes(models, gsv, tmp_path):
+    from genshin_assistant.chat.web import Greeting
+
+    voice_dir = tmp_path / "voice"
+    g = Greeting(voice_dir, PaimonVoice(models, gsv["url"]), text="旅行者，你终于来啦！")
+    assert not g.ready and g.refresh(tries=1) and g.ready
+    assert g.wav.read_bytes() == b"RIFF-fake-wav" and len(gsv["tts"]) == 1
+    assert gsv["tts"][0]["prompt_text"] == "太好啦"  # 开场白用兴奋的语气
+    # 文字没变：不再合成；语音服务没开也照样能用存好的文件
+    assert g.refresh(tries=1) and len(gsv["tts"]) == 1
+    assert Greeting(voice_dir, None, text="旅行者，你终于来啦！").ready
+    # 文字改了：旧音频不算数，重新合成后两个文件一起更新
+    g2 = Greeting(voice_dir, PaimonVoice(models, gsv["url"]), text="换一句开场白！")
+    assert not g2.ready and g2.refresh(tries=1) and len(gsv["tts"]) == 2
+    assert (voice_dir / "greeting.txt").read_text(encoding="utf-8").strip() == "换一句开场白！"
+    # 服务没开、文字又改了：合成不了，也不会拿旧音频凑数
+    g3 = Greeting(voice_dir, PaimonVoice(models, "http://127.0.0.1:9"), text="再换一句。")
+    assert not g3.refresh(tries=1) and not g3.ready
 
 
 def test_web_greeting_audio(kb, tmp_path, models, gsv):  # noqa: F811
     from genshin_assistant.chat.web import GREETING, Greeting
 
     voice = PaimonVoice(models, gsv["url"])
-    greeting = Greeting(voice, tmp_path / "cache")
+    greeting = Greeting(tmp_path / "voice", voice)
     a = make(kb, {"intent": "team", "character": "那维莱特"}, tmp_path)
     server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(a, voice, greeting))
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -171,8 +178,7 @@ def test_web_greeting_audio(kb, tmp_path, models, gsv):  # noqa: F811
         assert state["greeting"] == GREETING and state["greeting_audio"] is False
         with pytest.raises(urllib.error.HTTPError):
             urllib.request.urlopen(base + "/api/greeting.wav")
-        assert greeting.prepare(tries=1)
-        assert gsv["tts"][-1]["prompt_text"] == "太好啦"  # 开场白用兴奋的语气
+        assert greeting.refresh(tries=1)
         assert json.loads(urllib.request.urlopen(base + "/api/state").read())["greeting_audio"] is True
         assert urllib.request.urlopen(base + "/api/greeting.wav").read() == b"RIFF-fake-wav"
     finally:
