@@ -156,6 +156,8 @@ def main(argv: list[str] | None = None) -> None:
     for name, helptext in (("web", "打开本机网页，用中文提问配队和养成"), ("chat", "命令行里用中文提问配队和养成")):
         x = sub.add_parser(name, help=helptext)
         x.add_argument("--key-file", help="DeepSeek key 文件（默认先看 DEEPSEEK_API_KEY，再找仓库和上一级目录的 ds_key.txt）")
+        x.add_argument("--paimon-url", default=None, help="派蒙改写模型服务（默认 PAIMON_URL 环境变量或 http://127.0.0.1:8000）")
+        x.add_argument("--no-paimon", action="store_true", help="不做派蒙改写，直接显示 DeepSeek 的回答")
         if name == "chat":
             x.add_argument("--roster", help="「我的角色」存哪（默认 work/roster.json）")
         if name == "web":
@@ -232,6 +234,13 @@ def _chat(args, kb) -> None:
     else:
         roster = Roster(Path(args.roster) if args.roster else work / "roster.json")
     assistant = Assistant(kb, model, data_dir, roster)
+    if not args.no_paimon:
+        import os
+
+        from .chat.paimon import DEFAULT_URL, PaimonStyle, game_terms
+        assistant.style = PaimonStyle(game_terms(assistant.game), args.paimon_url or os.environ.get("PAIMON_URL") or DEFAULT_URL)
+        state = assistant.style.health()
+        print(f"派蒙改写：{assistant.style.url} " + ("已就绪" if state == "ready" else f"暂不可用（{state}），先显示原回答，服务就绪后自动启用"))
     if args.cmd == "web":
         from .chat.web import serve
         serve(assistant, args.port, not args.no_browser)
