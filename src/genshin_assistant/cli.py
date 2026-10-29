@@ -163,6 +163,9 @@ def main(argv: list[str] | None = None) -> None:
         if name == "web":
             x.add_argument("--port", type=int, default=8765)
             x.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
+            x.add_argument("--no-voice", action="store_true", help="不开派蒙语音")
+            x.add_argument("--voice-dir", help="派蒙语音模型目录（默认 PAIMON_VOICE_DIR 环境变量或仓库上一级的 paimon-voice）")
+            x.add_argument("--voice-url", default=None, help="GPT-SoVITS 服务（默认 GPT_SOVITS_URL 环境变量或 http://127.0.0.1:9880）")
     _add_bili_parser(sub)
     gamedata_cli.add_subcommands(sub)
     damage_cli.add_subcommands(sub)
@@ -253,7 +256,8 @@ def _chat(args, kb) -> None:
         }.get(state, f"暂不可用（{state}），先显示原回答，服务就绪后自动启用"))
     if args.cmd == "web":
         from .chat.web import serve
-        serve(assistant, args.port, not args.no_browser)
+        voice = None if args.no_voice else _voice(args, data_dir)
+        serve(assistant, args.port, not args.no_browser, voice)
         return
     print("问配队或养成，例如「我有沃雅妮莎，怎么配队」。空行退出。")
     last = None
@@ -267,6 +271,30 @@ def _chat(args, kb) -> None:
         reply = assistant.ask(q, last)
         last = reply.query
         print(reply.answer if reply.explained_by_llm else "[大模型解释失败，下面是引擎原始结果]\n" + reply.answer)
+
+
+def _voice(args, data_dir: Path):
+    """派蒙语音：有模型目录才开；本机默认地址上没有 GPT-SoVITS 服务就找整合包拉起来。"""
+    import os
+
+    from .chat.voice import DEFAULT_URL, PaimonVoice, find_gpt_sovits, start_service
+    home = data_dir.parent.parent  # 仓库上一级，ds_key.txt 也在这
+    model_dir = Path(args.voice_dir or os.environ.get("PAIMON_VOICE_DIR") or home / "paimon-voice")
+    voice = PaimonVoice(model_dir, args.voice_url or os.environ.get("GPT_SOVITS_URL") or DEFAULT_URL)
+    if voice.base is None:
+        print(f"派蒙语音：{model_dir} 里没有派蒙模型，不开语音（下载方法见 README）")
+        return None
+    state = voice.health()
+    if state == "offline" and voice.url == DEFAULT_URL:
+        env = os.environ.get("GPT_SOVITS_DIR")
+        gsv = find_gpt_sovits(Path(env)) if env else find_gpt_sovits(home, home.parent)
+        if gsv and start_service(gsv):
+            state = "starting"
+    print(f"派蒙语音：{voice.url} " + {
+        "ready": f"已就绪（{voice.base.mood}）",
+        "starting": "正在启动 GPT-SoVITS，加载完（约半分钟）网页上就能听",
+    }.get(state, f"暂不可用（{state}），服务就绪后自动启用"))
+    return voice
 
 
 def _add_bili_parser(sub) -> None:

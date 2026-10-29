@@ -3,8 +3,9 @@
 
 接口：
     GET  /             页面
-    GET  /api/state    模型名、派蒙改写服务状态
+    GET  /api/state    模型名、派蒙改写和派蒙语音服务状态
     POST /api/ask      {"question": "...", "last": 上一轮的 query 或 null} → 回答
+    POST /api/speak    {"text": "一段话"} → wav（派蒙语音没开或不可用时 503）
 """
 
 from __future__ import annotations
@@ -16,11 +17,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from .assistant import Assistant, Query
+from .voice import PaimonVoice
 
 PAGE = Path(__file__).with_name("static") / "index.html"
 
 
-def make_handler(assistant: Assistant):
+def make_handler(assistant: Assistant, voice: PaimonVoice | None = None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):  # 不刷屏
             pass
@@ -44,7 +46,8 @@ def make_handler(assistant: Assistant):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
             elif self.path == "/api/state":
                 style = assistant.style.health() if assistant.style else "off"
-                self._json({"model": getattr(assistant.model, "model", ""), "paimon": style})
+                self._json({"model": getattr(assistant.model, "model", ""), "paimon": style,
+                            "voice": voice.health() if voice else "off"})
             else:
                 self._send(404, b"not found", "text/plain")
 
@@ -60,6 +63,12 @@ def make_handler(assistant: Assistant):
                     names = {f.name for f in fields(Query)}
                     q = Query(**{k: v for k, v in last.items() if k in names}) if isinstance(last, dict) else None
                     self._json(assistant.ask(question, q).to_dict())
+                elif self.path == "/api/speak":
+                    wav = voice.speak(str(body.get("text") or "")) if voice else None
+                    if wav:
+                        self._send(200, wav, "audio/wav")
+                    else:
+                        self._json({"error": "派蒙语音不可用"}, 503)
                 else:
                     self._send(404, b"not found", "text/plain")
             except Exception as e:  # 页面上显示错误，不让服务挂掉
@@ -69,8 +78,8 @@ def make_handler(assistant: Assistant):
     return Handler
 
 
-def serve(assistant: Assistant, port: int = 8765, open_browser: bool = True) -> None:
-    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(assistant))
+def serve(assistant: Assistant, port: int = 8765, open_browser: bool = True, voice: PaimonVoice | None = None) -> None:
+    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(assistant, voice))
     url = f"http://127.0.0.1:{port}/"
     print(f"原神配队助手：{url}（Ctrl+C 退出）")
     if open_browser:
