@@ -74,7 +74,7 @@ header .meta { color: var(--muted); font-size: 12px; margin-top: 2px; letter-spa
 
 #log { flex: 1; overflow-y: auto; padding: 12px 2px 20px; display: flex; flex-direction: column; gap: 18px; scrollbar-width: thin; scrollbar-color: var(--gold-dim) transparent; }
 
-/* 向导的话：游戏里的对话框，上下金线向两边淡出 */
+/* 派蒙的话：游戏里的对话框，上下金线向两边淡出 */
 .npc { align-self: stretch; position: relative; padding: 14px 22px 16px; background: var(--box); border-radius: 4px;
   box-shadow: 0 6px 24px rgba(0,0,0,.25); }
 .npc::before, .npc::after { content: ""; position: absolute; left: 6%; right: 6%; height: 1px;
@@ -166,8 +166,8 @@ button.send:disabled { opacity: .55; cursor: default; }
   </form>
 </div>
 <script>
-const NPC = "攻略向导";
-const GREETING = "旅行者，想问哪位角色？配队、配装、天赋我都能帮你理一理。要是缺了谁，直接告诉我「我没有芙宁娜」，我换个搭法给你。四星队友我会把 0 命和 6 命的打法都讲到。";
+const NPC = "派蒙";
+const GREETING = "旅行者，想问哪位角色？配队、配装、天赋，派蒙都能帮你理一理！要是缺了谁，直接告诉派蒙「我没有芙宁娜」，派蒙换个搭法给你。四星队友的 0 命和 6 命打法，派蒙也会一起讲到哦。";
 const EXAMPLES = ["我有沃雅妮莎，怎么配队？", "那维莱特 0 命怎么配队", "我没有芙宁娜和万叶，水龙怎么配", "阿罗夏 1 命怎么养成"];
 const STAR = '<svg class="star" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>';
 const BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>';
@@ -259,7 +259,10 @@ $("#ask").onsubmit = e => { e.preventDefault(); const v = q.value; q.value = "";
 const hello = npc(`<p>${esc(GREETING)}</p>`);
 options(hello, EXAMPLES);
 q.focus();
-fetch("/api/state").then(r => r.json()).then(s => { $("#meta").textContent = s.model ? `由 ${s.model} 解读` : ""; }).catch(() => {});
+fetch("/api/state").then(r => r.json()).then(s => {
+  const style = s.paimon === "ready" ? "，派蒙改写已开启" : s.paimon === "off" ? "" : "，派蒙改写模型未就绪（先显示原回答）";
+  $("#meta").textContent = s.model ? `由 ${s.model} 解读${style}` : "";
+}).catch(() => {});
 </script>
 </body>
 </html>

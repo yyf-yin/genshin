@@ -1,9 +1,9 @@
-"""本机网页：和攻略向导对话。只监听 127.0.0.1，自用。
+"""本机网页：和派蒙对话。只监听 127.0.0.1，自用。
 网页不设「我的角色」：按全都有算，四星的 0 命和 6 命并排给。
 
 接口：
     GET  /             页面
-    GET  /api/state    模型名
+    GET  /api/state    模型名、派蒙改写服务状态
     POST /api/ask      {"question": "...", "last": 上一轮的 query 或 null} → 回答
 """
 
@@ -43,7 +43,8 @@ def make_handler(assistant: Assistant):
             if self.path in ("/", "/index.html"):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
             elif self.path == "/api/state":
-                self._json({"model": getattr(assistant.model, "model", "")})
+                style = assistant.style.health() if assistant.style else "off"
+                self._json({"model": getattr(assistant.model, "model", ""), "paimon": style})
             else:
                 self._send(404, b"not found", "text/plain")
 

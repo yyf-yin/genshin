@@ -1,4 +1,4 @@
-"""问答层：大模型把问题解析成查询 → 推荐引擎算结果 → 大模型照着结果用中文解释。
+"""问答层：大模型把问题解析成查询 → 推荐引擎算结果 → 大模型照着结果用中文解释 → 改写成派蒙的口吻。
 
 大模型不决定配队和配装，只做两件事：听懂问题、把引擎结果讲清楚。
 界面（网页、命令行）只调用 Assistant.ask，不碰这里的细节。
@@ -13,6 +13,7 @@ from pathlib import Path
 from ..engine import Engine, Owned
 from ..extract.llm import JSONModel, LLMError
 from ..kb import KnowledgeBase, load_draft_builds
+from .paimon import PaimonStyle
 
 INTENTS = ("team", "build", "other")
 
@@ -88,10 +89,11 @@ class Reply:
     query: Query
     facts: dict
     explained_by_llm: bool = True
+    stylized: bool = False  # 经过了派蒙改写（没过检查的段落仍是原文）
 
     def to_dict(self) -> dict:
         return {"answer": self.answer, "query": asdict(self.query), "facts": self.facts,
-                "explained_by_llm": self.explained_by_llm}
+                "explained_by_llm": self.explained_by_llm, "stylized": self.stylized}
 
 
 class Roster:
@@ -117,7 +119,8 @@ class Roster:
 
 
 class Assistant:
-    def __init__(self, kb: KnowledgeBase, model: JSONModel, data_dir: Path, roster: Roster | None = None, game=None):
+    def __init__(self, kb: KnowledgeBase, model: JSONModel, data_dir: Path, roster: Roster | None = None, game=None,
+                 style: PaimonStyle | None = None):
         self.kb = kb
         self.model = model
         self.data_dir = Path(data_dir)
@@ -127,6 +130,7 @@ class Assistant:
             from ..gamedata import load_gamedata
             game = load_gamedata(self.data_dir)
         self.game = game
+        self.style = style
 
     # ---------- 对外 ----------
 
@@ -136,9 +140,10 @@ class Assistant:
         q.awaiting_carry = facts.get("status") == "need_carry"
         try:
             answer = self.explain(question, facts)
-            return Reply(answer, q, facts)
         except LLMError:
             return Reply(render_plain(facts), q, facts, explained_by_llm=False)
+        styled = self.style.rewrite(answer) if self.style else None
+        return Reply(styled or answer, q, facts, stylized=styled is not None)
 
     def parse(self, question: str, last: Query | None = None) -> Query:
         names = "\n".join(f"{c.zh}：{'、'.join(c.aliases)}" if c.aliases else c.zh for c in self.kb.characters.values())
