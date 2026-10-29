@@ -17,6 +17,7 @@ GPT-SoVITS 服务（默认 http://127.0.0.1:9880）：
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import threading
@@ -104,12 +105,12 @@ class PaimonVoice:
                 return False
         return True
 
-    def speak(self, text: str) -> bytes | None:
-        """合成一段话，返回 wav；没东西可念或服务不可用返回 None。"""
+    def speak(self, text: str, mood: str | None = None) -> bytes | None:
+        """合成一段话，返回 wav；没东西可念或服务不可用返回 None。mood 指定参考音频（情绪目录名），不给就按句末语气选。"""
         text = speakable(text)
         if not text or self.health() != "ready":
             return None
-        v = next((self.voices[m] for m in MOODS.get(mood_of(text), []) if m in self.voices), self.base)
+        v = self._voice(text, mood)
         body = json.dumps({
             "text": text, "text_lang": "zh",
             "ref_audio_path": str(v.ref), "prompt_text": v.prompt, "prompt_lang": "zh",
@@ -121,6 +122,30 @@ class PaimonVoice:
                 return r.read()
         except OSError:
             return None
+
+
+    def _voice(self, text: str, mood: str | None) -> Voice:
+        if mood in self.voices:
+            return self.voices[mood]
+        return next((self.voices[m] for m in MOODS.get(mood_of(text), []) if m in self.voices), self.base)
+
+    def cached(self, text: str, cache_dir: Path, mood: str | None = None) -> Path | None:
+        """合成一次存成文件（开场白这种固定的话），以后直接读。文字、参考音频或权重变了才重新合成。"""
+        if self.base is None:
+            return None
+        v = self._voice(speakable(text), mood)
+        key = "\n".join(map(str, (speakable(text), v.ref.name, self.base.gpt and self.base.gpt.name, self.base.sovits and self.base.sovits.name)))
+        path = Path(cache_dir) / f"greeting-{hashlib.sha1(key.encode()).hexdigest()[:12]}.wav"
+        if path.exists():
+            return path
+        wav = self.speak(text, mood)
+        if not wav:
+            return None
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_bytes(wav)
+        tmp.replace(path)
+        return path
 
 
 def find_gpt_sovits(*roots: Path) -> Path | None:

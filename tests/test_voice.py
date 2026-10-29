@@ -142,3 +142,38 @@ def test_web_speak(kb, tmp_path, models, gsv):  # noqa: F811
                 assert e.code == code == 503
         finally:
             server.shutdown()
+
+
+def test_cached_synthesizes_once_per_text(models, gsv, tmp_path):
+    voice = PaimonVoice(models, gsv["url"])
+    first = voice.cached("旅行者，你终于来啦！", tmp_path / "cache", "平静")
+    assert first.read_bytes() == b"RIFF-fake-wav" and len(gsv["tts"]) == 1
+    assert gsv["tts"][0]["prompt_text"] == "既然罗莎莉亚说足迹上有元素力"  # 指定的语气优先于句末的「！」
+    assert voice.cached("旅行者，你终于来啦！", tmp_path / "cache", "平静") == first and len(gsv["tts"]) == 1
+    # 服务关了也能直接用缓存
+    assert PaimonVoice(models, "http://127.0.0.1:9").cached("旅行者，你终于来啦！", tmp_path / "cache", "平静") == first
+    other = voice.cached("换一句开场白！", tmp_path / "cache", "平静")
+    assert other != first and len(gsv["tts"]) == 2
+    assert PaimonVoice(models, "http://127.0.0.1:9").cached("没合成过", tmp_path / "cache") is None
+
+
+def test_web_greeting_audio(kb, tmp_path, models, gsv):  # noqa: F811
+    from genshin_assistant.chat.web import GREETING, Greeting
+
+    voice = PaimonVoice(models, gsv["url"])
+    greeting = Greeting(voice, tmp_path / "cache")
+    a = make(kb, {"intent": "team", "character": "那维莱特"}, tmp_path)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(a, voice, greeting))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        state = json.loads(urllib.request.urlopen(base + "/api/state").read())
+        assert state["greeting"] == GREETING and state["greeting_audio"] is False
+        with pytest.raises(urllib.error.HTTPError):
+            urllib.request.urlopen(base + "/api/greeting.wav")
+        assert greeting.prepare(tries=1)
+        assert gsv["tts"][-1]["prompt_text"] == "太好啦"  # 开场白用兴奋的语气
+        assert json.loads(urllib.request.urlopen(base + "/api/state").read())["greeting_audio"] is True
+        assert urllib.request.urlopen(base + "/api/greeting.wav").read() == b"RIFF-fake-wav"
+    finally:
+        server.shutdown()
