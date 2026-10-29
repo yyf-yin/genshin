@@ -188,7 +188,7 @@ def test_web_endpoints(kb, tmp_path):
         page = urllib.request.urlopen(base + "/").read().decode()
         assert "原神配队助手" in page
         state = json.loads(urllib.request.urlopen(base + "/api/state").read())
-        assert state == {"model": "fake", "paimon": "off"} and "我的角色" not in page
+        assert state == {"model": "fake", "paimon": "off", "voice": "off"} and "我的角色" not in page
         reply = post("/api/ask", {"question": "水龙怎么配", "last": {"intent": "team", "character": "那维莱特", "junk": 1}})
         assert reply["facts"]["status"] == "team" and reply["query"]["character"] == "那维莱特"
         try:
