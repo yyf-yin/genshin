@@ -104,12 +104,12 @@ class PaimonVoice:
                 return False
         return True
 
-    def speak(self, text: str) -> bytes | None:
-        """合成一段话，返回 wav；没东西可念或服务不可用返回 None。"""
+    def speak(self, text: str, mood: str | None = None) -> bytes | None:
+        """合成一段话，返回 wav；没东西可念或服务不可用返回 None。mood 指定参考音频（情绪目录名），不给就按句末语气选。"""
         text = speakable(text)
         if not text or self.health() != "ready":
             return None
-        v = next((self.voices[m] for m in MOODS.get(mood_of(text), []) if m in self.voices), self.base)
+        v = self._voice(text, mood)
         body = json.dumps({
             "text": text, "text_lang": "zh",
             "ref_audio_path": str(v.ref), "prompt_text": v.prompt, "prompt_lang": "zh",
@@ -121,6 +121,24 @@ class PaimonVoice:
                 return r.read()
         except OSError:
             return None
+
+
+    def _voice(self, text: str, mood: str | None) -> Voice:
+        if mood in self.voices:
+            return self.voices[mood]
+        return next((self.voices[m] for m in MOODS.get(mood_of(text), []) if m in self.voices), self.base)
+
+    def save(self, text: str, path: Path, mood: str | None = None) -> bool:
+        """合成一段话存成 wav 文件（先写临时文件再替换，合成失败不会留下半个文件）。"""
+        wav = self.speak(text, mood)
+        if not wav:
+            return False
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_bytes(wav)
+        tmp.replace(path)
+        return True
 
 
 def find_gpt_sovits(*roots: Path) -> Path | None:

@@ -257,7 +257,7 @@ def _chat(args, kb) -> None:
     if args.cmd == "web":
         from .chat.web import serve
         voice = None if args.no_voice else _voice(args, data_dir)
-        serve(assistant, args.port, not args.no_browser, voice)
+        serve(assistant, args.port, not args.no_browser, voice, data_dir / "voice")
         return
     print("问配队或养成，例如「我有沃雅妮莎，怎么配队」。空行退出。")
     last = None

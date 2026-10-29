@@ -102,7 +102,7 @@ header .meta { color: var(--muted); font-size: 12px; margin-top: 2px; letter-spa
 .npc .say:hover, .npc .say:focus-visible { border-color: var(--gold); outline: none; box-shadow: 0 0 0 2px var(--gold-dim); }
 .npc .say.on { background: var(--gold-dim); animation: pulse 1.4s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 4px var(--gold-dim); } }
-.npc .body .speaking { color: var(--gold-hi); }
+.npc .body .speaking, .npc .body.speaking { color: var(--gold-hi); }
 header .auto { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; user-select: none; }
 header .auto input { accent-color: var(--gold); margin: 0; }
 header .auto[hidden] { display: none; }
@@ -179,7 +179,7 @@ button.send:disabled { opacity: .55; cursor: default; }
 </div>
 <script>
 const NPC = "派蒙";
-const GREETING = "旅行者，想问哪位角色？配队、配装、天赋，派蒙都能帮你理一理！要是缺了谁，直接告诉派蒙「我没有芙宁娜」，派蒙换个搭法给你。四星队友的 0 命和 6 命打法，派蒙也会一起讲到哦。";
+const GREETING = "旅行者，想问哪位角色？派蒙都帮你安排！";  // 服务端没给开场白时才用
 const EXAMPLES = ["我有沃雅妮莎，怎么配队？", "那维莱特 0 命怎么配队", "我没有芙宁娜和万叶，水龙怎么配", "阿罗夏 1 命怎么养成"];
 const STAR = '<svg class="star" viewBox="0 0 24 24"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>';
 const BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>';
@@ -215,7 +215,7 @@ function stopVoice() {
   document.querySelectorAll(".speaking").forEach(el => el.classList.remove("speaking"));
   player.button = null;
 }
-async function speakBlob(text) {
+async function speakText(text) {
   const r = await fetch("/api/speak", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text})});
   return r.ok ? URL.createObjectURL(await r.blob()) : null;
 }
@@ -223,10 +223,14 @@ async function speak(reply) {
   const button = reply.querySelector(".say");
   const wasMine = player.button === button;
   stopVoice();
-  if (wasMine) return;  // 再点一次就停
+  if (wasMine) return true;  // 再点一次就停
   const run = player.run;
-  player.button = button; button.classList.add("on");
-  const parts = [...reply.querySelectorAll(".body p, .body li, .body h4")].filter(el => !el.classList.contains("dots") && el.textContent.trim());
+  player.button = button; button?.classList.add("on");
+  // 开场白有预先合成好的整段语音，直接播文件
+  const cached = reply.dataset.audio;
+  const parts = cached ? [reply.querySelector(".body")]
+    : [...reply.querySelectorAll(".body p, .body li, .body h4")].filter(el => !el.classList.contains("dots") && el.textContent.trim());
+  const speakBlob = cached ? () => Promise.resolve(cached) : speakText;
   let next = parts.length ? speakBlob(parts[0].textContent) : null;
   for (let i = 0; i < parts.length && run === player.run; i++) {
     const url = await next;
@@ -234,11 +238,16 @@ async function speak(reply) {
     if (!url || run !== player.run) continue;
     parts[i].classList.add("speaking");
     const audio = player.audio = new Audio(url);
-    await new Promise(done => { audio.onended = audio.onerror = audio.onpause = done; audio.play().catch(done); });
+    const ok = await new Promise(done => {
+      audio.onended = audio.onerror = audio.onpause = () => done(true);
+      audio.play().catch(() => done(false));  // 浏览器不让没点过的页面出声
+    });
+    if (!ok && cached) { parts[i].classList.remove("speaking"); stopVoice(); return false; }
     parts[i].classList.remove("speaking");
-    URL.revokeObjectURL(url);
+    if (url.startsWith("blob:")) URL.revokeObjectURL(url);
   }
   if (run === player.run) stopVoice();
+  return true;
 }
 function addSpeaker(reply) {
   if (!voiceOn || reply.querySelector(".say")) return;
@@ -316,10 +325,14 @@ $("#ask").onsubmit = e => { e.preventDefault(); const v = q.value; q.value = "";
 const auto = $("#auto");
 try { auto.checked = localStorage.getItem("paimon-auto-voice") === "1"; } catch (e) {}
 auto.onchange = () => { try { localStorage.setItem("paimon-auto-voice", auto.checked ? "1" : "0"); } catch (e) {} };
-const hello = npc(`<p>${esc(GREETING)}</p>`);
-options(hello, EXAMPLES);
+let hello = null;
+function greet(text) {
+  hello = npc(`<p>${esc(text)}</p>`);
+  options(hello, EXAMPLES);
+}
 q.focus();
 fetch("/api/state").then(r => r.json()).then(s => {
+  greet(s.greeting || GREETING);
   const style = s.paimon === "ready" ? "，派蒙改写已开启" : s.paimon === "off" ? "" : "，派蒙改写模型未就绪（先显示原回答）";
   const voice = {ready: "，派蒙语音已开启", offline: "，派蒙语音服务还没起来", error: "，派蒙语音模型加载失败"}[s.voice] || "";
   $("#meta").textContent = s.model ? `由 ${s.model} 解读${style}${voice}` : "";
@@ -327,7 +340,19 @@ fetch("/api/state").then(r => r.json()).then(s => {
   voiceOn = !["off", "nomodel"].includes(s.voice);
   $("#auto-box").hidden = !voiceOn;
   if (voiceOn) document.querySelectorAll(".npc").forEach(addSpeaker);
-}).catch(() => {});
+  // 开场白语音是启动时存好的文件，一打开就念；浏览器拦了自动播放，就等第一次点页面或按键再念
+  if (s.greeting_audio) {
+    hello.dataset.audio = "/api/greeting.wav";
+    speak(hello).then(played => {
+      if (played) return;
+      const once = e => {
+        removeEventListener("pointerdown", once, true); removeEventListener("keydown", once, true);
+        if (!e.target.closest?.("button") && !busy && !player.button && !document.querySelector(".me")) speak(hello);
+      };
+      addEventListener("pointerdown", once, true); addEventListener("keydown", once, true);
+    });
+  }
+}).catch(() => { if (!hello) greet(GREETING); });
 </script>
 </body>
 </html>
