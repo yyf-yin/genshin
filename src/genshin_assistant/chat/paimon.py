@@ -94,3 +94,27 @@ def _numbers(text: str) -> set[str]:
 def game_terms(game) -> list[str]:
     """游戏数据里所有角色、武器、圣遗物套装的中文名。"""
     return [row["zh"] for table in (game.characters, game.weapons, game.artifact_sets) for row in table.values()]
+
+
+DEFAULT_MODEL_DIR = r"D:\projects\model"
+WSL_DISTRO = "Paimon-Train"
+
+
+def start_service(model_dir: str = DEFAULT_MODEL_DIR, port: int = 8000):
+    """在 WSL 里启动改写服务，返回 Popen；模型项目不在就返回 None。
+
+    服务进程在 WSL 里自成一个会话，关掉 wsl.exe 杀不掉它，所以让 bash 守着 stdin：
+    本进程退出（包括直接关窗口）时管道断开，cat 读到 EOF，就把服务也关掉。
+    """
+    import subprocess
+    from pathlib import Path
+
+    if not (Path(model_dir) / "scripts" / "client-server.py").exists():
+        return None
+    serve = f"bash scripts/run-python.sh -u scripts/client-server.py --host 127.0.0.1 --port {port}"
+    watch = f"{serve} & pid=$!; cat >/dev/null; kill $pid"
+    try:
+        return subprocess.Popen(["wsl.exe", "-d", WSL_DISTRO, "-u", "paimon", "--cd", model_dir, "--", "bash", "-c", watch],
+                                stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:  # 没装 WSL
+        return None

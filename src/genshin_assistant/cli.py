@@ -234,13 +234,23 @@ def _chat(args, kb) -> None:
     else:
         roster = Roster(Path(args.roster) if args.roster else work / "roster.json")
     assistant = Assistant(kb, model, data_dir, roster)
+    service = None  # noqa: F841  自动拉起的派蒙改写服务，跟本进程同生共死
     if not args.no_paimon:
         import os
 
-        from .chat.paimon import DEFAULT_URL, PaimonStyle, game_terms
-        assistant.style = PaimonStyle(game_terms(assistant.game), args.paimon_url or os.environ.get("PAIMON_URL") or DEFAULT_URL)
+        from .chat.paimon import DEFAULT_MODEL_DIR, DEFAULT_URL, PaimonStyle, game_terms, start_service
+        url = args.paimon_url or os.environ.get("PAIMON_URL") or DEFAULT_URL
+        assistant.style = PaimonStyle(game_terms(assistant.game), url)
         state = assistant.style.health()
-        print(f"派蒙改写：{assistant.style.url} " + ("已就绪" if state == "ready" else f"暂不可用（{state}），先显示原回答，服务就绪后自动启用"))
+        # 本机默认地址上没有服务就在 WSL 里拉起来。service 要一直引用着：它的 stdin 一关，服务就退出
+        if state == "offline" and url == DEFAULT_URL:
+            service = start_service(os.environ.get("PAIMON_MODEL_DIR") or DEFAULT_MODEL_DIR)
+            if service:
+                state = "starting"
+        print(f"派蒙改写：{url} " + {
+            "ready": "已就绪",
+            "starting": "正在 WSL 里启动模型，约 15 秒后可用，之前的回答先显示原文",
+        }.get(state, f"暂不可用（{state}），先显示原回答，服务就绪后自动启用"))
     if args.cmd == "web":
         from .chat.web import serve
         serve(assistant, args.port, not args.no_browser)
